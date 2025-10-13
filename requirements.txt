@@ -1,0 +1,116 @@
+# EduKids - Hub Éducatif Multimodal
+# Installation: pip install -r requirements.txt
+
+# ============================================
+# FRAMEWORK DJANGO
+# ============================================
+Django==5.2.6
+djangorestframework==3.15.2
+
+# ============================================
+# BASE DE DONNÉES
+# ============================================
+psycopg2-binary==2.9.10  # PostgreSQL adapter
+django-redis==5.4.0  # Redis cache backend
+
+# ============================================
+# INTELLIGENCE ARTIFICIELLE & NLP
+# ============================================
+# OpenAI pour l'assistant virtuel
+openai==1.54.5
+
+# Traitement du langage naturel
+spacy>=3.8.7  # Version compatible Python 3.13
+nltk==3.9.1
+
+# Machine Learning
+scikit-learn==1.6.1
+numpy==2.2.1
+pandas==2.2.3
+
+# TensorFlow pour l'IA adaptative (optionnel - commenté si trop lourd)
+# tensorflow==2.18.0
+
+# ============================================
+# AUDIO PROCESSING & SPEECH ANALYSIS
+# Pour l'évaluation vocale par IA
+# ============================================
+librosa==0.10.2  # Analyse audio complète
+soundfile==0.12.1  # Lecture fichiers audio
+textblob==0.18.0.post0  # Analyse de texte/sentiment
+python-speech-features==0.6  # Extraction features audio
+pydub==0.25.1  # Manipulation fichiers audio
+scipy==1.15.1  # Traitement du signal
+ffmpeg-python==0.2.0  # Conversion formats audio
+praat-parselmouth==0.4.5  # Analyse prosodique (pitch, intonation)
+
+# ============================================
+# TRAITEMENT ASYNCHRONE
+# ============================================
+celery==5.4.0
+redis==5.2.1
+
+# ============================================
+# GESTION DES IMAGES
+# ============================================
+Pillow==11.3.0
+django-imagekit==5.0.0  # Manipulation d'images
+
+# ============================================
+# APIS ET SERIALIZATION
+# ============================================
+djangorestframework-simplejwt==5.4.0  # JWT Authentication
+drf-spectacular==0.28.0  # API documentation
+
+# ============================================
+# FORMULAIRES ET VALIDATION
+# ============================================
+django-crispy-forms==2.3
+crispy-bootstrap5==2025.1
+
+# ============================================
+# SÉCURITÉ
+# ============================================
+django-cors-headers==4.6.0
+django-environ==0.11.2  # Variables d'environnement
+
+# ============================================
+# OUTILS DE DÉVELOPPEMENT
+# ============================================
+python-dotenv==1.0.1
+requests==2.32.3
+
+# Debug toolbar (développement uniquement)
+django-debug-toolbar==5.0.0
+
+# ============================================
+# GÉNÉRATION DE PDF ET RAPPORTS
+# ============================================
+reportlab==4.2.5  # Génération de PDF
+openpyxl==3.1.5  # Export Excel
+
+# ============================================
+# UTILITAIRES
+# ============================================
+python-dateutil==2.9.0
+pytz==2024.2
+
+# ============================================
+# SERVEUR DE PRODUCTION
+# ============================================
+gunicorn==23.0.0  # WSGI server
+whitenoise==6.8.2  # Fichiers statiques
+
+# ============================================
+# TESTS
+# ============================================
+pytest==8.3.4
+pytest-django==4.9.0
+factory-boy==3.3.1  # Test fixtures
+
+# ============================================
+# QUALITÉ DU CODE
+# ============================================
+flake8==7.1.1
+black==24.10.0
+isort==5.13.2

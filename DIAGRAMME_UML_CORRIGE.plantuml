@@ -1,0 +1,372 @@
+@startuml
+!theme plain
+skinparam classAttributeIconSize 0
+
+package "EduKids - Hub Éducatif Multimodal" {
+    
+    abstract class User {
+        + id: UUID
+        + username: String
+        + email: String
+        + password: String
+        + user_type: String
+        + phone: String
+        + avatar: ImageField
+        + created_at: DateTime
+        + updated_at: DateTime
+        + is_active: Boolean
+        + authenticate()
+        + update_profile()
+    }
+    
+    class Student {
+        + grade_level: String
+        + birth_date: Date
+        + learning_style: String
+        + preferred_language: String
+        + progress_score: Float
+        + total_points: Integer
+        + current_level: Integer
+        + created_at: DateTime
+        + updated_at: DateTime
+        + get_age()
+    }
+    
+    class Teacher {
+        + subject_specialties: JSONField
+        + teaching_experience: Integer
+        + certification_level: String
+        + created_at: DateTime
+        + updated_at: DateTime
+    }
+    
+    class Parent {
+        + notification_preferences: JSONField
+        + created_at: DateTime
+        + updated_at: DateTime
+    }
+    
+    class Classroom {
+        + name: String
+        + grade_level: String
+        + school_year: String
+        + max_students: Integer
+        + created_at: DateTime
+        + updated_at: DateTime
+        + get_student_count()
+    }
+    
+    class Subject {
+        + name: String
+        + code: String
+        + description: TextField
+        + icon: ImageField
+        + color: String
+        + order: Integer
+    }
+    
+    class Topic {
+        + name: String
+        + description: TextField
+        + grade_levels: JSONField
+        + order: Integer
+    }
+    
+    class Exercise {
+        + title: String
+        + exercise_type: String
+        + content: TextField
+        + instructions: TextField
+        + difficulty_level: Integer
+        + grade_level: String
+        + points: Integer
+        + time_limit: Integer
+        + is_ai_generated: Boolean
+        + is_active: Boolean
+        + created_at: DateTime
+        + updated_at: DateTime
+    }
+    
+    class Question {
+        + question_text: TextField
+        + question_type: String
+        + image: ImageField
+        + audio: FileField
+        + points: Integer
+        + order: Integer
+        + explanation: TextField
+    }
+    
+    class Answer {
+        + answer_text: TextField
+        + is_correct: Boolean
+        + image: ImageField
+        + order: Integer
+    }
+    
+    class ContentLibrary {
+        + title: String
+        + content_type: String
+        + description: TextField
+        + file: FileField
+        + url: URLField
+        + grade_levels: JSONField
+        + tags: JSONField
+        + is_active: Boolean
+        + created_at: DateTime
+        + updated_at: DateTime
+    }
+    
+    class VirtualAssistant {
+        + name: String
+        + personality: String
+        + avatar: ImageField
+        + language: String
+        + knowledge_base_version: String
+        + ai_model: String
+        + is_active: Boolean
+        + created_at: DateTime
+        + updated_at: DateTime
+    }
+    
+    class Conversation {
+        + title: String
+        + context: JSONField
+        + is_active: Boolean
+        + started_at: DateTime
+        + last_message_at: DateTime
+        + get_message_count()
+    }
+    
+    class Message {
+        + sender_type: String
+        + message_type: String
+        + content: TextField
+        + audio_file: FileField
+        + image_file: ImageField
+        + metadata: JSONField
+        + is_read: Boolean
+        + timestamp: DateTime
+    }
+    
+    class KnowledgeBase {
+        + category: String
+        + question_pattern: TextField
+        + answer_template: TextField
+        + grade_levels: JSONField
+        + examples: JSONField
+        + priority: Integer
+        + is_active: Boolean
+        + created_at: DateTime
+        + updated_at: DateTime
+    }
+    
+    class AssistantInteraction {
+        + question: TextField
+        + answer_provided: TextField
+        + was_helpful: Boolean
+        + processing_time: Float
+        + ai_confidence: Float
+        + metadata: JSONField
+        + created_at: DateTime
+    }
+    
+    class Assessment {
+        + status: String
+        + score: Float
+        + points_earned: Integer
+        + time_taken: Integer
+        + attempts: Integer
+        + started_at: DateTime
+        + completed_at: DateTime
+        + calculate_score()
+    }
+    
+    class StudentResponse {
+        + answer_text: TextField
+        + selected_answers: JSONField
+        + is_correct: Boolean
+        + points_earned: Integer
+        + time_taken: Integer
+        + feedback: TextField
+        + answered_at: DateTime
+    }
+    
+    class Progress {
+        + skill_level: Float
+        + exercises_completed: Integer
+        + average_score: Float
+        + total_time_spent: Integer
+        + improvement_rate: Float
+        + strengths: JSONField
+        + weaknesses: JSONField
+        + last_practice_date: DateTime
+        + updated_at: DateTime
+    }
+    
+    class Report {
+        + title: String
+        + report_type: String
+        + data: JSONField
+        + start_date: Date
+        + end_date: Date
+        + file: FileField
+        + is_shared: Boolean
+        + generated_at: DateTime
+    }
+    
+    class Recommendation {
+        + recommendation_type: String
+        + title: String
+        + description: TextField
+        + priority: Integer
+        + is_viewed: Boolean
+        + is_completed: Boolean
+        + created_at: DateTime
+        + expires_at: DateTime
+    }
+    
+    class Badge {
+        + name: String
+        + description: TextField
+        + category: String
+        + rarity: String
+        + icon: ImageField
+        + points_reward: Integer
+        + criteria: JSONField
+        + is_active: Boolean
+        + created_at: DateTime
+    }
+    
+    class StudentBadge {
+        + earned_at: DateTime
+        + is_displayed: Boolean
+    }
+    
+    class Reward {
+        + name: String
+        + description: TextField
+        + reward_type: String
+        + image: ImageField
+        + unlock_cost: Integer
+        + required_level: Integer
+        + is_premium: Boolean
+        + is_active: Boolean
+        + created_at: DateTime
+    }
+    
+    class StudentReward {
+        + unlocked_at: DateTime
+        + is_equipped: Boolean
+    }
+    
+    class Challenge {
+        + title: String
+        + description: TextField
+        + challenge_type: String
+        + difficulty: String
+        + objective: JSONField
+        + points_reward: Integer
+        + start_date: DateTime
+        + end_date: DateTime
+        + is_active: Boolean
+        + created_at: DateTime
+    }
+    
+    class StudentChallenge {
+        + status: String
+        + progress: Float
+        + started_at: DateTime
+        + completed_at: DateTime
+    }
+    
+    class Leaderboard {
+        + name: String
+        + leaderboard_type: String
+        + start_date: Date
+        + end_date: Date
+        + is_active: Boolean
+        + created_at: DateTime
+    }
+    
+    class LeaderboardEntry {
+        + rank: Integer
+        + score: Integer
+        + exercises_completed: Integer
+        + updated_at: DateTime
+    }
+    
+    class Notification {
+        + notification_type: String
+        + title: String
+        + message: TextField
+        + icon: String
+        + link: String
+        + is_read: Boolean
+        + priority: Integer
+        + created_at: DateTime
+    }
+}
+
+' Relations User
+User <|-- Student
+User <|-- Teacher
+User <|-- Parent
+
+' Relations Student
+Student ||--o{ Assessment : "takes"
+Student ||--o{ Progress : "has"
+Student ||--o{ Conversation : "participates in"
+Student ||--o{ AssistantInteraction : "has"
+Student ||--o{ StudentResponse : "gives"
+Student ||--o{ StudentBadge : "earns"
+Student ||--o{ StudentReward : "unlocks"
+Student ||--o{ StudentChallenge : "participates in"
+Student ||--o{ LeaderboardEntry : "appears in"
+Student ||--o{ Notification : "receives"
+
+' Relations Teacher
+Teacher ||--o{ Exercise : "creates"
+Teacher ||--o{ Report : "generates"
+Teacher ||--o{ Classroom : "teaches"
+
+' Relations Parent
+Parent ||--o{ Student : "monitors"
+
+' Relations Classroom
+Classroom ||--o{ Student : "contains"
+Classroom ||--o{ Leaderboard : "has"
+
+' Relations Exercise
+Exercise ||--o{ Question : "contains"
+Exercise ||--o{ Assessment : "evaluated by"
+Exercise ||--o{ Recommendation : "suggested in"
+
+' Relations Subject/Topic
+Subject ||--o{ Topic : "contains"
+Topic ||--o{ Exercise : "covers"
+Subject ||--o{ Exercise : "belongs to"
+Subject ||--o{ ContentLibrary : "has content"
+Subject ||--o{ Progress : "tracked in"
+Subject ||--o{ Leaderboard : "ranked by"
+
+' Relations Question/Answer
+Question ||--o{ Answer : "has"
+Question ||--o{ StudentResponse : "answered in"
+
+' Relations Assistant
+VirtualAssistant ||--o{ Conversation : "participates in"
+VirtualAssistant ||--o{ KnowledgeBase : "uses"
+Conversation ||--o{ Message : "contains"
+Conversation ||--o{ AssistantInteraction : "generates"
+
+' Relations Assessment
+Assessment ||--o{ StudentResponse : "contains"
+
+' Relations Gamification
+Badge ||--o{ StudentBadge : "earned by"
+Reward ||--o{ StudentReward : "unlocked by"
+Challenge ||--o{ StudentChallenge : "participated by"
+Leaderboard ||--o{ LeaderboardEntry : "contains"
+
+@enduml

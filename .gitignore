@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+/static/
+/staticfiles/
+*.pot
+local_settings.py
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# Audio files (trop lourds pour Git)
+*.wav
+*.mp3
+*.ogg
+*.flac
+!/media/sample_audio/  # Garder les exemples
+
+# Documentation temporaire
+*.tmp
+*.bak
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Pytest
+.pytest_cache/
+
+# Docker
+docker-compose.override.yml
