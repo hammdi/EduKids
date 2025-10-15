@@ -14,6 +14,26 @@ from .voice_analyzer import VoiceAnalyzer
 
 
 @login_required
+def voice_assessment(request):
+    """Voice assessment interface"""
+    return render(request, 'assessments/voice_assessment.html')
+
+@login_required
+def teacher_assessments(request):
+    """Teacher assessments view"""
+    return render(request, 'teachers/assessments.html')
+
+@login_required
+def student_exercises(request):
+    """Student exercises view"""
+    return render(request, 'students/exercises.html')
+
+@login_required
+def teacher_exercises(request):
+    """Teacher exercises view"""
+    return render(request, 'teachers/exercises.html')
+
+@login_required
 def voice_assessment_view(request, student_id=None):
     """
     Interface d'évaluation vocale

@@ -1,0 +1,61 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register - EduKids{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- User Type Selection -->
+            <div class="text-center mb-4">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'register' %}?type=student" 
+                       class="btn {% if user_type == 'student' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        <i class="fas fa-graduation-cap me-2"></i>I'm a Student
+                    </a>
+                    <a href="{% url 'register' %}?type=teacher" 
+                       class="btn {% if user_type == 'teacher' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>I'm a Teacher
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-lg border-0 mt-3">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        {% if user_type == 'teacher' %}
+                            <i class="fas fa-chalkboard-teacher fa-3x text-info mb-3"></i>
+                            <h2 class="fw-bold">Join as Teacher</h2>
+                            <p class="text-muted">Create your teacher account and start managing your classroom</p>
+                        {% else %}
+                            <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                            <h2 class="fw-bold">Join as Student</h2>
+                            <p class="text-muted">Create your student account and start learning</p>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create {{ user_type.title }} Account
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted">
+                            Already have an account? 
+                            <a href="{% url 'login' %}" class="text-decoration-none">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

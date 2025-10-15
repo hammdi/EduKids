@@ -1,0 +1,335 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - EduKids{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-success text-white border-0">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 fw-bold mb-2">
+                                Teacher Dashboard 🎓
+                            </h1>
+                            <p class="lead mb-0">Welcome, {{ user.get_full_name|default:user.username }}! Manage your classroom and track student progress.</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-chalkboard-teacher fa-4x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="text-primary mb-3">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <h3 class="fw-bold">24</h3>
+                    <p class="text-muted mb-0">Total Students</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="text-success mb-3">
+                        <i class="fas fa-book fa-3x"></i>
+                    </div>
+                    <h3 class="fw-bold">18</h3>
+                    <p class="text-muted mb-0">Exercises Created</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="text-warning mb-3">
+                        <i class="fas fa-chart-bar fa-3x"></i>
+                    </div>
+                    <h3 class="fw-bold">156</h3>
+                    <p class="text-muted mb-0">Assessments Completed</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="text-info mb-3">
+                        <i class="fas fa-microphone fa-3x"></i>
+                    </div>
+                    <h3 class="fw-bold">42</h3>
+                    <p class="text-muted mb-0">Voice Assessments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-tools text-primary me-2"></i>Teacher Tools
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'teacher_exercises' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Create New Exercise
+                        </a>
+                        <a href="{% url 'teacher_assessments' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-chart-line me-2"></i>View Assessments
+                        </a>
+                        <a href="#" class="btn btn-warning">
+                            <i class="fas fa-users me-2"></i>Manage Students
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-file-alt me-2"></i>Generate Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-exclamation-circle text-warning me-2"></i>Recent Notifications
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-microphone text-success me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">New Voice Assessment</h6>
+                                    <small class="text-muted">Sarah completed her storytelling exercise</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-star text-warning me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Student Achievement</h6>
+                                    <small class="text-muted">Mike earned the Math Master badge</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clock text-info me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Exercise Deadline</h6>
+                                    <small class="text-muted">Science quiz due tomorrow</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Performance -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-chart-line text-success me-2"></i>Class Performance Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-trophy text-warning me-2"></i>Top Performers
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0 d-flex align-items-center">
+                            <div class="position-relative me-3">
+                                <span class="badge bg-warning position-absolute top-0 start-100 translate-middle rounded-pill">1</span>
+                                <i class="fas fa-crown text-warning fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Sarah Johnson</h6>
+                                <small class="text-muted">Average: 94%</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0 d-flex align-items-center">
+                            <div class="position-relative me-3">
+                                <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle rounded-pill">2</span>
+                                <i class="fas fa-medal text-secondary fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Mike Chen</h6>
+                                <small class="text-muted">Average: 91%</small>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0 d-flex align-items-center">
+                            <div class="position-relative me-3">
+                                <span class="badge bg-warning position-absolute top-0 start-100 translate-middle rounded-pill">3</span>
+                                <i class="fas fa-award text-warning fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Emma Davis</h6>
+                                <small class="text-muted">Average: 89%</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Voice Assessments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-microphone text-primary me-2"></i>Recent Voice Assessments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Exercise</th>
+                                    <th>Originality</th>
+                                    <th>Verbal</th>
+                                    <th>Paraverbal</th>
+                                    <th>Overall</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                S
+                                            </div>
+                                            Sarah Johnson
+                                        </div>
+                                    </td>
+                                    <td>Creative Storytelling</td>
+                                    <td><span class="badge bg-success">92%</span></td>
+                                    <td><span class="badge bg-info">88%</span></td>
+                                    <td><span class="badge bg-warning">85%</span></td>
+                                    <td><span class="badge bg-primary">88%</span></td>
+                                    <td>2 hours ago</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-success text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                M
+                                            </div>
+                                            Mike Chen
+                                        </div>
+                                    </td>
+                                    <td>Presentation Skills</td>
+                                    <td><span class="badge bg-success">89%</span></td>
+                                    <td><span class="badge bg-success">91%</span></td>
+                                    <td><span class="badge bg-success">90%</span></td>
+                                    <td><span class="badge bg-success">90%</span></td>
+                                    <td>5 hours ago</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-warning text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                E
+                                            </div>
+                                            Emma Davis
+                                        </div>
+                                    </td>
+                                    <td>Poetry Reading</td>
+                                    <td><span class="badge bg-info">86%</span></td>
+                                    <td><span class="badge bg-success">89%</span></td>
+                                    <td><span class="badge bg-info">87%</span></td>
+                                    <td><span class="badge bg-info">87%</span></td>
+                                    <td>1 day ago</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Performance Chart
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Average Score',
+                data: [78, 82, 85, 88],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Voice Assessment Score',
+                data: [72, 75, 80, 85],
+                borderColor: '#56ab2f',
+                backgroundColor: 'rgba(86, 171, 47, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

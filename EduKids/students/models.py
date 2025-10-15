@@ -124,6 +124,14 @@ class Teacher(models.Model):
     """
     Modèle pour les enseignants du primaire
     """
+    CERTIFICATION_LEVEL_CHOICES = (
+        ('bachelor', 'Licence'),
+        ('master', 'Master'),
+        ('phd', 'Doctorat'),
+        ('certified', 'Certifié'),
+        ('other', 'Autre'),
+    )
+    
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -141,6 +149,8 @@ class Teacher(models.Model):
     )
     certification_level = models.CharField(
         max_length=100,
+        choices=CERTIFICATION_LEVEL_CHOICES,
+        default='bachelor',
         blank=True,
         verbose_name="Niveau de certification"
     )

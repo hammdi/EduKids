@@ -22,8 +22,11 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # Évaluations (incluant évaluation vocale IA)
-    path('', include('assessments.urls')),
+    # Main app URLs (students, auth, home)
+    path('', include('students.urls')),
+    
+    # Assessments and exercises
+    path('assessments/', include('assessments.urls')),
 ]
 
 # Servir les fichiers media en développement

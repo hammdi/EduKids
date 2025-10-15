@@ -1,0 +1,376 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}AI Voice Assessment - EduKids{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="mb-3">
+                    <i class="fas fa-microphone fa-4x text-primary"></i>
+                </div>
+                <h1 class="display-5 fw-bold">AI Voice Assessment</h1>
+                <p class="lead text-muted">
+                    Revolutionary voice evaluation system analyzing originality, verbal communication, and paraverbal communication
+                </p>
+            </div>
+
+            <!-- Assessment Card -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>Voice Evaluation System
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Exercise Prompt -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>Exercise Prompt
+                        </h5>
+                        <div class="alert alert-light border-start border-primary border-4">
+                            <p class="mb-0">
+                                <strong>Creative Storytelling:</strong> "Imagine you discover a magical door in your backyard. 
+                                What happens when you open it? Tell us about your adventure in 2-3 minutes. 
+                                Be creative and use descriptive words!"
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Recording Interface -->
+                    <div class="recording-section mb-4">
+                        <div class="text-center">
+                            <div class="recording-controls mb-3">
+                                <button id="recordBtn" class="btn btn-success btn-lg rounded-circle" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-microphone fa-2x"></i>
+                                </button>
+                                <div class="mt-3">
+                                    <span id="recordingStatus" class="badge bg-secondary fs-6">Ready to Record</span>
+                                </div>
+                            </div>
+                            
+                            <div class="recording-timer mb-3">
+                                <span class="display-6 fw-bold text-primary" id="timer">00:00</span>
+                            </div>
+                            
+                            <div class="recording-actions">
+                                <button id="stopBtn" class="btn btn-danger me-2" disabled>
+                                    <i class="fas fa-stop me-2"></i>Stop Recording
+                                </button>
+                                <button id="playBtn" class="btn btn-info" disabled>
+                                    <i class="fas fa-play me-2"></i>Play Back
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audio Waveform Visualization -->
+                    <div class="waveform-container mb-4">
+                        <canvas id="waveform" width="100%" height="100"></canvas>
+                    </div>
+
+                    <!-- Submit Section -->
+                    <div class="text-center">
+                        <button id="submitBtn" class="btn btn-primary btn-lg" disabled>
+                            <i class="fas fa-paper-plane me-2"></i>Submit for AI Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Analysis Results (Hidden initially) -->
+            <div id="analysisResults" class="mt-5" style="display: none;">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-brain me-2"></i>AI Analysis Results
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Overall Score -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="text-center">
+                                    <h2 class="display-4 fw-bold text-success mb-2">88%</h2>
+                                    <h5 class="text-muted">Overall Performance Score</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Scores -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                                        <h5 class="fw-bold">Originality</h5>
+                                        <h3 class="text-warning fw-bold">92%</h3>
+                                        <p class="text-muted small">Creative ideas and unique concepts</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-comments fa-3x text-info mb-3"></i>
+                                        <h5 class="fw-bold">Verbal Communication</h5>
+                                        <h3 class="text-info fw-bold">85%</h3>
+                                        <p class="text-muted small">Structure, fluency, and vocabulary</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-volume-up fa-3x text-success mb-3"></i>
+                                        <h5 class="fw-bold">Paraverbal</h5>
+                                        <h3 class="text-success fw-bold">87%</h3>
+                                        <p class="text-muted small">Intonation, rhythm, and timing</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Analysis -->
+                        <div class="analysis-details">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-clipboard-list text-primary me-2"></i>Detailed Analysis
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-success">Strengths:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Excellent creativity and original ideas</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Clear story structure</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Good use of descriptive vocabulary</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-warning">Areas for Improvement:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-exclamation text-warning me-2"></i>Try to speak a bit slower</li>
+                                        <li><i class="fas fa-exclamation text-warning me-2"></i>Add more pauses between ideas</li>
+                                        <li><i class="fas fa-exclamation text-warning me-2"></i>Use more varied sentence structures</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="text-center mt-4">
+                            <button class="btn btn-primary me-2">
+                                <i class="fas fa-redo me-2"></i>Try Again
+                            </button>
+                            <button class="btn btn-outline-primary">
+                                <i class="fas fa-download me-2"></i>Download Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recording-controls button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .waveform-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    #waveform {
+        width: 100%;
+        height: 100px;
+        border-radius: 4px;
+    }
+    
+    .recording-active {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    class VoiceRecorder {
+        constructor() {
+            this.mediaRecorder = null;
+            this.audioChunks = [];
+            this.isRecording = false;
+            this.startTime = null;
+            this.timerInterval = null;
+            
+            this.initializeElements();
+            this.setupEventListeners();
+        }
+        
+        initializeElements() {
+            this.recordBtn = document.getElementById('recordBtn');
+            this.stopBtn = document.getElementById('stopBtn');
+            this.playBtn = document.getElementById('playBtn');
+            this.submitBtn = document.getElementById('submitBtn');
+            this.status = document.getElementById('recordingStatus');
+            this.timer = document.getElementById('timer');
+            this.waveform = document.getElementById('waveform');
+            this.results = document.getElementById('analysisResults');
+        }
+        
+        setupEventListeners() {
+            this.recordBtn.addEventListener('click', () => this.startRecording());
+            this.stopBtn.addEventListener('click', () => this.stopRecording());
+            this.playBtn.addEventListener('click', () => this.playRecording());
+            this.submitBtn.addEventListener('click', () => this.submitAssessment());
+        }
+        
+        async startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                this.mediaRecorder = new MediaRecorder(stream);
+                this.audioChunks = [];
+                
+                this.mediaRecorder.ondataavailable = (event) => {
+                    this.audioChunks.push(event.data);
+                };
+                
+                this.mediaRecorder.start();
+                this.isRecording = true;
+                this.startTime = Date.now();
+                
+                this.updateUI(true);
+                this.startTimer();
+                this.animateWaveform();
+                
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                alert('Please allow microphone access to use voice assessment.');
+            }
+        }
+        
+        stopRecording() {
+            if (this.mediaRecorder && this.isRecording) {
+                this.mediaRecorder.stop();
+                this.isRecording = false;
+                
+                this.updateUI(false);
+                this.stopTimer();
+                this.stopWaveform();
+                
+                // Stop all tracks to release microphone
+                this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+        }
+        
+        playRecording() {
+            if (this.audioChunks.length > 0) {
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+            }
+        }
+        
+        submitAssessment() {
+            // Show loading state
+            this.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+            this.submitBtn.disabled = true;
+            
+            // Simulate AI analysis (replace with actual API call)
+            setTimeout(() => {
+                this.results.style.display = 'block';
+                this.results.scrollIntoView({ behavior: 'smooth' });
+                
+                // Reset button
+                this.submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit for AI Analysis';
+                this.submitBtn.disabled = false;
+            }, 3000);
+        }
+        
+        updateUI(recording) {
+            if (recording) {
+                this.recordBtn.classList.add('recording-active');
+                this.recordBtn.innerHTML = '<i class="fas fa-stop fa-2x"></i>';
+                this.recordBtn.disabled = true;
+                this.stopBtn.disabled = false;
+                this.status.textContent = 'Recording...';
+                this.status.className = 'badge bg-danger fs-6';
+            } else {
+                this.recordBtn.classList.remove('recording-active');
+                this.recordBtn.innerHTML = '<i class="fas fa-microphone fa-2x"></i>';
+                this.recordBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.playBtn.disabled = false;
+                this.submitBtn.disabled = false;
+                this.status.textContent = 'Recording Complete';
+                this.status.className = 'badge bg-success fs-6';
+            }
+        }
+        
+        startTimer() {
+            this.timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                this.timer.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+        
+        stopTimer() {
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+        }
+        
+        animateWaveform() {
+            const ctx = this.waveform.getContext('2d');
+            const animate = () => {
+                if (this.isRecording) {
+                    ctx.clearRect(0, 0, this.waveform.width, this.waveform.height);
+                    ctx.strokeStyle = '#007bff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    
+                    for (let x = 0; x < this.waveform.width; x += 10) {
+                        const y = 50 + Math.random() * 20 - 10;
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                    requestAnimationFrame(animate);
+                }
+            };
+            animate();
+        }
+        
+        stopWaveform() {
+            const ctx = this.waveform.getContext('2d');
+            ctx.clearRect(0, 0, this.waveform.width, this.waveform.height);
+        }
+    }
+    
+    // Initialize voice recorder when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        new VoiceRecorder();
+    });
+</script>
+{% endblock %}
