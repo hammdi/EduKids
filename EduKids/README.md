@@ -35,15 +35,43 @@ cd "/Users/hamdi/5Twin4 Framework Python"
 source venv/bin/activate
 cd EduKids
 
-# 2. Installer Django
-pip install Django==5.2.6
+# 2. Installer les dépendances
+pip install -r requirements.txt
 
 # 3. Créer les migrations
 python manage.py makemigrations
 python manage.py migrate
 
-# 4. Créer un superutilisateur
-python manage.py createsuperuser
+# 4. Créer les utilisateurs de test (optionnel)
+python manage.py shell -c "
+from django.contrib.auth import get_user_model
+from students.models import Student, Teacher
+from datetime import date
+
+User = get_user_model()
+
+# Créer utilisateur admin
+admin_user, _ = User.objects.get_or_create(username='admin', defaults={'email': 'admin@edukids.com', 'first_name': 'Admin', 'last_name': 'EduKids', 'is_staff': True, 'is_superuser': True, 'is_active': True, 'user_type': 'admin'})
+admin_user.set_password('admin123')
+admin_user.save()
+
+# Créer utilisateur enseignant
+teacher_user, _ = User.objects.get_or_create(username='teacher', defaults={'email': 'teacher@edukids.com', 'first_name': 'Marie', 'last_name': 'Dupont', 'user_type': 'teacher'})
+teacher_user.set_password('teacher123')
+teacher_user.save()
+Teacher.objects.get_or_create(user=teacher_user, defaults={'subject_specialties': ['Français', 'Mathématiques'], 'teaching_experience': 5, 'certification_level': 'master'})
+
+# Créer utilisateur élève
+student_user, _ = User.objects.get_or_create(username='student', defaults={'email': 'student@edukids.com', 'first_name': 'Lucas', 'last_name': 'Martin', 'user_type': 'student'})
+student_user.set_password('student123')
+student_user.save()
+Student.objects.get_or_create(user=student_user, defaults={'grade_level': 'CM2', 'learning_style': 'visual', 'birth_date': date(2012, 6, 15)})
+
+print('✅ Utilisateurs de test créés!')
+print('👑 Admin: admin / admin123')
+print('👨‍🏫 Enseignant: teacher / teacher123')
+print('🎓 Élève: student / student123')
+"
 
 # 5. Lancer le serveur
 python manage.py runserver
@@ -52,7 +80,15 @@ python manage.py runserver
 ### **Accès :**
 - **Application** : http://localhost:8000
 - **Admin Django** : http://localhost:8000/admin
-- **Login** : admin / admin123
+- **Login** : http://localhost:8000/login
+- **Registration** : http://localhost:8000/register
+
+### **🔑 Comptes de Test :**
+| Rôle | Utilisateur | Mot de passe | Accès |
+|------|-------------|--------------|-------|
+| 👑 **Admin** | `admin` | `admin123` | Tout + Admin Django |
+| 👨‍🏫 **Enseignant** | `teacher` | `teacher123` | Dashboard enseignant |
+| 🎓 **Élève** | `student` | `student123` | Dashboard élève |
 
 ## 📁 **Structure du Projet**
 
@@ -106,6 +142,25 @@ EduKids/
 - `Challenge` : Défis quotidiens/hebdomadaires
 - `Leaderboard` : Classements
 - `Notification` : Notifications de progression
+
+## 👥 **Gestion des Utilisateurs**
+
+### **🔐 Authentification**
+- **Inscription** : Choix du rôle (Élève/Enseignant)
+- **Connexion** : Authentification sécurisée
+- **Profils** : Gestion complète des informations utilisateur
+- **Déconnexion** : Sécurisée avec redirection
+
+### **🎯 Rôles et Permissions**
+- **👑 Administrateur** : Accès complet + Admin Django
+- **👨‍🏫 Enseignant** : Gestion des classes et évaluations
+- **🎓 Élève** : Accès aux exercices et progression
+
+### **📊 Interface d'Administration**
+- **Gestion des utilisateurs** : CRUD complet
+- **Statistiques** : Nombre d'utilisateurs par rôle
+- **Modération** : Activation/désactivation des comptes
+- **Import/Export** : Gestion en masse des utilisateurs
 
 ## ⚙️ **Configuration PostgreSQL (Optionnel)**
 
@@ -175,24 +230,51 @@ python manage.py createsuperuser
 
 ## 📊 **Dépendances**
 
-### **Dépendances de base (requises) :**
+### **Installation automatique :**
 ```bash
-pip install Django==5.2.6
-pip install Pillow==11.3.0
+pip install -r requirements.txt
 ```
 
-### **PostgreSQL (optionnel) :**
-```bash
-pip install psycopg2-binary==2.9.10
+### **Dépendances principales :**
+- **Django 5.2.6** : Framework web principal
+- **Pillow 11.3.0** : Gestion des images
+- **crispy-forms** : Formulaires stylisés
+- **crispy-bootstrap5** : Interface Bootstrap 5
+
+### **Base de données :**
+- **psycopg2-binary** : PostgreSQL (optionnel)
+- **django-redis** : Cache Redis (optionnel)
+
+### **IA et Analyse vocale :**
+- **openai** : API OpenAI pour l'assistant
+- **spacy** : Traitement du langage naturel
+- **librosa** : Analyse audio pour évaluation vocale
+- **textblob** : Analyse de sentiment
+- **scikit-learn** : Machine learning
+
+### **Développement :**
+- **django-debug-toolbar** : Debug en développement
+- **pytest-django** : Tests automatisés
+- **black, flake8** : Formatage et qualité du code
 ```
 
-### **IA et NLP (optionnel) :**
-```bash
-pip install openai==1.54.5
-pip install spacy>=3.8.7
-pip install nltk==3.9.1
-pip install scikit-learn==1.6.1
-```
+## 🧪 **Test du Système**
+
+### **🔐 Test de l'Authentification**
+1. **Accéder à** : http://localhost:8000/
+2. **Tester l'inscription** : http://localhost:8000/register/
+3. **Tester la connexion** : http://localhost:8000/login/
+4. **Tester le profil** : http://localhost:8000/profile/
+
+### **👥 Test des Rôles**
+- **Admin** : Accès complet + interface admin Django
+- **Enseignant** : Dashboard enseignant + gestion des classes
+- **Élève** : Dashboard élève + exercices
+
+### **📊 Test de l'Administration**
+- **Gestion utilisateurs** : http://localhost:8000/admin/users/
+- **Interface Django** : http://localhost:8000/admin/
+- **CRUD complet** : Créer, modifier, supprimer des utilisateurs
 
 ## 🎯 **Prochaines Étapes**
 
