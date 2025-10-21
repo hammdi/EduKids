@@ -94,12 +94,10 @@ WSGI_APPLICATION = 'EduKids.wsgi.application'
 # PostgreSQL Configuration (décommentez pour utiliser PostgreSQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'edukids_db',
-        'USER': 'postgres',
-        'PASSWORD': 'edukids_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        
+
     }
 }
 
