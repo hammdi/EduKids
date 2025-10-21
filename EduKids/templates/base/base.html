@@ -17,7 +17,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fas fa-graduation-cap me-2"></i>EduKids
@@ -30,40 +30,38 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                        {% if user.student %}
+                        {% if user.user_type == 'student' %}
+                            <!-- Student Navigation -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'student_dashboard' %}">
                                     <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'student_exercises' %}">
-                                    <i class="fas fa-book me-1"></i>Exercises
+                                <a class="nav-link" href="{% url 'student_subjects_list' %}">
+                                    <i class="fas fa-book me-1"></i>Mes Matières
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'voice_assessment' %}">
-                                    <i class="fas fa-microphone me-1"></i>Voice Assessment
-                                </a>
-                            </li>
-                        {% elif user.teacher %}
+                        {% elif user.user_type == 'teacher' %}
+                            <!-- Teacher Navigation -->
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'teacher_dashboard' %}">
                                     <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'teacher_exercises' %}">
-                                    <i class="fas fa-edit me-1"></i>Create Exercises
+                                <a class="nav-link" href="{% url 'subjects_list' %}">
+                                    <i class="fas fa-book me-1"></i>Subjects
                                 </a>
                             </li>
+                        {% else %}
+                            <!-- Fallback for other user types -->
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'teacher_assessments' %}">
-                                    <i class="fas fa-chart-bar me-1"></i>Assessments
-                                </a>
+                                <a class="nav-link" href="{% url 'home' %}">Home</a>
                             </li>
                         {% endif %}
                     {% else %}
+                        <!-- Non-authenticated users -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">Home</a>
                         </li>
@@ -73,10 +71,10 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#about">About</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'student_subjects_list' %}">Matières</a>
+                        </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'subjects_list' %}">Subjects</a>
-                    </li>
                 </ul>
                 
                 <ul class="navbar-nav">
@@ -84,6 +82,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                                <span class="badge bg-secondary ms-1">{{ user.user_type|capfirst }}</span>
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{% url 'profile' %}">

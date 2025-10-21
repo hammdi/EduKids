@@ -3,6 +3,7 @@ Models pour les exercices et contenus éducatifs - EduKids
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from students.models import User
 
 
@@ -71,7 +72,7 @@ class Exercise(models.Model):
     EXERCISE_TYPE_CHOICES = [
         ('QCM', 'QCM'),
         ('dictée', 'Dictée'),
-        ('trous', 'Texte à trous'),
+        ('texte_à_trous', 'Texte à trous'),  # Changed from 'trous' to 'texte_à_trous'
         ('math', 'Problème mathématique'),
     ]
     DIFFICULTY_CHOICES = [
@@ -116,6 +117,7 @@ class Question(models.Model):
     order = models.PositiveIntegerField(default=0, verbose_name="Ordre")
     hint = models.TextField(blank=True, verbose_name="Indice")
     image = models.ImageField(upload_to='questions/', blank=True, null=True, verbose_name="Image")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True)
 
     class Meta:
         verbose_name = "Question"
@@ -189,3 +191,43 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.topic.name} - {self.title}"
+
+
+class ExerciseResult(models.Model):
+    """
+    Results of student exercise attempts
+    """
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exercise_results')
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='results')
+    started_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(default=timezone.now)
+    score = models.FloatField()  # Percentage score
+    total_points = models.IntegerField()
+    earned_points = models.IntegerField()
+    attempt_number = models.PositiveIntegerField(default=1)
+    
+    class Meta:
+        ordering = ['-completed_at']
+        verbose_name = "Résultat d'exercice"
+        verbose_name_plural = "Résultats d'exercices"
+    
+    def __str__(self):
+        return f"{self.student.username} - {self.exercise.name} - {self.score}%"
+
+
+class StudentAnswer(models.Model):
+    """
+    Individual question answers within an exercise result
+    """
+    exercise_result = models.ForeignKey(ExerciseResult, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    student_answer = models.TextField()
+    is_correct = models.BooleanField()
+    points_earned = models.IntegerField()
+    
+    class Meta:
+        verbose_name = "Réponse d'étudiant"
+        verbose_name_plural = "Réponses d'étudiants"
+    
+    def __str__(self):
+        return f"{self.exercise_result.student.username} - Q{self.question.pk}"

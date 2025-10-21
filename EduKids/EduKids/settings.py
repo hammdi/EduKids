@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'assistant.apps.AssistantConfig',
     'assessments.apps.AssessmentsConfig',
     'gamification.apps.GamificationConfig',
+   
 ]
 
 MIDDLEWARE = [
