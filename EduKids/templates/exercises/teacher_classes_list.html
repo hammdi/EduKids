@@ -1,0 +1,121 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'teacher_dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Mes Classes</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="fas fa-chalkboard-teacher me-2"></i>Mes Classes</h1>
+                <a href="{% url 'create_classroom' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Créer une classe
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for classroom in classrooms %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ classroom.name }}</h5>
+                    <span class="badge bg-{% if classroom.is_active %}success{% else %}secondary{% endif %}">
+                        {% if classroom.is_active %}Actif{% else %}Inactif{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ classroom.description|default:"Aucune description" }}</p>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-primary">{{ classroom.student_count }}</h6>
+                            <small class="text-muted">Étudiants</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-warning">{{ classroom.assignment_count }}</h6>
+                            <small class="text-muted">Devoirs</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info">{{ classroom.grade_level }}</h6>
+                            <small class="text-muted">Niveau</small>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-2">
+                        <strong>Matière:</strong> {{ classroom.subject.name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Code d'accès:</strong> 
+                        <code class="bg-light p-1 rounded">{{ classroom.join_code }}</code>
+                        <button class="btn btn-sm btn-outline-secondary ms-1" onclick="copyToClipboard('{{ classroom.join_code }}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Créée le {{ classroom.created_at|date:"d/m/Y" }}</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'classroom_detail' classroom.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>Voir la classe
+                        </a>
+                        <a href="{% url 'create_assignment' classroom.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-1"></i>Assigner
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <h4>Aucune classe créée</h4>
+                <p>Vous n'avez pas encore créé de classes. Commencez par créer votre première classe pour organiser vos étudiants.</p>
+                <a href="{% url 'create_classroom' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Créer ma première classe
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-3';
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    Code copié dans le presse-papiers!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    });
+}
+</script>
+{% endblock %}
