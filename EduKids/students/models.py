@@ -10,6 +10,22 @@ class User(AbstractUser):
     """
     Modèle utilisateur personnalisé pour EduKids
     """
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_('The groups this user belongs to.'),
+        related_name='edukids_user_set',
+        related_query_name='user',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name=_('user permissions'),
+        blank=True,
+        help_text=_('Specific permissions for this user.'),
+        related_name='edukids_user_set',
+        related_query_name='user',
+    )
     USER_TYPE_CHOICES = (
         ('student', 'Élève'),
         ('teacher', 'Enseignant'),

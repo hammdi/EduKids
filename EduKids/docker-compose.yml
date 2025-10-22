@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: edukids_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: edukids_password
+      POSTGRES_PASSWORD: a
     ports:
       - "5432:5432"
     volumes:

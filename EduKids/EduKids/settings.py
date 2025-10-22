@@ -98,7 +98,7 @@ DATABASES = {
         'NAME': 'edukids_db',
         'USER': 'postgres',
         'PASSWORD': 'edukids_password',
-        'HOST': 'localhost',
+        'HOST': 'a',
         'PORT': '5432',
     }
 }
