@@ -28,6 +28,22 @@
   </div>
   <p>{{ subject.description }}</p>
 
+  <!-- NEW: Edit form (show only if editing) -->
+  {% if subject_form %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="update_subject" value="1" />
+      {{ subject_form.as_p }}
+      <button type="submit" class="btn btn-success">Update Subject</button>
+      <a href="{% url 'subject_detail' subject.pk %}" class="btn btn-secondary">Cancel</a>
+    </form>
+  {% endif %}
+
+  <!-- In subject header -->
+  {% if user == subject.created_by %}
+    <a href="?edit=subject" class="btn btn-outline-primary">Edit Subject</a>
+  {% endif %}
+
   <!-- Topics List -->
   <h3>Topics</h3>
   <div class="row">

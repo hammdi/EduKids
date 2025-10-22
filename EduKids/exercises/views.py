@@ -7,7 +7,7 @@ import json
 from students.models import User, Student
 from .models import (
     Subject, Topic, Exercise, Lesson, Question, Answer, ExerciseResult, StudentAnswer, 
-    SubjectMembership,  # Add this
+    SubjectMembership, StudentSubjectView, StudentTopicView,  # Add this
 )
 from .forms import SubjectForm, TopicForm, ExerciseForm, LessonForm, QuestionForm, AnswerForm, QuestionWithAnswersForm, AnswerFormSet
 
@@ -27,23 +27,33 @@ def subject_detail(request, pk):
     if request.user.user_type == 'teacher' and subject.created_by != request.user:
         return redirect('subjects_list')
     
-    # FIXED: Get exercises through topics
-    
     memberships = subject.memberships.filter(is_active=True).select_related('student')
     students = [m.student for m in memberships]
-    
-    # Also include topics for content organization
     topics = subject.topics.filter(is_active=True)
     topic_form = TopicForm()
     
+    # NEW: Subject edit form
+    subject_form = SubjectForm(instance=subject) if request.GET.get('edit') == 'subject' else None
+    
     if request.method == 'POST':
-        if 'add_topic' in request.POST:
+        if 'update_subject' in request.POST:  # NEW: Handle subject update
+            subject_form = SubjectForm(request.POST, request.FILES, instance=subject)
+            if subject_form.is_valid():
+                subject_form.save()
+                messages.success(request, 'Subject updated successfully!')
+                return redirect('subject_detail', pk=subject.pk)
+        elif 'add_topic' in request.POST:
             topic_form = TopicForm(request.POST)
             if topic_form.is_valid():
                 topic = topic_form.save(commit=False)
                 topic.subject = subject
                 topic.save()
                 messages.success(request, 'Topic created successfully!')
+                
+                # Update subject's updated_at timestamp
+                subject.updated_at = timezone.now()
+                subject.save()
+                
                 return redirect('subject_detail', pk=subject.pk)
     
     return render(request, 'exercises/subject_detail.html', {
@@ -51,6 +61,7 @@ def subject_detail(request, pk):
         'students': students,
         'topics': topics,
         'topic_form': topic_form,
+        'subject_form': subject_form,  # NEW
     })
 
 @login_required
@@ -104,14 +115,28 @@ def topic_detail(request, pk):
     lessons = topic.lessons.filter(is_active=True)
     exercise_form = ExerciseForm()
     lesson_form = LessonForm()
+    
+    # NEW: Topic edit form
+    topic_form = TopicForm(instance=topic) if request.GET.get('edit') == 'topic' else None
+    
     if request.method == 'POST':
-        if 'add_exercise' in request.POST:
+        if 'update_topic' in request.POST:  # NEW
+            topic_form = TopicForm(request.POST, instance=topic)
+            if topic_form.is_valid():
+                topic_form.save()
+                messages.success(request, 'Topic updated successfully!')
+                return redirect('topic_detail', pk=topic.pk)
+        elif 'add_exercise' in request.POST:
             exercise_form = ExerciseForm(request.POST)
             if exercise_form.is_valid():
                 exercise = exercise_form.save(commit=False)
                 exercise.topic = topic
                 exercise.creator = request.user
                 exercise.save()
+                topic.updated_at = timezone.now()
+                topic.save()
+                topic.subject.updated_at = timezone.now()
+                topic.subject.save()
                 messages.success(request, 'Exercise created successfully!')
                 return redirect('topic_detail', pk=topic.pk)
         elif 'add_lesson' in request.POST:
@@ -120,6 +145,11 @@ def topic_detail(request, pk):
                 lesson = lesson_form.save(commit=False)
                 lesson.topic = topic
                 lesson.save()
+                # Update timestamps for new content indicator
+                topic.updated_at = timezone.now()
+                topic.save()
+                topic.subject.updated_at = timezone.now()
+                topic.subject.save()
                 messages.success(request, 'Lesson created successfully!')
                 return redirect('topic_detail', pk=topic.pk)
     return render(request, 'exercises/topic_detail.html', {
@@ -128,8 +158,10 @@ def topic_detail(request, pk):
         'lessons': lessons,
         'exercise_form': exercise_form,
         'lesson_form': lesson_form,
+        'topic_form': topic_form,  # NEW
     })
 
+@login_required
 def exercise_detail(request, pk):
     exercise = get_object_or_404(Exercise, pk=pk)
     questions = exercise.questions.all()
@@ -137,8 +169,18 @@ def exercise_detail(request, pk):
     answer_formset = AnswerFormSet()
     answer_form = AnswerForm()
     
+    # NEW: Exercise edit form
+    exercise_form = ExerciseForm(instance=exercise) if request.GET.get('edit') == 'exercise' else None
+    
     if request.method == 'POST':
-        if 'add_question' in request.POST:
+        if 'update_exercise' in request.POST:  # NEW: Handle exercise update
+            exercise_form = ExerciseForm(request.POST, instance=exercise)
+            if exercise_form.is_valid():
+                exercise_form.save()
+                messages.success(request, 'Exercise updated successfully!')
+                return redirect('exercise_detail', pk=exercise.pk)
+        # EXISTING: Add question logic (unchanged)
+        elif 'add_question' in request.POST:
             print("add_question in POST")  # Debug
             question_form = QuestionWithAnswersForm(request.POST, request.FILES)
             print("question_form valid:", question_form.is_valid())  # Debug
@@ -229,6 +271,7 @@ def exercise_detail(request, pk):
         'question_form': question_form,
         'answer_formset': answer_formset,
         'answer_form': answer_form,
+        'exercise_form': exercise_form,  # NEW
     })
 
 @login_required
@@ -250,9 +293,21 @@ def delete_exercise(request, pk):
     return redirect('topic_detail', pk=exercise.topic.pk)  # Fallback
 
 @login_required
+def delete_question(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, 'Question deleted successfully!')
+        return redirect('exercise_detail', pk=question.exercise.pk)
+    return redirect('exercise_detail', pk=question.exercise.pk)  # Fallback
+
+@login_required
 def student_subjects_list(request):
     if request.user.user_type != 'student':
         return redirect('home')
+    
+    # Get search query from GET parameters
+    search_query = request.GET.get('search', '').strip()
     
     # Only show subjects where the student has an active membership
     subjects = Subject.objects.filter(
@@ -261,7 +316,21 @@ def student_subjects_list(request):
         is_active=True
     ).distinct()
     
-    return render(request, 'exercises/student_subjects_list.html', {'subjects': subjects})
+    # Apply search filter if query provided
+    if search_query:
+        subjects = subjects.filter(name__icontains=search_query)
+    
+    # New code: add indicators for new content
+    subjects_with_indicators = []
+    for subject in subjects:
+        view_record = StudentSubjectView.objects.filter(student=request.user, subject=subject).first()
+        has_new = view_record is None or subject.updated_at > view_record.last_viewed
+        subjects_with_indicators.append({'subject': subject, 'has_new': has_new})
+    
+    return render(request, 'exercises/student_subjects_list.html', {
+        'subjects_with_indicators': subjects_with_indicators,
+        'search_query': search_query,  # Pass query back to template
+    })
 
 @login_required
 def student_subject_detail(request, pk):
@@ -286,9 +355,22 @@ def student_subject_detail(request, pk):
         topic.lessons_count = topic.lessons.filter(is_active=True).count()
         topic.exercises_count = topic.exercises.filter(is_active=True).count()
     
+    # New code: indicate if there's new content in topics
+    topics_with_indicators = []
+    for topic in topics:
+        view_record = StudentTopicView.objects.filter(student=request.user, topic=topic).first()
+        has_new = view_record is None or topic.updated_at > view_record.last_viewed
+        topics_with_indicators.append({'topic': topic, 'has_new': has_new})
+    
+    # Update subject view
+    StudentSubjectView.objects.update_or_create(
+        student=request.user, subject=subject,
+        defaults={'last_viewed': timezone.now()}
+    )
+    
     return render(request, 'exercises/student_subject_detail.html', {
         'subject': subject,
-        'topics': topics,
+        'topics_with_indicators': topics_with_indicators,
         'student_grade': student_grade,
     })
 
@@ -298,17 +380,42 @@ def student_topic_detail(request, pk):
     topic = get_object_or_404(Topic, pk=pk, is_active=True)
     lessons = topic.lessons.filter(is_active=True).order_by('order', 'created_at')
     
-    # Filter exercises: available now and not expired
-    exercises = topic.exercises.filter(
-        is_active=True,
-        available_from__lte=timezone.now(),  # Available from now or earlier
-        due_date__gt=timezone.now()  # Due date in the future
-    ).order_by('name')
+    # Get all active exercises
+    all_exercises = topic.exercises.filter(is_active=True).order_by('name')
+    
+    # Categorize exercises
+    now = timezone.now()
+    upcoming_exercises = []
+    available_exercises = []
+    expired_exercises = []
+    
+    for exercise in all_exercises:
+        if exercise.available_from and exercise.available_from > now:
+            upcoming_exercises.append(exercise)
+        elif exercise.due_date and exercise.due_date <= now:
+            expired_exercises.append(exercise)
+        else:
+            available_exercises.append(exercise)
+    
+    # Add latest result to each exercise
+    for exercise in upcoming_exercises + available_exercises + expired_exercises:
+        exercise.latest_result = ExerciseResult.objects.filter(
+            student=request.user,
+            exercise=exercise
+        ).order_by('-completed_at').first()
+    
+    # Update topic view for indicator reset
+    StudentTopicView.objects.update_or_create(
+        student=request.user, topic=topic,
+        defaults={'last_viewed': now}
+    )
     
     return render(request, 'exercises/student_topic_detail.html', {
         'topic': topic,
         'lessons': lessons,
-        'exercises': exercises,
+        'upcoming_exercises': upcoming_exercises,
+        'available_exercises': available_exercises,
+        'expired_exercises': expired_exercises,
     })
 
 @login_required

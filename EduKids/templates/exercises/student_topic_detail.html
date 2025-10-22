@@ -1,4 +1,7 @@
-{% extends 'base/base.html' %} {% load static %} {% block extra_css %}
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block extra_css %}
 <style>
   .pdf-viewer {
     border: 1px solid #ddd;
@@ -27,7 +30,9 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+
+{% block content %}
 <div class="container">
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
@@ -36,13 +41,9 @@
         <a href="{% url 'student_subjects_list' %}">Mes Matières</a>
       </li>
       <li class="breadcrumb-item">
-        <a href="{% url 'student_subject_detail' topic.subject.pk %}"
-          >{{ topic.subject.name }}</a
-        >
+        <a href="{% url 'student_subject_detail' topic.subject.pk %}">{{ topic.subject.name }}</a>
       </li>
-      <li class="breadcrumb-item active" aria-current="page">
-        {{ topic.name }}
-      </li>
+      <li class="breadcrumb-item active" aria-current="page">{{ topic.name }}</li>
     </ol>
   </nav>
 
@@ -63,91 +64,52 @@
         <div class="card-body">
           <h5 class="card-title">{{ lesson.title }}</h5>
           <p class="card-text">{{ lesson.content|truncatechars:150 }}</p>
-          {% if lesson.media %} {% if lesson.media.name|slice:"-4:" == '.pdf' %}
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#pdfModal{{ lesson.pk }}"
-            onclick="loadPDF('{{ lesson.media.url }}', {{ lesson.pk }})"
-          >
-            <i class="fas fa-file-pdf me-1"></i>Voir le PDF
-          </button>
-          {% elif lesson.media.name|slice:"-4:" in '.jpg,.png,.gif,.jpeg' %}
-          <img
-            src="{{ lesson.media.url }}"
-            alt="{{ lesson.title }}"
-            class="img-fluid mt-2"
-            style="max-height: 150px"
-          />
-          {% else %}
-          <a
-            href="{{ lesson.media.url }}"
-            target="_blank"
-            class="btn btn-sm btn-outline-secondary"
-          >
-            <i class="fas fa-file me-1"></i>Voir le fichier
-          </a>
-          {% endif %} {% endif %}
+          {% if lesson.media %}
+            {% if lesson.media.name|slice:"-4:" == '.pdf' %}
+              <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pdfModal{{ lesson.pk }}">
+                <i class="fas fa-file-pdf me-1"></i>Voir le PDF
+              </button>
+            {% elif lesson.media.name|slice:"-4:" in '.jpg,.png,.gif,.jpeg' %}
+              <img src="{{ lesson.media.url }}" alt="{{ lesson.title }}" class="img-fluid mt-2" style="max-height: 150px" />
+            {% else %}
+              <a href="{{ lesson.media.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-file me-1"></i>Voir le fichier
+              </a>
+            {% endif %}
+          {% endif %}
         </div>
       </div>
     </div>
 
     <!-- PDF Modal for each lesson -->
     {% if lesson.media and lesson.media.name|slice:"-4:" == '.pdf' %}
-    <div
-      class="modal fade"
-      id="pdfModal{{ lesson.pk }}"
-      tabindex="-1"
-      aria-labelledby="pdfModalLabel{{ lesson.pk }}"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="pdfModal{{ lesson.pk }}" tabindex="-1" aria-labelledby="pdfModalLabel{{ lesson.pk }}" aria-hidden="true">
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="pdfModalLabel{{ lesson.pk }}">
-              {{ lesson.title }}
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h5 class="modal-title" id="pdfModalLabel{{ lesson.pk }}">{{ lesson.title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body p-0">
             <div class="pdf-viewer">
               <div class="pdf-controls">
                 <div>
-                  <button
-                    class="btn btn-sm btn-outline-secondary"
-                    onclick="prevPage({{ lesson.pk }})"
-                  >
+                  <button class="btn btn-sm btn-outline-secondary" onclick="prevPage({{ lesson.pk }})">
                     <i class="fas fa-chevron-left"></i> Précédent
                   </button>
                   <span class="mx-2">
-                    Page <span id="pageNum{{ lesson.pk }}">1</span> /
-                    <span id="pageCount{{ lesson.pk }}">1</span>
+                    Page <span id="pageNum{{ lesson.pk }}">1</span> / <span id="pageCount{{ lesson.pk }}">1</span>
                   </span>
-                  <button
-                    class="btn btn-sm btn-outline-secondary"
-                    onclick="nextPage({{ lesson.pk }})"
-                  >
+                  <button class="btn btn-sm btn-outline-secondary" onclick="nextPage({{ lesson.pk }})">
                     Suivant <i class="fas fa-chevron-right"></i>
                   </button>
                 </div>
                 <div>
-                  <button
-                    class="btn btn-sm btn-outline-secondary"
-                    onclick="zoomOut({{ lesson.pk }})"
-                  >
+                  <button class="btn btn-sm btn-outline-secondary" onclick="zoomOut({{ lesson.pk }})">
                     <i class="fas fa-minus"></i>
                   </button>
                   <span class="mx-2" id="zoomLevel{{ lesson.pk }}">100%</span>
-                  <button
-                    class="btn btn-sm btn-outline-secondary"
-                    onclick="zoomIn({{ lesson.pk }})"
-                  >
+                  <button class="btn btn-sm btn-outline-secondary" onclick="zoomIn({{ lesson.pk }})">
                     <i class="fas fa-plus"></i>
                   </button>
                 </div>
@@ -157,31 +119,15 @@
                 <div id="pdfLoading{{ lesson.pk }}" style="display: none">
                   <i class="fas fa-spinner fa-spin"></i> Chargement du PDF...
                 </div>
-                <div
-                  id="pdfError{{ lesson.pk }}"
-                  style="display: none"
-                  class="alert alert-danger"
-                >
+                <div id="pdfError{{ lesson.pk }}" style="display: none" class="alert alert-danger">
                   Erreur lors du chargement du PDF.
-                  <a
-                    href="{{ lesson.media.url }}"
-                    target="_blank"
-                    class="btn btn-primary btn-sm mt-2"
-                  >
-                    Ouvrir dans un nouvel onglet
-                  </a>
+                  <a href="{{ lesson.media.url }}" target="_blank" class="btn btn-primary btn-sm mt-2">Ouvrir dans un nouvel onglet</a>
                 </div>
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Fermer
-            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             <a href="{{ lesson.media.url }}" download class="btn btn-primary">
               <i class="fas fa-download me-1"></i>Télécharger
             </a>
@@ -189,7 +135,8 @@
         </div>
       </div>
     </div>
-    {% endif %} {% empty %}
+    {% endif %}
+    {% empty %}
     <div class="col-12">
       <p class="text-muted">Aucune leçon disponible pour ce thème.</p>
     </div>
@@ -198,8 +145,46 @@
 
   <!-- Exercises Section -->
   <h3><i class="fas fa-pencil-alt me-2"></i>Exercices</h3>
+
+  <!-- Upcoming Exercises -->
+  {% if upcoming_exercises %}
+  <h4 class="text-warning">À venir</h4>
   <div class="row">
-    {% for exercise in exercises %}
+    {% for exercise in upcoming_exercises %}
+    <div class="col-md-6 mb-3">
+      <div class="card bg-light">
+        <div class="card-body">
+          <h5 class="card-title">{{ exercise.name }}</h5>
+          <p class="card-text">{{ exercise.description|truncatechars:120 }}</p>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              {% if exercise.difficulty == 'facile' %}
+                <span class="badge bg-success">{{ exercise.get_difficulty_display }}</span>
+              {% elif exercise.difficulty == 'moyen' %}
+                <span class="badge bg-warning">{{ exercise.get_difficulty_display }}</span>
+              {% elif exercise.difficulty == 'difficile' %}
+                <span class="badge bg-danger">{{ exercise.get_difficulty_display }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ exercise.get_difficulty_display }}</span>
+              {% endif %}
+              <span class="badge bg-info">{{ exercise.get_exercise_type_display }}</span>
+            </div>
+            <span class="text-muted">{{ exercise.points }} pts</span>
+          </div>
+          <p>Disponible le {{ exercise.available_from|date:"d/m/Y H:i" }}</p>
+          <span class="badge bg-secondary">Non disponible</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Available Exercises -->
+  {% if available_exercises %}
+  <h4 class="text-success">Disponibles</h4>
+  <div class="row">
+    {% for exercise in available_exercises %}
     <div class="col-md-6 mb-3">
       <div class="card">
         <div class="card-body">
@@ -207,32 +192,34 @@
           <p class="card-text">{{ exercise.description|truncatechars:120 }}</p>
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <span class="badge 
-                {% if exercise.difficulty == 'facile' %}bg-success
-                {% elif exercise.difficulty == 'moyen' %}bg-warning  
-                {% elif exercise.difficulty == 'difficile' %}bg-danger
-                {% else %}bg-secondary
-                {% endif %}">
-              {{ exercise.get_difficulty_display }}
-              </span>
+              {% if exercise.difficulty == 'facile' %}
+                <span class="badge bg-light text-dark">{{ exercise.get_difficulty_display }}</span>
+              {% elif exercise.difficulty == 'moyen' %}
+                <span class="badge bg-light text-dark">{{ exercise.get_difficulty_display }}</span>
+              {% elif exercise.difficulty == 'difficile' %}
+                <span class="badge bg-light text-dark">{{ exercise.get_difficulty_display }}</span>
+              {% else %}
+                <span class="badge bg-dark">{{ exercise.get_difficulty_display }}</span>
+              {% endif %}
               <span class="badge bg-info">{{ exercise.get_exercise_type_display }}</span>
             </div>
             <span class="text-muted">{{ exercise.points }} pts</span>
           </div>
 
           <!-- Exercise Results Display -->
-          {% if exercise.latest_result %}
+          {% if not exercise.latest_result %}
+            <!-- Start button if not completed -->
+            <a href="{% url 'student_exercise_start' exercise.pk %}" class="btn btn-primary btn-sm">
+              <i class="fas fa-play me-1"></i>Commencer l'exercice
+            </a>
+          {% else %}
             <!-- Show result if exercise completed -->
             <div class="alert alert-{% if exercise.latest_result.score >= 70 %}success{% elif exercise.latest_result.score >= 50 %}warning{% else %}danger{% endif %} mb-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>
-                    Note: {% if exercise.latest_result.score %}{{ exercise.latest_result.score|floatformat:1 }}{% else %}0{% endif %}%
-                  </strong>
+                  <strong>Note: {% if exercise.latest_result.score %}{{ exercise.latest_result.score|floatformat:1 }}{% else %}0{% endif %}%</strong>
                   <br />
-                  <small>
-                    {% if exercise.latest_result.earned_points %}{{ exercise.latest_result.earned_points }}{% else %}0{% endif %}/{% if exercise.latest_result.total_points %}{{ exercise.latest_result.total_points }}{% else %}0{% endif %} points
-                  </small>
+                  <small>{% if exercise.latest_result.earned_points %}{{ exercise.latest_result.earned_points }}{% else %}0{% endif %}/{% if exercise.latest_result.total_points %}{{ exercise.latest_result.total_points }}{% else %}0{% endif %} points</small>
                 </div>
                 <div>
                   {% if exercise.latest_result.score >= 70 %}
@@ -251,18 +238,15 @@
 
             <!-- Action buttons for completed exercise -->
             <div class="d-flex gap-2">
-              <a href="{% url 'student_exercise_start' exercise.pk %}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-redo me-1"></i>Refaire l'exercice
-              </a>
+              {% if exercise.latest_result.score < 70 %}
+                <a href="{% url 'student_exercise_start' exercise.pk %}" class="btn btn-secondary btn-sm">
+                  <i class="fas fa-redo me-1"></i>Refaire l'exercice
+                </a>
+              {% endif %}
               <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#resultModal{{ exercise.pk }}">
                 <i class="fas fa-eye me-1"></i>Voir les détails
               </button>
             </div>
-          {% else %}
-            <!-- Start button if not completed -->
-            <a href="{% url 'student_exercise_start' exercise.pk %}" class="btn btn-primary btn-sm">
-              <i class="fas fa-play me-1"></i>Commencer l'exercice
-            </a>
           {% endif %}
         </div>
       </div>
@@ -270,80 +254,47 @@
 
     <!-- Result Details Modal -->
     {% if exercise.latest_result %}
-    <div
-      class="modal fade"
-      id="resultModal{{ exercise.pk }}"
-      tabindex="-1"
-      aria-labelledby="resultModalLabel{{ exercise.pk }}"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="resultModal{{ exercise.pk }}" tabindex="-1" aria-labelledby="resultModalLabel{{ exercise.pk }}" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="resultModalLabel{{ exercise.pk }}">
-              Résultats - {{ exercise.name }}
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h5 class="modal-title" id="resultModalLabel{{ exercise.pk }}">Résultats - {{ exercise.name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="row mb-3">
               <div class="col-md-4 text-center">
-                <h3 class="text-primary">
-                  {{ exercise.latest_result.score|floatformat:1 }}%
-                </h3>
+                <h3 class="text-primary">{{ exercise.latest_result.score|floatformat:1 }}%</h3>
                 <p class="text-muted">Score final</p>
               </div>
               <div class="col-md-4 text-center">
-                <h3 class="text-success">
-                  {{ exercise.latest_result.earned_points }}
-                </h3>
+                <h3 class="text-success">{{ exercise.latest_result.earned_points }}</h3>
                 <p class="text-muted">Points obtenus</p>
               </div>
               <div class="col-md-4 text-center">
-                <h3 class="text-info">
-                  {{ exercise.latest_result.total_points }}
-                </h3>
+                <h3 class="text-info">{{ exercise.latest_result.total_points }}</h3>
                 <p class="text-muted">Points totaux</p>
               </div>
             </div>
-
             <hr />
-
             <h6>Détails par question:</h6>
             {% for answer in exercise.latest_result.answers.all %}
-            <div
-              class="card mb-2 border-{% if answer.is_correct %}success{% else %}danger{% endif %}"
-            >
+            <div class="card mb-2 border-{% if answer.is_correct %}success{% else %}danger{% endif %}">
               <div class="card-body py-2">
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <small class="text-muted"
-                      >Question {{ forloop.counter }}</small
-                    >
-                    <p class="mb-1">
-                      {{ answer.question.question_text|truncatechars:60 }}
-                    </p>
-                    <small
-                      >Votre réponse: {{ answer.student_answer|truncatechars:30
-                      }}</small
-                    >
+                    <small class="text-muted">Question {{ forloop.counter }}</small>
+                    <p class="mb-1">{{ answer.question.question_text|truncatechars:60 }}</p>
+                    <small>Votre réponse: {{ answer.student_answer|truncatechars:30 }}</small>
                   </div>
                   <div class="text-end">
                     {% if answer.is_correct %}
-                    <i class="fas fa-check text-success"></i>
+                      <i class="fas fa-check text-success"></i>
                     {% else %}
-                    <i class="fas fa-times text-danger"></i>
+                      <i class="fas fa-times text-danger"></i>
                     {% endif %}
                     <br />
-                    <small
-                      >{{ answer.points_earned }}/{{ answer.question.points }}
-                      pts</small
-                    >
+                    <small>{{ answer.points_earned }}/{{ answer.question.points }} pts</small>
                   </div>
                 </div>
               </div>
@@ -351,31 +302,56 @@
             {% endfor %}
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Fermer
-            </button>
-            <a
-              href="{% url 'student_exercise_start' exercise.pk %}"
-              class="btn btn-primary"
-            >
-              <i class="fas fa-redo me-1"></i>Refaire l'exercice
-            </a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            {% if exercise.latest_result.score < 70 %}
+              <a href="{% url 'student_exercise_start' exercise.pk %}" class="btn btn-primary">
+                <i class="fas fa-redo me-1"></i>Refaire l'exercice
+              </a>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
-    {% endif %} {% empty %}
-    <div class="col-12">
-      <p class="text-muted">Aucun exercice disponible pour ce thème.</p>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Expired Exercises -->
+  {% if expired_exercises %}
+  <h4 class="text-danger">Expirés</h4>
+  <div class="row">
+    {% for exercise in expired_exercises %}
+    <div class="col-md-6 mb-3">
+      <div class="card bg-secondary text-white">
+        <div class="card-body">
+          <h5 class="card-title">{{ exercise.name }}</h5>
+          <p class="card-text">{{ exercise.description|truncatechars:120 }}</p>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="badge bg-light text-dark">{{ exercise.get_difficulty_display }}</span>
+              <span class="badge bg-dark">{{ exercise.get_exercise_type_display }}</span>
+            </div>
+            <span class="text-white">{{ exercise.points }} pts</span>
+          </div>
+          <p>Échéance dépassée le {{ exercise.due_date|date:"d/m/Y H:i" }}</p>
+          <span class="badge bg-dark">Expiré</span>
+        </div>
+      </div>
     </div>
     {% endfor %}
   </div>
+  {% endif %}
+
+  {% if not upcoming_exercises and not available_exercises and not expired_exercises %}
+  <div class="col-12">
+    <p class="text-muted">Aucun exercice disponible pour ce thème.</p>
+  </div>
+  {% endif %}
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
   // PDF.js variables - Initialize as objects to track each lesson separately
@@ -388,181 +364,187 @@
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   function loadPDF(url, lessonId) {
-      const loadingDiv = document.getElementById(`pdfLoading${lessonId}`);
-      const errorDiv = document.getElementById(`pdfError${lessonId}`);
-      const canvas = document.getElementById(`pdfCanvas${lessonId}`);
+    const loadingDiv = document.getElementById(`pdfLoading${lessonId}`);
+    const errorDiv = document.getElementById(`pdfError${lessonId}`);
+    const canvas = document.getElementById(`pdfCanvas${lessonId}`);
 
-      // Show loading state
-      loadingDiv.style.display = 'block';
-      errorDiv.style.display = 'none';
-      canvas.style.display = 'none';
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+    canvas.style.display = 'none';
 
-      // Initialize variables for this lesson
-      pageNums[lessonId] = 1;
-      scales[lessonId] = 1.0;
-      pageRendering[lessonId] = false;
-      pageNumPending[lessonId] = null;
+    // Initialize variables for this lesson
+    pageNums[lessonId] = 1;
+    scales[lessonId] = 1.0;
+    pageRendering[lessonId] = false;
+    pageNumPending[lessonId] = null;
 
-      // Clear any existing PDF
-      if (pdfDocs[lessonId]) {
-          pdfDocs[lessonId].destroy();
-      }
+    // Clear any existing PDF
+    if (pdfDocs[lessonId]) {
+      pdfDocs[lessonId].destroy();
+    }
 
-      pdfjsLib.getDocument(url).promise.then(function(pdf) {
-          pdfDocs[lessonId] = pdf;
-          document.getElementById(`pageCount${lessonId}`).textContent = pdf.numPages;
+    pdfjsLib.getDocument(url).promise.then(function(pdf) {
+      pdfDocs[lessonId] = pdf;
+      document.getElementById(`pageCount${lessonId}`).textContent = pdf.numPages;
 
-          // Update page display
-          document.getElementById(`pageNum${lessonId}`).textContent = pageNums[lessonId];
-          document.getElementById(`zoomLevel${lessonId}`).textContent = '100%';
+      // Update page display
+      document.getElementById(`pageNum${lessonId}`).textContent = pageNums[lessonId];
+      document.getElementById(`zoomLevel${lessonId}`).textContent = '100%';
 
-          loadingDiv.style.display = 'none';
-          canvas.style.display = 'block';
+      loadingDiv.style.display = 'none';
+      canvas.style.display = 'block';
 
-          renderPage(pageNums[lessonId], lessonId);
-      }).catch(function(error) {
-          console.error('Error loading PDF:', error);
-          loadingDiv.style.display = 'none';
-          errorDiv.style.display = 'block';
-      });
+      renderPage(pageNums[lessonId], lessonId);
+    }).catch(function(error) {
+      console.error('Error loading PDF:', error);
+      loadingDiv.style.display = 'none';
+      errorDiv.style.display = 'block';
+    });
   }
 
   function renderPage(num, lessonId) {
-      if (!pdfDocs[lessonId]) {
-          console.error('PDF not loaded for lesson', lessonId);
-          return;
-      }
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
 
-      if (num < 1 || num > pdfDocs[lessonId].numPages) {
-          console.error('Invalid page number:', num, 'for lesson', lessonId);
-          return;
-      }
+    if (num < 1 || num > pdfDocs[lessonId].numPages) {
+      console.error('Invalid page number:', num, 'for lesson', lessonId);
+      return;
+    }
 
-      pageRendering[lessonId] = true;
+    pageRendering[lessonId] = true;
 
-      pdfDocs[lessonId].getPage(num).then(function(page) {
-          const canvas = document.getElementById(`pdfCanvas${lessonId}`);
-          const ctx = canvas.getContext('2d');
-          const viewport = page.getViewport({scale: scales[lessonId]});
+    pdfDocs[lessonId].getPage(num).then(function(page) {
+      const canvas = document.getElementById(`pdfCanvas${lessonId}`);
+      const ctx = canvas.getContext('2d');
+      const viewport = page.getViewport({scale: scales[lessonId]});
 
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
 
-          const renderContext = {
-              canvasContext: ctx,
-              viewport: viewport
-          };
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
 
-          const renderTask = page.render(renderContext);
+      const renderTask = page.render(renderContext);
 
-          renderTask.promise.then(function() {
-              pageRendering[lessonId] = false;
+      renderTask.promise.then(function() {
+        pageRendering[lessonId] = false;
 
-              // Update page number display
-              document.getElementById(`pageNum${lessonId}`).textContent = num;
-              pageNums[lessonId] = num;
+        // Update page number display
+        document.getElementById(`pageNum${lessonId}`).textContent = num;
+        pageNums[lessonId] = num;
 
-              // If there was a pending page render, execute it
-              if (pageNumPending[lessonId] !== null) {
-                  renderPage(pageNumPending[lessonId], lessonId);
-                  pageNumPending[lessonId] = null;
-              }
-          }).catch(function(error) {
-              console.error('Error rendering page:', error);
-              pageRendering[lessonId] = false;
-          });
+        // If there was a pending page render, execute it
+        if (pageNumPending[lessonId] !== null) {
+          renderPage(pageNumPending[lessonId], lessonId);
+          pageNumPending[lessonId] = null;
+        }
       }).catch(function(error) {
-          console.error('Error getting page:', error);
-          pageRendering[lessonId] = false;
+        console.error('Error rendering page:', error);
+        pageRendering[lessonId] = false;
       });
+    }).catch(function(error) {
+      console.error('Error getting page:', error);
+      pageRendering[lessonId] = false;
+    });
   }
 
   function queueRenderPage(num, lessonId) {
-      if (!pdfDocs[lessonId]) {
-          console.error('PDF not loaded for lesson', lessonId);
-          return;
-      }
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
 
-      if (num < 1 || num > pdfDocs[lessonId].numPages) {
-          console.error('Invalid page number:', num);
-          return;
-      }
+    if (num < 1 || num > pdfDocs[lessonId].numPages) {
+      console.error('Invalid page number:', num);
+      return;
+    }
 
-      if (pageRendering[lessonId]) {
-          pageNumPending[lessonId] = num;
-      } else {
-          renderPage(num, lessonId);
-      }
+    if (pageRendering[lessonId]) {
+      pageNumPending[lessonId] = num;
+    } else {
+      renderPage(num, lessonId);
+    }
   }
 
   function prevPage(lessonId) {
-      if (!pdfDocs[lessonId]) {
-          console.error('PDF not loaded for lesson', lessonId);
-          return;
-      }
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
 
-      if (pageNums[lessonId] <= 1) {
-          console.log('Already at first page');
-          return;
-      }
+    if (pageNums[lessonId] <= 1) {
+      console.log('Already at first page');
+      return;
+    }
 
-      const newPageNum = pageNums[lessonId] - 1;
-      queueRenderPage(newPageNum, lessonId);
+    const newPageNum = pageNums[lessonId] - 1;
+    queueRenderPage(newPageNum, lessonId);
   }
 
   function nextPage(lessonId) {
-      if (!pdfDocs[lessonId]) {
-          console.error('PDF not loaded for lesson', lessonId);
-          return;
-      }
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
 
-      if (pageNums[lessonId] >= pdfDocs[lessonId].numPages) {
-          console.log('Already at last page');
-          return;
-      }
+    if (pageNums[lessonId] >= pdfDocs[lessonId].numPages) {
+      console.log('Already at last page');
+      return;
+    }
 
-      const newPageNum = pageNums[lessonId] + 1;
-      queueRenderPage(newPageNum, lessonId);
+    const newPageNum = pageNums[lessonId] + 1;
+    queueRenderPage(newPageNum, lessonId);
   }
 
   function zoomIn(lessonId) {
-      if (!pdfDocs[lessonId]) return;
+    if (!pdfDocs[lessonId]) return;
 
-      scales[lessonId] = Math.min(scales[lessonId] * 1.25, 3.0);
-      const zoomPercent = Math.round(scales[lessonId] * 100) + '%';
-      document.getElementById(`zoomLevel${lessonId}`).textContent = zoomPercent;
-      queueRenderPage(pageNums[lessonId], lessonId);
+    scales[lessonId] = Math.min(scales[lessonId] * 1.25, 3.0);
+    const zoomPercent = Math.round(scales[lessonId] * 100) + '%';
+    document.getElementById(`zoomLevel${lessonId}`).textContent = zoomPercent;
+    queueRenderPage(pageNums[lessonId], lessonId);
   }
 
   function zoomOut(lessonId) {
-      if (!pdfDocs[lessonId]) return;
+    if (!pdfDocs[lessonId]) return;
 
-      scales[lessonId] = Math.max(scales[lessonId] * 0.8, 0.5);
-      const zoomPercent = Math.round(scales[lessonId] * 100) + '%';
-      document.getElementById(`zoomLevel${lessonId}`).textContent = zoomPercent;
-      queueRenderPage(pageNums[lessonId], lessonId);
+    scales[lessonId] = Math.max(scales[lessonId] * 0.8, 0.5);
+    const zoomPercent = Math.round(scales[lessonId] * 100) + '%';
+    document.getElementById(`zoomLevel${lessonId}`).textContent = zoomPercent;
+    queueRenderPage(pageNums[lessonId], lessonId);
   }
 
   // Clean up when modal is closed
   document.addEventListener('DOMContentLoaded', function() {
-      {% for lesson in lessons %}
-          {% if lesson.media and lesson.media.name|slice:"-4:" == '.pdf' %}
-          const modal{{ lesson.pk }} = document.getElementById('pdfModal{{ lesson.pk }}');
-          if (modal{{ lesson.pk }}) {
-              modal{{ lesson.pk }}.addEventListener('hidden.bs.modal', function () {
-                  // Clean up when modal is closed
-                  if (pdfDocs[{{ lesson.pk }}]) {
-                      // Don't destroy the PDF, just reset the canvas
-                      const canvas = document.getElementById('pdfCanvas{{ lesson.pk }}');
-                      if (canvas) {
-                          const ctx = canvas.getContext('2d');
-                          ctx.clearRect(0, 0, canvas.width, canvas.height);
-                      }
-                  }
-              });
-          }
-          {% endif %}
-      {% endfor %}
+    {% for lesson in lessons %}
+      {% if lesson.media and lesson.media.name|slice:"-4:" == '.pdf' %}
+        const modal{{ lesson.pk }} = document.getElementById('pdfModal{{ lesson.pk }}');
+        if (modal{{ lesson.pk }}) {
+          // NEW: Load PDF when modal is shown
+          modal{{ lesson.pk }}.addEventListener('show.bs.modal', function () {
+            loadPDF('{{ lesson.media.url }}', {{ lesson.pk }});
+          });
+
+          // Keep existing cleanup on hide
+          modal{{ lesson.pk }}.addEventListener('hidden.bs.modal', function () {
+            // Clean up when modal is closed
+            if (pdfDocs[{{ lesson.pk }}]) {
+              // Don't destroy the PDF, just reset the canvas
+              const canvas = document.getElementById('pdfCanvas{{ lesson.pk }}');
+              if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              }
+            }
+          });
+        }
+      {% endif %}
+    {% endfor %}
   });
 </script>
 {% endblock %}

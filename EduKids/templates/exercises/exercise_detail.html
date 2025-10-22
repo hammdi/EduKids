@@ -27,6 +27,31 @@
   </p>
   <p>{{ exercise.description }}</p>
 
+  <!-- NEW: Edit Exercise button (visible only to the creator) -->
+  {% if user == exercise.creator %}
+  <a href="?edit=exercise" class="btn btn-outline-primary btn-sm">
+    Edit Exercise
+  </a>
+  {% endif %}
+
+  <!-- NEW: Edit form (show only if editing) -->
+  {% if exercise_form %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3>Edit Exercise</h3>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="update_exercise" value="1">
+        {{ exercise_form.as_p }}
+        <button type="submit" class="btn btn-success">Update Exercise</button>
+        <a href="{% url 'exercise_detail' exercise.pk %}" class="btn btn-secondary">
+          Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
   <h3>Questions</h3>
   {% for question in questions %}
   <div class="card mb-3">
@@ -56,6 +81,14 @@
       >
         Add Answer
       </button>
+
+      <!-- NEW: Delete Question button (visible only to the creator) -->
+      {% if user == exercise.creator %}
+      <form method="post" action="{% url 'delete_question' question.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this question?')">Delete Question</button>
+      </form>
+      {% endif %}
     </div>
   </div>
 

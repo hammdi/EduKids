@@ -18,8 +18,14 @@
     </ol>
   </nav>
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{{ topic.name }}</h1>
     <div>
+      <h1>{{ topic.name }}</h1>
+      <p class="text-muted">{{ topic.description }}</p>
+    </div>
+    <div>
+      {% if user == topic.subject.created_by %}
+      <a href="?edit=topic" class="btn btn-outline-primary btn-sm">Edit Topic</a>
+      {% endif %}
       <button
         type="button"
         class="btn btn-success me-2"
@@ -38,7 +44,22 @@
       </button>
     </div>
   </div>
-  <p>{{ topic.description }}</p>
+
+  <!-- Add this after the topic header, before existing forms: -->
+  {% if topic_form %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3>Edit Topic</h3>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="update_topic" value="1">
+        {{ topic_form.as_p }}
+        <button type="submit" class="btn btn-success">Update Topic</button>
+        <a href="{% url 'topic_detail' topic.pk %}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+  {% endif %}
 
   <h3>Lessons</h3>
   <div class="row">
