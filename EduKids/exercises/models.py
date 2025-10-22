@@ -41,6 +41,7 @@ class Subject(models.Model):
         default='CP',
         help_text="Niveau scolaire pour cette matière/classe"
     )
+    updated_at = models.DateTimeField(auto_now=True, help_text="Last updated when content added")
 
     class Meta:
         verbose_name = "Matière"
@@ -68,6 +69,7 @@ class Topic(models.Model):
     grade_level = models.CharField(max_length=3, choices=GRADE_LEVEL_CHOICES, verbose_name="Niveau scolaire")
     order = models.PositiveIntegerField(default=0, verbose_name="Ordre")
     is_active = models.BooleanField(default=True, verbose_name="Actif")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Last updated when content added")
 
     class Meta:
         verbose_name = "Thème"
@@ -264,3 +266,27 @@ class SubjectMembership(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.subject.name}"
+
+
+class StudentSubjectView(models.Model):
+    """
+    Track last viewed subjects for students
+    """
+    student = models.ForeignKey('students.User', on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    last_viewed = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('student', 'subject')
+
+
+class StudentTopicView(models.Model):
+    """
+    Track last viewed topics for students
+    """
+    student = models.ForeignKey('students.User', on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    last_viewed = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('student', 'topic')

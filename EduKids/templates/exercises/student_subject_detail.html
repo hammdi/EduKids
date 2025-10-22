@@ -2,60 +2,241 @@
 {% load static %}
 
 {% block content %}
-<div class="container">
-    <!-- Breadcrumb -->
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Breadcrumb -->
+  <div class="container mb-4">
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'student_subjects_list' %}">Mes Matières</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ subject.name }}</li>
-        </ol>
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'student_subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Mes Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ subject.color }};">
+          {{ subject.name }}
+        </li>
+      </ol>
     </nav>
+  </div>
 
-    <!-- Subject Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card" style="border-left: 5px solid {{ subject.color }};">
-                <div class="card-body">
-                    <h1>
-                        {% if subject.icon %}<i class="fas {{ subject.icon }} me-2" style="color: {{ subject.color }};"></i>{% endif %}
-                        {{ subject.name }}
-                        {% if student_grade %}<span class="badge bg-info ms-2">{{ student_grade }}</span>{% endif %}
-                    </h1>
-                    <p class="lead">{{ subject.description }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Topics -->
-    <h3>Thèmes disponibles</h3>
+  <!-- Subject Header -->
+  <div class="container mb-5">
     <div class="row">
-        {% for topic in topics %}
-        <div class="col-md-6 mb-4">
-            <a href="{% url 'student_topic_detail' topic.pk %}" class="text-decoration-none">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ topic.name }}</h5>
-                        <p class="card-text">{{ topic.description|truncatechars:120 }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="badge bg-success me-2">{{ topic.lessons_count }} leçon{{ topic.lessons_count|pluralize }}</span>
-                                <span class="badge bg-primary">{{ topic.exercises_count }} exercice{{ topic.exercises_count|pluralize }}</span>
-                            </div>
-                            <i class="fas fa-arrow-right text-muted"></i>
-                        </div>
-                    </div>
+      <div class="col-12">
+        <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 25px;">
+          <!-- Header Background -->
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ subject.color }}08, {{ subject.color }}15); height: 200px;">
+            <!-- Subject Image Overlay -->
+            {% if subject.image %}
+              <img src="{{ subject.image.url }}" 
+                   class="position-absolute w-100 h-100" 
+                   style="object-fit: cover; opacity: 0.2;" 
+                   alt="{{ subject.name }}">
+            {% endif %}
+            
+            <!-- Content -->
+            <div class="position-absolute bottom-0 start-0 p-4 w-100" 
+                 style="background: linear-gradient(transparent, rgba(255,255,255,0.1));">
+              <div class="d-flex align-items-center mb-3">
+                {% if subject.icon %}
+                  <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                       style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                    <i class="fas {{ subject.icon }} fa-2x" style="color: {{ subject.color }};"></i>
+                  </div>
+                {% endif %}
+                <div class="flex-grow-1">
+                  <h1 class="mb-2 fw-bold text-dark">
+                    {{ subject.name }}
+                    {% if student_grade %}
+                      <span class="badge rounded-pill px-3 py-2 ms-3" 
+                            style="background: {{ subject.color }}; font-size: 0.7rem;">
+                        {{ student_grade }}
+                      </span>
+                    {% endif %}
+                  </h1>
+                  <p class="lead mb-0 text-dark opacity-75" style="font-size: 1.1rem;">
+                    {{ subject.description }}
+                  </p>
                 </div>
-            </a>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                <h4>Aucun thème disponible</h4>
-                <p>Il n'y a pas encore de thèmes disponibles pour {{ subject.name }} niveau {{ student_grade }}.</p>
+              </div>
             </div>
+          </div>
         </div>
-        {% endfor %}
+      </div>
     </div>
+  </div>
+
+  <!-- Topics Section -->
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between">
+          <h2 class="fw-bold text-dark mb-0">
+            <i class="fas fa-book-open me-3" style="color: {{ subject.color }};"></i>
+            Thèmes disponibles
+          </h2>
+          <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
+            {{ topics_with_indicators|length }} thème{{ topics_with_indicators|length|pluralize }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topics Grid -->
+    <div class="row g-4">
+      {% for item in topics_with_indicators %}
+        <div class="col-xl-4 col-lg-6 col-md-6 col-12">
+          <a href="{% url 'student_topic_detail' item.topic.pk %}" class="text-decoration-none">
+            <div class="card topic-card h-100 border-0 shadow-sm position-relative overflow-hidden" 
+                 style="border-radius: 20px; transition: all 0.3s ease; background: #ffffff;">
+              
+              <!-- New Badge -->
+              {% if item.has_new %}
+                <div class="position-absolute top-0 end-0 m-3" style="z-index: 10;">
+                  <span class="badge bg-danger pulse-animation px-3 py-2 rounded-pill shadow">
+                    <i class="fas fa-sparkles me-1"></i>Nouveau!
+                  </span>
+                </div>
+              {% endif %}
+
+              <!-- Card Header with Light Gradient -->
+              <div class="card-header border-0 p-4" 
+                   style="background: linear-gradient(135deg, {{ subject.color }}05, {{ subject.color }}08); border-radius: 20px 20px 0 0;">
+                <div class="d-flex align-items-center">
+                  <div class="topic-icon me-3 d-flex align-items-center justify-content-center" 
+                       style="width: 50px; height: 50px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <i class="fas fa-book fa-lg" style="color: {{ subject.color }};"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h5 class="card-title mb-0 fw-bold text-dark">{{ item.topic.name }}</h5>
+                    <small class="text-muted">Thème d'apprentissage</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card Body -->
+              <div class="card-body p-4">
+                <p class="card-text text-muted mb-4" style="line-height: 1.6; font-size: 0.95rem;">
+                  {{ item.topic.description|truncatechars:120 }}
+                </p>
+
+                <!-- Stats with Lighter Colors -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <div class="stat-item p-3 text-center rounded-3" 
+                         style="background: linear-gradient(135deg, #d4f8db, #c3f5cb); color: #059669; border: 1px solid #a7f3d0;">
+                      <div class="fw-bold fs-5">{{ item.topic.lessons_count }}</div>
+                      <small class="opacity-80">Leçon{{ item.topic.lessons_count|pluralize }}</small>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="stat-item p-3 text-center rounded-3" 
+                         style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #2563eb; border: 1px solid #93c5fd;">
+                      <div class="fw-bold fs-5">{{ item.topic.exercises_count }}</div>
+                      <small class="opacity-80">Exercice{{ item.topic.exercises_count|pluralize }}</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                  <span class="text-muted small">
+                    <i class="fas fa-clock me-1"></i>Commencer l'apprentissage
+                  </span>
+                  <div class="arrow-icon d-flex align-items-center justify-content-center" 
+                       style="width: 40px; height: 40px; background: {{ subject.color }}10; border-radius: 10px;">
+                    <i class="fas fa-arrow-right" style="color: {{ subject.color }};"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hover Effect Border -->
+              <div class="position-absolute top-0 start-0 w-100 h-100 hover-border" 
+                   style="border: 2px solid {{ subject.color }}30; border-radius: 20px; opacity: 0; transition: opacity 0.3s ease;"></div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="text-center py-5">
+            <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px; border-radius: 25px; background: white;">
+              <div class="card-body p-5">
+                <div class="mb-4">
+                  <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                       style="width: 120px; height: 120px; background: {{ subject.color }}08; border-radius: 50%;">
+                    <i class="fas fa-book-open fa-3x" style="color: {{ subject.color }}; opacity: 0.5;"></i>
+                  </div>
+                </div>
+                <h4 class="text-dark mb-3 fw-bold">Aucun thème disponible</h4>
+                <p class="text-muted mb-4">
+                  Les thèmes pour cette matière seront bientôt disponibles. 
+                  Revenez plus tard pour découvrir de nouveaux contenus !
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                  <span class="badge bg-light text-dark px-4 py-2 rounded-pill">
+                    <i class="fas fa-hourglass-half me-2"></i>En préparation
+                  </span>
+                  <span class="badge px-4 py-2 rounded-pill" style="background: {{ subject.color }}10; color: {{ subject.color }};">
+                    <i class="fas fa-bell me-2"></i>Restez connecté
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
 </div>
+
+<style>
+  .topic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+  }
+  
+  .topic-card:hover .hover-border {
+    opacity: 1 !important;
+  }
+  
+  .topic-card:hover .arrow-icon {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  
+  .topic-card:hover .topic-icon {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  
+  .pulse-animation {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  
+  .stat-item {
+    transition: all 0.3s ease;
+  }
+  
+  .topic-card:hover .stat-item {
+    transform: translateY(-1px);
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-weight: bold;
+    color: #6c757d;
+  }
+  
+  .icon-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+</style>
 {% endblock %}

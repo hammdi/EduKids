@@ -10,6 +10,7 @@ urlpatterns = [
     path('exercises/<int:pk>/', views.exercise_detail, name='exercise_detail'),
     path('lessons/<int:pk>/delete/', views.delete_lesson, name='delete_lesson'),
     path('exercises/<int:pk>/delete/', views.delete_exercise, name='delete_exercise'),
+    path('questions/<int:pk>/delete/', views.delete_question, name='delete_question'),
     
     # Student views
     path('student/subjects/', views.student_subjects_list, name='student_subjects_list'),
@@ -32,4 +33,6 @@ urlpatterns = [
     # path('assignments/<int:assignment_pk>/add-questions/', views.assignment_add_questions, name='assignment_add_questions'),  # REMOVED
     # path('teacher/assignments/', views.teacher_assignments_list, name='teacher_assignments_list'),  # REMOVED
     path('subjects/<int:subject_pk>/invite-student/', views.invite_student_to_subject, name='invite_student_to_subject'),
+    path('exercises/<int:pk>/generate-ai/', views.generate_ai_questions, name='generate_ai_questions'),
+    path('exercises/<int:pk>/preview-ai/', views.preview_ai_questions, name='preview_ai_questions'),
 ]
