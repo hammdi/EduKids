@@ -4,9 +4,82 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
 import json
-
-from .models import Subject, Topic, Exercise, Lesson, Question, Answer, ExerciseResult, StudentAnswer
+from students.models import User, Student
+from .models import (
+    Subject, Topic, Exercise, Lesson, Question, Answer, ExerciseResult, StudentAnswer, 
+    SubjectMembership,  # Add this
+)
 from .forms import SubjectForm, TopicForm, ExerciseForm, LessonForm, QuestionForm, AnswerForm, QuestionWithAnswersForm, AnswerFormSet
+
+@login_required
+def subjects_list(request):
+    """List subjects as classes (teachers see their own)"""
+    if request.user.user_type == 'teacher':
+        subjects = Subject.objects.filter(created_by=request.user)
+    else:
+        subjects = Subject.objects.all()
+    return render(request, 'exercises/subjects_list.html', {'subjects': subjects})
+
+@login_required
+def subject_detail(request, pk):
+    """Subject as class: show exercises (assignments), enrolled students, and topics"""
+    subject = get_object_or_404(Subject, pk=pk)
+    if request.user.user_type == 'teacher' and subject.created_by != request.user:
+        return redirect('subjects_list')
+    
+    # FIXED: Get exercises through topics
+    
+    memberships = subject.memberships.filter(is_active=True).select_related('student')
+    students = [m.student for m in memberships]
+    
+    # Also include topics for content organization
+    topics = subject.topics.filter(is_active=True)
+    topic_form = TopicForm()
+    
+    if request.method == 'POST':
+        if 'add_topic' in request.POST:
+            topic_form = TopicForm(request.POST)
+            if topic_form.is_valid():
+                topic = topic_form.save(commit=False)
+                topic.subject = subject
+                topic.save()
+                messages.success(request, 'Topic created successfully!')
+                return redirect('subject_detail', pk=subject.pk)
+    
+    return render(request, 'exercises/subject_detail.html', {
+        'subject': subject,
+        'students': students,
+        'topics': topics,
+        'topic_form': topic_form,
+    })
+
+@login_required
+def invite_student_to_subject(request, subject_pk):
+    """Invite student to subject (grade-matched)"""
+    subject = get_object_or_404(Subject, pk=subject_pk, created_by=request.user)
+    
+    # Filter Student objects by grade_level, then select related User
+    available_students = Student.objects.filter(
+        grade_level=subject.grade_level
+    ).select_related('user').exclude(
+        user__id__in=subject.memberships.values('student_id')
+    )
+    
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        try:
+            # Get the Student object, not User
+            student = Student.objects.get(user__id=student_id, grade_level=subject.grade_level)
+            SubjectMembership.objects.create(subject=subject, student=student.user)  # FIXED: Use student.user
+            messages.success(request, f'{student.user.username} invité!')
+        except Student.DoesNotExist:
+            messages.error(request, 'Étudiant introuvable.')
+        return redirect('subject_detail', pk=subject_pk)
+    
+    return render(request, 'exercises/invite_student.html', {
+        'subject': subject,
+        'available_students': available_students,
+    })
 
 def subjects_list(request):
     subjects = Subject.objects.filter(is_active=True)
@@ -23,24 +96,7 @@ def subjects_list(request):
         'subject_form': subject_form,
     })
 
-def subject_detail(request, pk):
-    subject = get_object_or_404(Subject, pk=pk, is_active=True)
-    topics = subject.topics.filter(is_active=True)
-    topic_form = TopicForm()
-    if request.method == 'POST':
-        if 'add_topic' in request.POST:
-            topic_form = TopicForm(request.POST)
-            if topic_form.is_valid():
-                topic = topic_form.save(commit=False)
-                topic.subject = subject
-                topic.save()
-                messages.success(request, 'Topic created successfully!')
-                return redirect('subject_detail', pk=subject.pk)
-    return render(request, 'exercises/subject_detail.html', {
-        'subject': subject,
-        'topics': topics,
-        'topic_form': topic_form,
-    })
+
 
 def topic_detail(request, pk):
     topic = get_object_or_404(Topic, pk=pk, is_active=True)
@@ -195,36 +251,17 @@ def delete_exercise(request, pk):
 
 @login_required
 def student_subjects_list(request):
-    """View for students to see subjects based on their grade level"""
-    try:
-        student = request.user.student_profile  # Assuming this relationship exists
-        student_grade = student.grade_level
-        
-        # Get subjects that have topics for the student's grade level
-        subjects_with_topics = Subject.objects.filter(
-            is_active=True,
-            topics__grade_level=student_grade,
-            topics__is_active=True
-        ).distinct()
-        
-        # Add topic count for each subject
-        for subject in subjects_with_topics:
-            subject.topic_count = subject.topics.filter(
-                grade_level=student_grade, 
-                is_active=True
-            ).count()
-            
-    except AttributeError:
-        # If user doesn't have a student profile, show all subjects
-        subjects_with_topics = Subject.objects.filter(is_active=True)
-        student_grade = None
-        for subject in subjects_with_topics:
-            subject.topic_count = subject.topics.filter(is_active=True).count()
+    if request.user.user_type != 'student':
+        return redirect('home')
     
-    return render(request, 'exercises/student_subjects_list.html', {
-        'subjects': subjects_with_topics,
-        'student_grade': student_grade,
-    })
+    # Only show subjects where the student has an active membership
+    subjects = Subject.objects.filter(
+        memberships__student=request.user,
+        memberships__is_active=True,
+        is_active=True
+    ).distinct()
+    
+    return render(request, 'exercises/student_subjects_list.html', {'subjects': subjects})
 
 @login_required
 def student_subject_detail(request, pk):
@@ -260,30 +297,13 @@ def student_topic_detail(request, pk):
     """Student view for a specific topic showing lessons and exercises"""
     topic = get_object_or_404(Topic, pk=pk, is_active=True)
     lessons = topic.lessons.filter(is_active=True).order_by('order', 'created_at')
-    exercises = topic.exercises.filter(is_active=True).order_by('name')
     
-    # Add exercise results for each exercise - IMPROVED
-    for exercise in exercises:
-        try:
-            latest_result = ExerciseResult.objects.filter(
-                student=request.user,
-                exercise=exercise
-            ).select_related('exercise').first()
-            
-            # Ensure the result has all required fields
-            if latest_result:
-                # Verify the result is complete
-                if latest_result.score is not None and latest_result.earned_points is not None:
-                    exercise.latest_result = latest_result
-                else:
-                    print(f"Warning: Incomplete result for exercise {exercise.pk}")
-                    exercise.latest_result = None
-            else:
-                exercise.latest_result = None
-                
-        except Exception as e:
-            print(f"Error loading result for exercise {exercise.pk}: {e}")
-            exercise.latest_result = None
+    # Filter exercises: available now and not expired
+    exercises = topic.exercises.filter(
+        is_active=True,
+        available_from__lte=timezone.now(),  # Available from now or earlier
+        due_date__gt=timezone.now()  # Due date in the future
+    ).order_by('name')
     
     return render(request, 'exercises/student_topic_detail.html', {
         'topic': topic,
@@ -295,6 +315,15 @@ def student_topic_detail(request, pk):
 def student_exercise_start(request, pk):
     """Student starts an exercise"""
     exercise = get_object_or_404(Exercise, pk=pk, is_active=True)
+    
+    # Check availability window
+    if exercise.available_from and exercise.available_from > timezone.now():
+        messages.error(request, 'This assignment is not yet available.')
+        return redirect('student_topic_detail', pk=exercise.topic.pk)
+    if exercise.due_date and exercise.due_date <= timezone.now():
+        messages.error(request, 'This assignment has expired.')
+        return redirect('student_topic_detail', pk=exercise.topic.pk)
+    
     questions = exercise.questions.all().order_by('order')
     
     # Debug output
@@ -708,3 +737,54 @@ def submit_exercise(request, pk):
         print(f"Error in submit_exercise: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def teacher_dashboard(request):
+    """Dashboard for teachers to overview their subjects/classes"""
+    if request.user.user_type != 'teacher':
+        return redirect('subjects_list')  # Redirect non-teachers
+    
+    # Get teacher's subjects (classes)
+    subjects = Subject.objects.filter(created_by=request.user, is_active=True)
+    
+    # Calculate stats
+    total_subjects = subjects.count()
+    total_students = sum(subject.memberships.filter(is_active=True).count() for subject in subjects)
+    
+    # Recent exercise results from teacher's subjects
+    recent_results = ExerciseResult.objects.filter(
+        exercise__topic__subject__created_by=request.user
+    ).select_related('student', 'exercise').order_by('-completed_at')[:10]
+    
+    # Add student count to each subject for display
+    for subject in subjects:
+        subject.student_count = subject.memberships.filter(is_active=True).count()
+    
+    return render(request, 'exercises/teacher_dashboard.html', {
+        'subjects': subjects,
+        'total_subjects': total_subjects,
+        'total_students': total_students,
+        'recent_results': recent_results,
+    })
+
+@login_required
+def set_exercise_assignment(request, pk):
+    """Set or update exercise assignment details"""
+    exercise = get_object_or_404(Exercise, pk=pk)
+    
+    if request.method == 'POST':
+        available_from = request.POST.get('available_from')
+        due_date = request.POST.get('due_date')
+        
+        exercise.available_from = available_from or None
+        exercise.due_date = due_date or None
+        exercise.save()
+        
+        messages.success(request, f'Assignment dates updated for {exercise.name}!')
+        return redirect('exercise_detail', pk=pk)
+    
+    return render(request, 'exercises/set_exercise_assignment.html', {
+        'exercise': exercise,
+    })
+
+

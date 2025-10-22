@@ -28,6 +28,19 @@ class Subject(models.Model):
     order = models.PositiveIntegerField(default=0, verbose_name="Ordre")
     image = models.ImageField(upload_to='subjects/', blank=True, null=True, verbose_name="Image")
     is_active = models.BooleanField(default=True, verbose_name="Actif")
+    created_by = models.ForeignKey('students.User', on_delete=models.CASCADE, related_name='created_subjects')
+    grade_level = models.CharField(
+        max_length=10,
+        choices=[
+            ('CP', 'CP'),
+            ('CE1', 'CE1'),
+            ('CE2', 'CE2'),
+            ('CM1', 'CM1'),
+            ('CM2', 'CM2'),
+        ],
+        default='CP',
+        help_text="Niveau scolaire pour cette matière/classe"
+    )
 
     class Meta:
         verbose_name = "Matière"
@@ -91,6 +104,8 @@ class Exercise(models.Model):
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Créateur")
     is_active = models.BooleanField(default=True, verbose_name="Actif")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    available_from = models.DateTimeField(null=True, blank=True, help_text="When this exercise becomes available as an assignment (optional)")
+    due_date = models.DateTimeField(null=True, blank=True, help_text="Due date for this assignment (optional)")
 
     class Meta:
         verbose_name = "Exercice"
@@ -231,3 +246,21 @@ class StudentAnswer(models.Model):
     
     def __str__(self):
         return f"{self.exercise_result.student.username} - Q{self.question.pk}"
+
+
+class SubjectMembership(models.Model):
+    """
+    Suivi des inscriptions des étudiants aux matières
+    """
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='memberships')
+    student = models.ForeignKey('students.User', on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('subject', 'student')
+        verbose_name = "Adhésion à une matière"
+        verbose_name_plural = "Adhésions aux matières"
+
+    def __str__(self):
+        return f"{self.student.username} - {self.subject.name}"
