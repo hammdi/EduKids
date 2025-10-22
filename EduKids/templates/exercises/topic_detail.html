@@ -1,313 +1,663 @@
-{% extends 'base/base.html' %} 
+{% extends 'base/base.html' %}
 {% load static %}
+
 {% block content %}
-<div class="container">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <a href="{% url 'subjects_list' %}">Subjects</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a href="{% url 'subject_detail' topic.subject.pk %}"
-          >{{ topic.subject.name }}</a
-        >
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">
-        {{ topic.name }}
-      </li>
-    </ol>
-  </nav>
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h1>{{ topic.name }}</h1>
-      <p class="text-muted">{{ topic.description }}</p>
-    </div>
-    <div>
-      {% if user == topic.subject.created_by %}
-      <a href="?edit=topic" class="btn btn-outline-primary btn-sm">Edit Topic</a>
-      {% endif %}
-      <button
-        type="button"
-        class="btn btn-success me-2"
-        data-bs-toggle="modal"
-        data-bs-target="#addLessonModal"
-      >
-        Add Lesson
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#addExerciseModal"
-      >
-        Add Exercise
-      </button>
-    </div>
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Breadcrumb -->
+  <div class="container mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'subject_detail' topic.subject.pk %}" class="text-decoration-none fw-medium">
+            {{ topic.subject.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ topic.subject.color }};">
+          {{ topic.name }}
+        </li>
+      </ol>
+    </nav>
   </div>
 
-  <!-- Add this after the topic header, before existing forms: -->
-  {% if topic_form %}
-  <div class="row mb-4">
-    <div class="col-12">
-      <h3>Edit Topic</h3>
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="update_topic" value="1">
-        {{ topic_form.as_p }}
-        <button type="submit" class="btn btn-success">Update Topic</button>
-        <a href="{% url 'topic_detail' topic.pk %}" class="btn btn-secondary">Cancel</a>
-      </form>
-    </div>
-  </div>
-  {% endif %}
-
-  <h3>Lessons</h3>
-  <div class="row">
-    {% for lesson in lessons %}
-    <div class="col-md-6 mb-3">
-      <div class="card">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h5 class="card-title">{{ lesson.title }}</h5>
-              <p class="card-text">{{ lesson.content|truncatechars:100 }}</p>
-              {% if lesson.order and lesson.order != 0 %}  <!-- Only show if order exists and is not 0 -->
-              <p class="text-muted">Ordre: {{ lesson.order }}</p>
-              {% endif %}
-              {% if lesson.media %}
-              {% if lesson.media.name|slice:"-4:" == '.pdf' %}
-              <a
-                href="{{ lesson.media.url }}"
-                target="_blank"
-                class="btn btn-sm btn-primary"
-              >
-                View Full Content (PDF)
-              </a>
-              {% elif lesson.media.name|slice:"-4:" in '.jpg,.png,.gif,.jpeg' %}
-              <img
-                src="{{ lesson.media.url }}"
-                alt="{{ lesson.title }}"
-                class="img-fluid mt-2"
-                style="max-height: 200px"
-              />
-              {% elif lesson.media.name|slice:"-4:" in '.mp4,.avi,.mov' %}
-              <video controls class="mt-2" style="max-width: 100%">
-                <source src="{{ lesson.media.url }}" type="{{ lesson.media.name|slice:"-3:" }}">
-                Your browser does not support the video tag.
-              </video>
-              {% else %}
-              <a
-                href="{{ lesson.media.url }}"
-                target="_blank"
-                class="btn btn-sm btn-secondary"
-              >
-                View Full Content
-              </a>
-              {% endif %}
-              {% endif %}
-            </div>
-            <div class="dropdown">
-              <button
-                class="btn btn-link text-muted"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i class="fas fa-ellipsis-v"></i>
-              </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <button class="dropdown-item" type="button">Edit</button>
-                </li>
-                <li>
-                  <form
-                    method="post"
-                    action="{% url 'delete_lesson' lesson.pk %}"
-                    style="display: inline"
-                    onsubmit="return confirm('Are you sure you want to delete this lesson?')"
-                  >
-                    {% csrf_token %}
-                    <button type="submit" class="dropdown-item text-danger">
-                      Delete
-                    </button>
-                  </form>
-                </li>
-              </ul>
+  <!-- Topic Header -->
+  <div class="container mb-5">
+    <div class="row">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 25px;">
+          <!-- Header Background -->
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ topic.subject.color }}08, {{ topic.subject.color }}15); height: 200px;">
+            
+            <!-- Content -->
+            <div class="position-absolute bottom-0 start-0 p-4 w-100">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                  <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                       style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                    <i class="fas fa-book-open fa-2x" style="color: {{ topic.subject.color }};"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h1 class="mb-2 fw-bold text-dark">
+                      {{ topic.name }}
+                      <span class="badge rounded-pill px-3 py-2 ms-3" 
+                            style="background: {{ topic.subject.color }}15; color: {{ topic.subject.color }}; font-size: 0.6rem;">
+                        {{ topic.grade_level }}
+                      </span>
+                    </h1>
+                    <p class="lead mb-0 text-dark opacity-75" style="font-size: 1.1rem;">
+                      {{ topic.description }}
+                    </p>
+                  </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3">
+                  {% if user == topic.subject.created_by %}
+                    <a href="?edit=topic" class="btn btn-outline-light rounded-pill px-4">
+                      <i class="fas fa-edit me-2"></i>Modifier le thème
+                    </a>
+                  {% endif %}
+                  <button type="button" class="btn btn-outline-light rounded-pill px-4" 
+                          data-bs-toggle="modal" data-bs-target="#addLessonModal">
+                    <i class="fas fa-plus me-2"></i>Ajouter une leçon
+                  </button>
+                  <button type="button" class="btn rounded-pill px-4" 
+                          style="background: {{ topic.subject.color }}; border: none; color: white;"
+                          data-bs-toggle="modal" data-bs-target="#addExerciseModal">
+                    <i class="fas fa-plus me-2"></i>Ajouter un exercice
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    {% empty %}
-    <p>No lessons available for this topic.</p>
-    {% endfor %}
   </div>
 
-  <h3>Exercises</h3>
-  <div class="row">
-    {% for exercise in exercises %}
-    <div class="col-md-6 mb-3">
-      <a
-        href="{% url 'exercise_detail' exercise.pk %}"
-        class="text-decoration-none"
-      >
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <h5 class="card-title">{{ exercise.name }}</h5>
-                <p class="card-text">{{ exercise.description|truncatechars:100 }}</p>
-                <p class="text-muted">Type: {{ exercise.get_exercise_type_display }}</p>  <!-- FIXED: Use display name, removed difficulty -->
+  <div class="container">
+    <!-- Edit Topic Form (Enhanced) -->
+    {% if topic_form %}
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+          <div class="card-header border-0 p-4" 
+               style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 25px 25px 0 0;">
+            <h3 class="fw-bold text-dark mb-0">
+              <i class="fas fa-edit me-3" style="color: {{ topic.subject.color }};"></i>
+              Modifier le thème
+            </h3>
+          </div>
+          <div class="card-body p-5">
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="update_topic" value="1">
+              
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark mb-2">
+                    <i class="fas fa-bookmark me-2" style="color: {{ topic.subject.color }};"></i>
+                    Nom du thème
+                  </label>
+                  <input type="text" name="{{ topic_form.name.name }}" 
+                         value="{{ topic_form.name.value|default:'' }}"
+                         class="form-control form-control-lg rounded-pill px-4"
+                         placeholder="Entrez le nom du thème..."
+                         style="border: 2px solid #e2e8f0;">
+                  <small class="text-muted">Nom descriptif pour identifier le thème</small>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold text-dark mb-2">
+                    <i class="fas fa-layer-group me-2" style="color: {{ topic.subject.color }};"></i>
+                    Niveau
+                  </label>
+                  <select name="{{ topic_form.grade_level.name }}" 
+                          class="form-select form-select-lg rounded-pill px-4"
+                          style="border: 2px solid #e2e8f0;">
+                    {% for choice in topic_form.grade_level.field.choices %}
+                      <option value="{{ choice.0 }}" {% if choice.0 == topic_form.grade_level.value %}selected{% endif %}>
+                        {{ choice.1 }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                  <small class="text-muted">Niveau scolaire approprié</small>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold text-dark mb-2">
+                    <i class="fas fa-align-left me-2" style="color: {{ topic.subject.color }};"></i>
+                    Description
+                  </label>
+                  <textarea name="{{ topic_form.description.name }}" 
+                            class="form-control form-control-lg rounded-3 px-4 py-3"
+                            rows="4"
+                            placeholder="Décrivez ce thème et ses objectifs d'apprentissage..."
+                            style="border: 2px solid #e2e8f0; resize: vertical;">{{ topic_form.description.value|default:'' }}</textarea>
+                  <small class="text-muted">Description détaillée du thème et de ses objectifs</small>
+                </div>
               </div>
-              <div class="dropdown">
-                <button
-                  class="btn btn-link text-muted"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="fas fa-ellipsis-v"></i>
+              
+              <div class="d-flex gap-3 mt-5">
+                <button type="submit" class="btn btn-success btn-lg rounded-pill px-5">
+                  <i class="fas fa-save me-2"></i>Sauvegarder les modifications
                 </button>
-                <ul class="dropdown-menu">
-                  <li>
-                    <button class="dropdown-item" type="button">Edit</button>
-                  </li>
-                  <li>
-                    <form
-                      method="post"
-                      action="{% url 'delete_exercise' exercise.pk %}"
-                      style="display: inline"
-                      onsubmit="return confirm('Are you sure you want to delete this exercise?')"
-                    >
-                      {% csrf_token %}
-                      <button type="submit" class="dropdown-item text-danger">
-                        Delete
-                      </button>
-                    </form>
-                  </li>
-                </ul>
+                <a href="{% url 'topic_detail' topic.pk %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+                  <i class="fas fa-times me-2"></i>Annuler
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Lessons Section -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <h2 class="fw-bold text-dark mb-0">
+            <i class="fas fa-graduation-cap me-3" style="color: {{ topic.subject.color }};"></i>
+            Leçons
+          </h2>
+          <div class="d-flex align-items-center gap-3">
+            <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
+              {{ lessons|length }} leçon{{ lessons|length|pluralize }}
+            </div>
+            <button type="button" class="btn rounded-pill px-4" 
+                    style="background: {{ topic.subject.color }}; border: none; color: white;"
+                    data-bs-toggle="modal" data-bs-target="#addLessonModal">
+              <i class="fas fa-plus me-2"></i>Nouvelle leçon
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          {% for lesson in lessons %}
+          <div class="col-xl-6 col-lg-6 col-md-12">
+            <div class="card lesson-card h-100 border-0 shadow-sm" 
+                 style="border-radius: 20px; transition: all 0.3s ease; background: white;">
+              
+              <div class="card-header border-0 p-4" 
+                   style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center">
+                    <div class="lesson-icon me-3 d-flex align-items-center justify-content-center" 
+                         style="width: 50px; height: 50px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                      <i class="fas fa-book fa-lg" style="color: {{ topic.subject.color }};"></i>
+                    </div>
+                    <div>
+                      <h5 class="card-title mb-0 fw-bold text-dark">{{ lesson.title }}</h5>
+                      {% if lesson.order and lesson.order != 0 %}
+                        <small class="text-muted">Ordre: {{ lesson.order }}</small>
+                      {% endif %}
+                    </div>
+                  </div>
+                  
+                  <div class="dropdown">
+                    <button class="btn btn-light rounded-circle p-2" type="button" 
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            style="width: 35px; height: 35px;">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu shadow-sm">
+                      <li>
+                        <button class="dropdown-item" type="button">
+                          <i class="fas fa-edit me-2"></i>Modifier
+                        </button>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <form method="post" action="{% url 'delete_lesson' lesson.pk %}" 
+                              style="display: inline"
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette leçon ?')">
+                          {% csrf_token %}
+                          <button type="submit" class="dropdown-item text-danger">
+                            <i class="fas fa-trash me-2"></i>Supprimer
+                          </button>
+                        </form>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body p-4">
+                <p class="card-text text-muted mb-3" style="line-height: 1.6;">
+                  {{ lesson.content|truncatechars:120 }}
+                </p>
+
+                {% if lesson.media %}
+                  <div class="media-preview mb-3">
+                    {% if lesson.media.name|slice:"-4:" == '.pdf' %}
+                      <div class="d-flex align-items-center p-3 rounded-3" 
+                           style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                        <i class="fas fa-file-pdf fa-2x text-warning me-3"></i>
+                        <div>
+                          <div class="fw-bold text-dark">Document PDF</div>
+                          <a href="{{ lesson.media.url }}" target="_blank" 
+                             class="btn btn-sm btn-warning rounded-pill px-3 mt-2">
+                            <i class="fas fa-external-link-alt me-1"></i>Ouvrir
+                          </a>
+                        </div>
+                      </div>
+                    {% elif lesson.media.name|slice:"-4:" in '.jpg,.png,.gif,.jpeg' %}
+                      <div class="image-container">
+                        <img src="{{ lesson.media.url }}" alt="{{ lesson.title }}" 
+                             class="img-fluid rounded-3 shadow-sm" 
+                             style="max-height: 200px; width: 100%; object-fit: cover;" />
+                      </div>
+                    {% elif lesson.media.name|slice:"-4:" in '.mp4,.avi,.mov' %}
+                      <div class="video-container">
+                        <video controls class="w-100 rounded-3" style="max-height: 200px;">
+                          <source src="{{ lesson.media.url }}" type="video/mp4">
+                          Votre navigateur ne supporte pas la lecture vidéo.
+                        </video>
+                      </div>
+                    {% else %}
+                      <div class="d-flex align-items-center p-3 rounded-3" 
+                           style="background: linear-gradient(135deg, #e0f2fe, #b3e5fc);">
+                        <i class="fas fa-file fa-2x text-info me-3"></i>
+                        <div>
+                          <div class="fw-bold text-dark">Fichier joint</div>
+                          <a href="{{ lesson.media.url }}" target="_blank" 
+                             class="btn btn-sm btn-info rounded-pill px-3 mt-2">
+                            <i class="fas fa-download me-1"></i>Télécharger
+                          </a>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
+          {% empty %}
+          <div class="col-12">
+            <div class="text-center py-5">
+              <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px; border-radius: 25px;">
+                <div class="card-body p-5">
+                  <div class="mb-4">
+                    <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                         style="width: 120px; height: 120px; background: {{ topic.subject.color }}08; border-radius: 50%;">
+                      <i class="fas fa-graduation-cap fa-3x" style="color: {{ topic.subject.color }}; opacity: 0.5;"></i>
+                    </div>
+                  </div>
+                  <h4 class="text-dark mb-3 fw-bold">Aucune leçon disponible</h4>
+                  <p class="text-muted mb-4 lead">
+                    Commencez par créer votre première leçon pour ce thème.
+                  </p>
+                  <button type="button" class="btn rounded-pill px-4" 
+                          style="background: {{ topic.subject.color }}; border: none; color: white;"
+                          data-bs-toggle="modal" data-bs-target="#addLessonModal">
+                    <i class="fas fa-plus me-2"></i>Créer une leçon
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
         </div>
-      </a>
+      </div>
     </div>
-    {% endfor %}
+
+    <!-- Exercises Section -->
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <h2 class="fw-bold text-dark mb-0">
+            <i class="fas fa-pencil-alt me-3" style="color: {{ topic.subject.color }};"></i>
+            Exercices
+          </h2>
+          <div class="d-flex align-items-center gap-3">
+            <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
+              {{ exercises|length }} exercice{{ exercises|length|pluralize }}
+            </div>
+            <button type="button" class="btn rounded-pill px-4" 
+                    style="background: {{ topic.subject.color }}; border: none; color: white;"
+                    data-bs-toggle="modal" data-bs-target="#addExerciseModal">
+              <i class="fas fa-plus me-2"></i>Nouvel exercice
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          {% for exercise in exercises %}
+          <div class="col-xl-6 col-lg-6 col-md-12">
+            <a href="{% url 'exercise_detail' exercise.pk %}" class="text-decoration-none">
+              <div class="card exercise-card h-100 border-0 shadow-sm" 
+                   style="border-radius: 20px; transition: all 0.3s ease; background: white;">
+                
+                <div class="card-header border-0 p-4" 
+                     style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                      <div class="exercise-icon me-3 d-flex align-items-center justify-content-center" 
+                           style="width: 50px; height: 50px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                        <i class="fas fa-pencil-alt fa-lg" style="color: {{ topic.subject.color }};"></i>
+                      </div>
+                      <div>
+                        <h5 class="card-title mb-0 fw-bold text-dark">{{ exercise.name }}</h5>
+                        <small class="text-muted">{{ exercise.get_exercise_type_display }}</small>
+                      </div>
+                    </div>
+                    
+                    <div class="dropdown" onclick="event.preventDefault(); event.stopPropagation();">
+                      <button class="btn btn-light rounded-circle p-2" type="button" 
+                              data-bs-toggle="dropdown" aria-expanded="false"
+                              style="width: 35px; height: 35px;">
+                        <i class="fas fa-ellipsis-v"></i>
+                      </button>
+                      <ul class="dropdown-menu shadow-sm">
+                        <li>
+                          <button class="dropdown-item" type="button">
+                            <i class="fas fa-edit me-2"></i>Modifier
+                          </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <form method="post" action="{% url 'delete_exercise' exercise.pk %}" 
+                                style="display: inline"
+                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet exercice ?')">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">
+                              <i class="fas fa-trash me-2"></i>Supprimer
+                            </button>
+                          </form>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card-body p-4">
+                  <p class="card-text text-muted mb-4" style="line-height: 1.6;">
+                    {{ exercise.description|truncatechars:120 }}
+                  </p>
+
+                  <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <span class="text-muted small">
+                      <i class="fas fa-eye me-1"></i>Voir l'exercice
+                    </span>
+                    <div class="arrow-icon d-flex align-items-center justify-content-center" 
+                         style="width: 40px; height: 40px; background: {{ topic.subject.color }}10; border-radius: 10px;">
+                      <i class="fas fa-arrow-right" style="color: {{ topic.subject.color }};"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+          {% empty %}
+          <div class="col-12">
+            <div class="text-center py-5">
+              <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px; border-radius: 25px;">
+                <div class="card-body p-5">
+                  <div class="mb-4">
+                    <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                         style="width: 120px; height: 120px; background: {{ topic.subject.color }}08; border-radius: 50%;">
+                      <i class="fas fa-pencil-alt fa-3x" style="color: {{ topic.subject.color }}; opacity: 0.5;"></i>
+                    </div>
+                  </div>
+                  <h4 class="text-dark mb-3 fw-bold">Aucun exercice disponible</h4>
+                  <p class="text-muted mb-4 lead">
+                    Créez votre premier exercice pour ce thème.
+                  </p>
+                  <button type="button" class="btn rounded-pill px-4" 
+                          style="background: {{ topic.subject.color }}; border: none; color: white;"
+                          data-bs-toggle="modal" data-bs-target="#addExerciseModal">
+                    <i class="fas fa-plus me-2"></i>Créer un exercice
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Modal for Adding Lesson -->
-<div
-  class="modal fade"
-  id="addLessonModal"
-  tabindex="-1"
-  aria-labelledby="addLessonModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addLessonModalLabel">Add New Lesson</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+<!-- Enhanced Modal for Adding Lesson -->
+<div class="modal fade" id="addLessonModal" tabindex="-1" aria-labelledby="addLessonModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      <div class="modal-header" 
+           style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title fw-bold" id="addLessonModalLabel">
+          <i class="fas fa-plus me-2" style="color: {{ topic.subject.color }};"></i>
+          Ajouter une nouvelle leçon
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="hidden" name="add_lesson" value="1" />
-        <div class="modal-body">{{ lesson_form.as_p }}</div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Cancel
+        <div class="modal-body p-4">
+          <div class="mb-4">
+            <p class="text-muted">Créez une nouvelle leçon avec du contenu, des médias et organisez l'ordre d'apprentissage.</p>
+          </div>
+          
+          <div class="row g-4">
+            <div class="col-md-8">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-heading me-2" style="color: {{ topic.subject.color }};"></i>
+                Titre de la leçon
+              </label>
+              <input type="text" name="{{ lesson_form.title.name }}" 
+                     class="form-control form-control-lg rounded-pill px-4"
+                     placeholder="Ex: Introduction aux fractions"
+                     style="border: 2px solid #e2e8f0;" required>
+              <small class="text-muted">Titre descriptif et engageant</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-sort-numeric-up me-2" style="color: {{ topic.subject.color }};"></i>
+                Ordre
+              </label>
+              <input type="number" name="{{ lesson_form.order.name }}" 
+                     class="form-control form-control-lg rounded-pill px-4"
+                     placeholder="1, 2, 3..."
+                     style="border: 2px solid #e2e8f0;" min="0">
+              <small class="text-muted">Ordre d'affichage</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-align-left me-2" style="color: {{ topic.subject.color }};"></i>
+                Contenu de la leçon
+              </label>
+              <textarea name="{{ lesson_form.content.name }}" 
+                        class="form-control form-control-lg rounded-3 px-4 py-3"
+                        rows="6"
+                        placeholder="Écrivez le contenu détaillé de votre leçon. Expliquez les concepts, donnez des exemples, et guidez les étudiants..."
+                        style="border: 2px solid #e2e8f0; resize: vertical;" required></textarea>
+              <small class="text-muted">Contenu pédagogique détaillé de la leçon</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-paperclip me-2" style="color: {{ topic.subject.color }};"></i>
+                Fichier média (optionnel)
+              </label>
+              <input type="file" name="{{ lesson_form.media.name }}" 
+                     class="form-control form-control-lg rounded-pill px-4"
+                     style="border: 2px solid #e2e8f0;"
+                     accept=".pdf,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.doc,.docx">
+              <small class="text-muted">PDF, images, vidéos ou documents (max 50MB)</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="background: #f8fafc; border-radius: 0 0 20px 20px;">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Annuler
           </button>
-          <button type="submit" class="btn btn-primary">Create Lesson</button>
+          <button type="submit" class="btn rounded-pill px-4" 
+                  style="background: {{ topic.subject.color }}; border: none; color: white;">
+            <i class="fas fa-save me-2"></i>Créer la leçon
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Modal for Adding Exercise -->
-<div
-  class="modal fade"
-  id="addExerciseModal"
-  tabindex="-1"
-  aria-labelledby="addExerciseModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addExerciseModalLabel">Add New Exercise</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+<!-- Enhanced Modal for Adding Exercise -->
+<div class="modal fade" id="addExerciseModal" tabindex="-1" aria-labelledby="addExerciseModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      <div class="modal-header" 
+           style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title fw-bold" id="addExerciseModalLabel">
+          <i class="fas fa-plus me-2" style="color: {{ topic.subject.color }};"></i>
+          Ajouter un nouvel exercice
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="post">
         {% csrf_token %}
         <input type="hidden" name="add_exercise" value="1" />
-        <div class="modal-body">{{ exercise_form.as_p }}</div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Cancel
+        <div class="modal-body p-4">
+          <div class="mb-4">
+            <p class="text-muted">Créez un nouvel exercice pour tester les connaissances des étudiants sur ce thème.</p>
+          </div>
+          
+          <div class="row g-4">
+            <div class="col-md-8">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-tag me-2" style="color: {{ topic.subject.color }};"></i>
+                Nom de l'exercice
+              </label>
+              <input type="text" name="{{ exercise_form.name.name }}" 
+                     class="form-control form-control-lg rounded-pill px-4"
+                     placeholder="Ex: Quiz sur les fractions"
+                     style="border: 2px solid #e2e8f0;" required>
+              <small class="text-muted">Nom court et descriptif</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-cogs me-2" style="color: {{ topic.subject.color }};"></i>
+                Type d'exercice
+              </label>
+              <select name="{{ exercise_form.exercise_type.name }}" 
+                      class="form-select form-select-lg rounded-pill px-4"
+                      style="border: 2px solid #e2e8f0;" required>
+                <option value="">Choisir...</option>
+                {% for choice in exercise_form.exercise_type.field.choices %}
+                  <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                {% endfor %}
+              </select>
+              <small class="text-muted">Format de l'exercice</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-align-left me-2" style="color: {{ topic.subject.color }};"></i>
+                Description de l'exercice
+              </label>
+              <textarea name="{{ exercise_form.description.name }}" 
+                        class="form-control form-control-lg rounded-3 px-4 py-3"
+                        rows="4"
+                        placeholder="Décrivez l'objectif de cet exercice, ce que les étudiants vont apprendre et comment ils seront évalués. Soyez précis sur les compétences testées..."
+                        style="border: 2px solid #e2e8f0; resize: vertical;" required></textarea>
+              <small class="text-muted">Description détaillée des objectifs et du contenu de l'exercice</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-star me-2" style="color: {{ topic.subject.color }};"></i>
+                Points
+              </label>
+              <input type="number" name="{{ exercise_form.points.name }}" 
+                     class="form-control form-control-lg rounded-pill px-4"
+                     placeholder="100"
+                     style="border: 2px solid #e2e8f0;" min="1" max="1000" value="10">
+              <small class="text-muted">Points maximum</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-layer-group me-2" style="color: {{ topic.subject.color }};"></i>
+                Difficulté
+              </label>
+              <select name="difficulty" 
+                      class="form-select form-select-lg rounded-pill px-4"
+                      style="border: 2px solid #e2e8f0;">
+                <option value="facile">Facile</option>
+                <option value="moyen" selected>Moyen</option>
+                <option value="difficile">Difficile</option>
+              </select>
+              <small class="text-muted">Niveau de difficulté</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-clock me-2" style="color: {{ topic.subject.color }};"></i>
+                Durée (min)
+              </label>
+              <input type="number" name="{{ exercise_form.time_limit.name }}" 
+                     class="form-control form-control-lg rounded-pill px-4"
+                     placeholder="30"
+                     style="border: 2px solid #e2e8f0;" min="1" max="300">
+              <small class="text-muted">Temps limite en minutes</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-info-circle me-2" style="color: {{ topic.subject.color }};"></i>
+                Instructions (optionnel)
+              </label>
+              <textarea name="{{ exercise_form.instructions.name }}" 
+                        class="form-control form-control-lg rounded-3 px-4 py-3"
+                        rows="3"
+                        placeholder="Instructions spécifiques pour les étudiants (ex: 'Lisez attentivement chaque question', 'Utilisez une calculatrice si nécessaire')..."
+                        style="border: 2px solid #e2e8f0; resize: vertical;"></textarea>
+              <small class="text-muted">Consignes particulières pour réaliser l'exercice</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="background: #f8fafc; border-radius: 0 0 20px 20px;">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Annuler
           </button>
-          <button type="submit" class="btn btn-primary">Create Exercise</button>
+          <button type="submit" class="btn rounded-pill px-4" 
+                  style="background: {{ topic.subject.color }}; border: none; color: white;">
+            <i class="fas fa-save me-2"></i>Créer l'exercice
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Modal for Adding Topic -->
-<div
-  class="modal fade"
-  id="addTopicModal"
-  tabindex="-1"
-  aria-labelledby="addTopicModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addTopicModalLabel">Add New Topic</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="add_topic" value="1" />
-        <div class="modal-body">{{ topic_form.as_p }}</div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Cancel
-          </button>
-          <button type="submit" class="btn btn-primary">Create Topic</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
+<style>
+  .lesson-card:hover, .exercise-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+  }
+  
+  .lesson-card:hover .lesson-icon, .exercise-card:hover .exercise-icon {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  
+  .exercise-card:hover .arrow-icon {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-weight: bold;
+    color: #6c757d;
+  }
+  
+  .icon-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: {{ topic.subject.color }} !important;
+    box-shadow: 0 0 0 0.2rem {{ topic.subject.color }}25 !important;
+  }
+</style>
 {% endblock %}

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
 import json
+import requests
 from students.models import User, Student
 from .models import (
     Subject, Topic, Exercise, Lesson, Question, Answer, ExerciseResult, StudentAnswer, 
@@ -92,13 +93,18 @@ def invite_student_to_subject(request, subject_pk):
         'available_students': available_students,
     })
 
+@login_required
 def subjects_list(request):
+    if request.user.user_type != 'teacher':
+        return redirect('home')  # Only teachers can create subjects
+    
     subjects = Subject.objects.filter(is_active=True)
     subject_form = SubjectForm()
     if request.method == 'POST':
         if 'add_subject' in request.POST:
             subject_form = SubjectForm(request.POST, request.FILES)
             if subject_form.is_valid():
+                subject_form.instance.created_by = request.user  # Set the creator
                 subject_form.save()
                 messages.success(request, 'Subject created successfully!')
                 return redirect('subjects_list')
@@ -894,4 +900,155 @@ def set_exercise_assignment(request, pk):
         'exercise': exercise,
     })
 
+@login_required
+def generate_ai_questions(request, pk):
+    exercise = get_object_or_404(Exercise, pk=pk)
+    if request.user != exercise.creator:
+        return redirect('exercise_detail', pk=pk)
+    
+    # Restrict to QCM only
+    if exercise.exercise_type != 'QCM':
+        messages.error(request, 'AI generation is currently only available for QCM exercises.')
+        return redirect('exercise_detail', pk=pk)
+    
+    if request.method == 'POST':
+        num_questions = int(request.POST.get('num_questions', 5))
+        difficulty = request.POST.get('difficulty', 'medium')
+        custom_prompt = request.POST.get('custom_prompt', '').strip()
+        
+        # Build AI prompt (QCM only)
+        base_prompt = (
+            f"Generate {num_questions} QCM questions for the topic "
+            f"'{exercise.topic.name}' in the subject '{exercise.topic.subject.name}' "
+            f"at {difficulty} difficulty level for grade {exercise.topic.grade_level}."
+        )
+        if custom_prompt:
+            base_prompt += f" Additional instructions: {custom_prompt}."
+        base_prompt += (
+            " Format each question as: Question: [question text], then provide 4 distinct numerical options:"
+            " A) [option1] B) [option2] C) [option3] D) [option4]."
+            " Ensure the correct option letter you indicate actually equals the true result of the calculation."
+            " Finally, specify Answer: [correct option letter]."
+        )
+        
+        # Groq API call
+        api_url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer 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",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [{"role": "user", "content": base_prompt}],
+            "max_tokens": 500,
+            "temperature": 0.7
+        }
+        
+        try:
+            response = requests.post(api_url, headers=headers, json=payload)
+            response.raise_for_status()
+            
+            response_data = response.json()
+            ai_output = response_data['choices'][0]['message']['content']
+            print("=== AI RESPONSE DEBUG ===")
+            print(f"AI Output: '{ai_output}'")
+            print(f"AI Output Length: {len(ai_output)}")
+            print("=== END DEBUG ===")
+            
+            # Parse AI output into QCM questions only
+            generated_questions = []
+            lines = ai_output.split('\n')
+            current_q = None
+            options = []
 
+            for line in lines:
+                line = line.strip()
+                if 'Question:' in line:
+                    # Save previous question
+                    if current_q:
+                        current_q['answers'] = options
+                        generated_questions.append(current_q)
+                    
+                    question_text = line.split('Question:', 1)[1].strip()
+                    current_q = {'text': question_text, 'answers': []}
+                    options = []
+                
+                elif line.startswith(('A)', 'B)', 'C)', 'D)')):
+                    # Collect options
+                    option_text = line[3:].strip()
+                    options.append({'text': option_text, 'correct': False})
+                
+                elif line.startswith('Answer:'):
+                    raw = line.replace('Answer:', '').strip()
+                    # extract the letter before ')' if present (e.g. "C) 10" → "C")
+                    letter = raw.split(')')[0].strip()
+                    # fallback if no ')' (e.g. "C")
+                    if len(letter) > 1 and letter[1] != '':
+                        letter = letter[0]
+                    if letter in ['A', 'B', 'C', 'D']:
+                        idx = ord(letter) - ord('A')
+                        if 0 <= idx < len(options):
+                            options[idx]['correct'] = True
+
+            # Don't forget the last question
+            if current_q:
+                current_q['answers'] = options
+                generated_questions.append(current_q)
+
+            print(f"=== PARSING DEBUG ===")
+            print(f"Parsed {len(generated_questions)} questions")
+            for i, q in enumerate(generated_questions):
+                print(f"Q{i+1}: {q['text'][:50]}...")
+                print(f"  Options: {len(q['answers'])}")
+                for j, a in enumerate(q['answers']):
+                    print(f"    {chr(65+j)}) {a['text']} {'✅' if a['correct'] else ''}")
+            print(f"=== END PARSING DEBUG ===")
+            
+            # Store in session for preview
+            request.session['generated_questions'] = generated_questions[:num_questions]
+            return redirect('preview_ai_questions', pk=pk)
+        
+        except Exception as e:
+            messages.error(request, f'AI generation failed: {str(e)}')
+            return redirect('exercise_detail', pk=pk)
+    
+    return redirect('exercise_detail', pk=pk)
+
+
+@login_required
+def preview_ai_questions(request, pk):
+    exercise = get_object_or_404(Exercise, pk=pk)
+    generated_questions = request.session.get('generated_questions', [])
+    if not generated_questions:
+        return redirect('exercise_detail', pk=pk)
+    
+    if request.method == 'POST':
+        # Save questions
+        for q_data in generated_questions:
+            question = Question.objects.create(
+                exercise=exercise,
+                question_text=q_data['text'],
+                question_type=exercise.exercise_type,
+                points=10,
+                creator=request.user
+            )
+            for a_data in q_data['answers']:
+                # For dictée, use question_text as answer_text (like manual creation)
+                if exercise.exercise_type == 'dictée':
+                    answer_text = q_data['text']  # Full question text (instruction)
+                else:
+                    answer_text = a_data['text']
+                
+                Answer.objects.create(
+                    question=question,
+                    answer_text=answer_text,
+                    is_correct=a_data['correct']
+                )
+        del request.session['generated_questions']
+        messages.success(request, f'Added {len(generated_questions)} questions!')
+        return redirect('exercise_detail', pk=pk)
+    
+    return render(request, 'exercises/preview_ai_questions.html', {
+        'exercise': exercise,
+        'generated_questions': generated_questions,
+    })

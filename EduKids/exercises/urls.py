@@ -33,4 +33,6 @@ urlpatterns = [
     # path('assignments/<int:assignment_pk>/add-questions/', views.assignment_add_questions, name='assignment_add_questions'),  # REMOVED
     # path('teacher/assignments/', views.teacher_assignments_list, name='teacher_assignments_list'),  # REMOVED
     path('subjects/<int:subject_pk>/invite-student/', views.invite_student_to_subject, name='invite_student_to_subject'),
+    path('exercises/<int:pk>/generate-ai/', views.generate_ai_questions, name='generate_ai_questions'),
+    path('exercises/<int:pk>/preview-ai/', views.preview_ai_questions, name='preview_ai_questions'),
 ]
