@@ -354,16 +354,17 @@
                       </button>
                       <ul class="dropdown-menu shadow-sm">
                         <li>
-                          <button class="dropdown-item" type="button">
-                            <i class="fas fa-edit me-2"></i>Modifier
-                          </button>
+                          
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                           <form method="post" action="{% url 'delete_exercise' exercise.pk %}" 
                                 style="display: inline"
-                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet exercice ?')">
-                            {% csrf_token %}
+                                onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet exercice ?')"
+                                onclick="event.stopPropagation();"
+                                >
+                                
+                                {% csrf_token %}
                             <button type="submit" class="dropdown-item text-danger">
                               <i class="fas fa-trash me-2"></i>Supprimer
                             </button>
