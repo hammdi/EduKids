@@ -246,11 +246,16 @@ def exercise_detail(request, pk):
                         # Create answers for QCM and texte_à_trous
                         for form in answer_formset:
                             if form.cleaned_data and not form.cleaned_data.get('DELETE') and form.cleaned_data.get('answer_text'):
-                                print("Creating answer:", form.cleaned_data['answer_text'])  # Debug
+                                is_correct = form.cleaned_data.get('is_correct', False)
+                                
+                                # FIX: For texte_à_trous, always set is_correct=True (since the hidden word is the expected answer)
+                                if exercise.exercise_type == 'texte_à_trous':
+                                    is_correct = True
+                                
                                 Answer.objects.create(
                                     question=question,
                                     answer_text=form.cleaned_data['answer_text'],
-                                    is_correct=form.cleaned_data['is_correct'],
+                                    is_correct=is_correct,
                                     explanation=form.cleaned_data.get('explanation', '')
                                 )
                         
