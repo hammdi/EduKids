@@ -1,0 +1,275 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Breadcrumb -->
+  <div class="container mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'subject_detail' subject.pk %}" class="text-decoration-none fw-medium">
+            {{ subject.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ subject.color }};">
+          Inviter un étudiant
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-8 col-lg-10 col-12">
+        <!-- Page Header -->
+        <div class="card border-0 shadow-lg mb-5" style="border-radius: 25px;">
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ subject.color }}08, {{ subject.color }}15); border-radius: 25px 25px 0 0; padding: 40px;">
+            <div class="d-flex align-items-center">
+              <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                   style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                <i class="fas fa-user-plus fa-2x" style="color: {{ subject.color }};"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h1 class="mb-2 fw-bold text-dark">Inviter un étudiant</h1>
+                <p class="lead mb-0 text-dark opacity-75" style="font-size: 1.1rem;">
+                  Ajoutez un nouvel étudiant à la matière <span class="fw-bold">{{ subject.name }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invitation Form -->
+        <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+          <div class="card-header border-0 p-4" 
+               style="background: linear-gradient(135deg, {{ subject.color }}05, {{ subject.color }}08); border-radius: 25px 25px 0 0;">
+            <h3 class="fw-bold text-dark mb-0">
+              <i class="fas fa-users me-3" style="color: {{ subject.color }};"></i>
+              Sélectionner un étudiant
+            </h3>
+          </div>
+          
+          <div class="card-body p-5">
+            {% if available_students %}
+              <form method="post" id="inviteForm">
+                {% csrf_token %}
+                
+                <!-- Instructions -->
+                <div class="alert border-0 mb-4" style="background: linear-gradient(135deg, #e0f2fe, #b3e5fc);">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle text-info me-3 fa-lg"></i>
+                    <div>
+                      <h6 class="fw-bold text-dark mb-1">Comment ça marche ?</h6>
+                      <p class="mb-0 text-dark opacity-75">
+                        Choisissez un étudiant dans la liste ci-dessous. Il pourra accéder aux thèmes et exercices de cette matière.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Student Selection -->
+                <div class="mb-4">
+                  <label for="student_id" class="form-label h5 fw-bold text-dark mb-3">
+                    <i class="fas fa-user-graduate me-2" style="color: {{ subject.color }};"></i>
+                    Choisir un étudiant
+                  </label>
+                  
+                  <select name="student_id" id="student_id" class="form-select form-select-lg rounded-pill px-4" 
+                          style="border: 2px solid #e2e8f0; font-size: 1.1rem;" required>
+                    <option value="">Sélectionnez un étudiant...</option>
+                    {% for student in available_students %}
+                    <option value="{{ student.user.id }}" 
+                            data-grade="{{ student.get_grade_level_display }}"
+                            data-email="{{ student.user.email }}">
+                      {{ student.user.username }} - {{ student.get_grade_level_display }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                  
+                  <small class="form-text text-muted mt-2">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    Seuls les étudiants non encore inscrits à cette matière sont affichés
+                  </small>
+                </div>
+
+                <!-- Selected Student Preview -->
+                <div id="studentPreview" class="mb-4" style="display: none;">
+                  <div class="p-4 rounded-3" style="background: linear-gradient(135deg, {{ subject.color }}05, {{ subject.color }}08); border: 1px solid {{ subject.color }}20;">
+                    <h6 class="fw-bold text-dark mb-2">
+                      <i class="fas fa-eye me-2" style="color: {{ subject.color }};"></i>
+                      Étudiant sélectionné
+                    </h6>
+                    <div class="d-flex align-items-center">
+                      <div class="student-avatar me-3 d-flex align-items-center justify-content-center" 
+                           style="width: 50px; height: 50px; background: white; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <i class="fas fa-user" style="color: {{ subject.color }};"></i>
+                      </div>
+                      <div>
+                        <div class="fw-bold text-dark" id="previewName">Nom de l'étudiant</div>
+                        <div class="text-muted small" id="previewDetails">Niveau • Email</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 justify-content-between">
+                  <a href="{% url 'subject_detail' subject.pk %}" 
+                     class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                  </a>
+                  
+                  <button type="submit" class="btn btn-lg rounded-pill px-5" 
+                          style="background: {{ subject.color }}; border: none; color: white;"
+                          id="submitBtn" disabled>
+                    <i class="fas fa-paper-plane me-2"></i>Envoyer l'invitation
+                  </button>
+                </div>
+              </form>
+
+            {% else %}
+              <!-- No Available Students -->
+              <div class="text-center py-5">
+                <div class="mb-4">
+                  <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                       style="width: 120px; height: 120px; background: {{ subject.color }}08; border-radius: 50%;">
+                    <i class="fas fa-user-slash fa-3x" style="color: {{ subject.color }}; opacity: 0.5;"></i>
+                  </div>
+                </div>
+                <h4 class="text-dark mb-3 fw-bold">Aucun étudiant disponible</h4>
+                <p class="text-muted mb-4 lead">
+                  Tous les étudiants éligibles sont déjà inscrits à cette matière, ou il n'y a pas d'étudiants dans le système.
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                  <a href="{% url 'subject_detail' subject.pk %}" 
+                     class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la matière
+                  </a>
+                 
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        {% if available_students %}
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+              <div class="card-body p-4 text-center">
+                <i class="fas fa-shield-alt fa-2x mb-3" style="color: {{ subject.color }};"></i>
+                <h6 class="fw-bold text-dark mb-2">Sécurisé</h6>
+                <p class="text-muted small mb-0">
+                  Les étudiants n'auront accès qu'aux contenus de cette matière
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+              <div class="card-body p-4 text-center">
+                <i class="fas fa-bell fa-2x mb-3" style="color: {{ subject.color }};"></i>
+                <h6 class="fw-bold text-dark mb-2">Notification</h6>
+                <p class="text-muted small mb-0">
+                  L'étudiant sera automatiquement notifié de son inscription
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-select:focus {
+    border-color: {{ subject.color }};
+    box-shadow: 0 0 0 0.2rem {{ subject.color }}25;
+  }
+  
+  .icon-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+  
+  .student-avatar {
+    transition: transform 0.3s ease;
+  }
+  
+  .student-avatar:hover {
+    transform: scale(1.05);
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-weight: bold;
+    color: #6c757d;
+  }
+  
+  #submitBtn:enabled:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px {{ subject.color }}40;
+    transition: all 0.3s ease;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const studentSelect = document.getElementById('student_id');
+    const studentPreview = document.getElementById('studentPreview');
+    const previewName = document.getElementById('previewName');
+    const previewDetails = document.getElementById('previewDetails');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    studentSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (this.value) {
+            // Show preview
+            const studentName = selectedOption.textContent.split(' - ')[0];
+            const studentGrade = selectedOption.dataset.grade;
+            const studentEmail = selectedOption.dataset.email;
+            
+            previewName.textContent = studentName;
+            previewDetails.textContent = `${studentGrade} • ${studentEmail}`;
+            
+            studentPreview.style.display = 'block';
+            submitBtn.disabled = false;
+            
+            // Add animation
+            studentPreview.style.opacity = '0';
+            studentPreview.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                studentPreview.style.transition = 'all 0.3s ease';
+                studentPreview.style.opacity = '1';
+                studentPreview.style.transform = 'translateY(0)';
+            }, 10);
+        } else {
+            // Hide preview
+            studentPreview.style.display = 'none';
+            submitBtn.disabled = true;
+        }
+    });
+    
+    // Form validation
+    document.getElementById('inviteForm').addEventListener('submit', function(e) {
+        if (!studentSelect.value) {
+            e.preventDefault();
+            alert('Veuillez sélectionner un étudiant avant de continuer.');
+            studentSelect.focus();
+        }
+    });
+});
+</script>
+{% endblock %}

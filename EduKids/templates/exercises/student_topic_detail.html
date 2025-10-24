@@ -1,0 +1,717 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  .pdf-viewer {
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    overflow: hidden;
+    background: white;
+  }
+
+  .pdf-controls {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .pdf-canvas-container {
+    text-align: center;
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #f8fafc;
+  }
+
+  #pdfCanvas {
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+  }
+
+  .lesson-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+  }
+
+  .exercise-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Breadcrumb -->
+  <div class="container mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'student_subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Mes Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'student_subject_detail' topic.subject.pk %}" class="text-decoration-none fw-medium">
+            {{ topic.subject.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ topic.subject.color }};">
+          {{ topic.name }}
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Topic Header -->
+  <div class="container mb-5">
+    <div class="row">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 25px;">
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ topic.subject.color }}08, {{ topic.subject.color }}15); height: 180px;">
+            <div class="position-absolute bottom-0 start-0 p-4 w-100">
+              <div class="d-flex align-items-center mb-3">
+                <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                     style="width: 70px; height: 70px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                  <i class="fas fa-book-open fa-2x" style="color: {{ topic.subject.color }};"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <h1 class="mb-2 fw-bold text-dark">{{ topic.name }}</h1>
+                  <p class="lead mb-0 text-dark opacity-75" style="font-size: 1.1rem;">
+                    {{ topic.description }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Lessons Section -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <h2 class="fw-bold text-dark mb-0">
+            <i class="fas fa-book me-3" style="color: {{ topic.subject.color }};"></i>
+            Leçons
+          </h2>
+          <div class="badge bg-light text-dark px-3 py-2 rounded-pill">
+            {{ lessons|length }} leçon{{ lessons|length|pluralize }}
+          </div>
+        </div>
+
+        <div class="row g-4">
+          {% for lesson in lessons %}
+          <div class="col-lg-6 col-md-6 col-12">
+            <div class="card lesson-card h-100 border-0 shadow-sm" 
+                 style="border-radius: 20px; transition: all 0.3s ease; background: white;">
+              <div class="card-header border-0 p-4" 
+                   style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+                <div class="d-flex align-items-center">
+                  <div class="lesson-icon me-3 d-flex align-items-center justify-content-center" 
+                       style="width: 45px; height: 45px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <i class="fas fa-file-alt fa-lg" style="color: {{ topic.subject.color }};"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h5 class="card-title mb-0 fw-bold text-dark">{{ lesson.title }}</h5>
+                    <small class="text-muted">Contenu d'apprentissage</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body p-4">
+                <p class="card-text text-muted mb-4" style="line-height: 1.6;">
+                  {{ lesson.content|truncatechars:150 }}
+                </p>
+                
+                {% if lesson.media %}
+                  {% if lesson.media.name|slice:"-4:" == '.pdf' %}
+                    <button type="button" class="btn btn-outline-primary rounded-pill px-4" 
+                            data-bs-toggle="modal" data-bs-target="#pdfModal{{ lesson.pk }}">
+                      <i class="fas fa-file-pdf me-2"></i>Voir le PDF
+                    </button>
+                  {% elif lesson.media.name|slice:"-4:" in '.jpg,.png,.gif,.jpeg' %}
+                    <div class="text-center mb-3">
+                      <img src="{{ lesson.media.url }}" alt="{{ lesson.title }}" 
+                           class="img-fluid rounded-3 shadow-sm" style="max-height: 150px;" />
+                    </div>
+                  {% else %}
+                    <a href="{{ lesson.media.url }}" target="_blank" 
+                       class="btn btn-outline-secondary rounded-pill px-4">
+                      <i class="fas fa-file me-2"></i>Voir le fichier
+                    </a>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF Modal for each lesson -->
+          {% if lesson.media and lesson.media.name|slice:"-4:" == '.pdf' %}
+          <div class="modal fade" id="pdfModal{{ lesson.pk }}" tabindex="-1" aria-labelledby="pdfModalLabel{{ lesson.pk }}" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+              <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+                  <h5 class="modal-title fw-bold" id="pdfModalLabel{{ lesson.pk }}">{{ lesson.title }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                  <div class="pdf-viewer">
+                    <div class="pdf-controls">
+                      <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary rounded-pill me-1" onclick="prevPage({{ lesson.pk }})">
+                          <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span class="mx-3 align-self-center">
+                          Page <span id="pageNum{{ lesson.pk }}" class="fw-bold">1</span> / <span id="pageCount{{ lesson.pk }}" class="fw-bold">1</span>
+                        </span>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill ms-1" onclick="nextPage({{ lesson.pk }})">
+                          <i class="fas fa-chevron-right"></i>
+                        </button>
+                      </div>
+                      <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill me-1" onclick="zoomOut({{ lesson.pk }})">
+                          <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="mx-3 align-self-center fw-bold" id="zoomLevel{{ lesson.pk }}">100%</span>
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill ms-1" onclick="zoomIn({{ lesson.pk }})">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="pdf-canvas-container">
+                      <canvas id="pdfCanvas{{ lesson.pk }}"></canvas>
+                      <div id="pdfLoading{{ lesson.pk }}" style="display: none" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div class="mt-3 text-muted">Chargement du PDF...</div>
+                      </div>
+                      <div id="pdfError{{ lesson.pk }}" style="display: none" class="alert alert-light border text-center mx-4">
+                        <i class="fas fa-exclamation-triangle text-warning mb-2"></i>
+                        <div>Erreur lors du chargement du PDF.</div>
+                        <a href="{{ lesson.media.url }}" target="_blank" class="btn btn-primary btn-sm mt-2 rounded-pill">
+                          Ouvrir dans un nouvel onglet
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer" style="background: #f8fafc;">
+                  <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                  <a href="{{ lesson.media.url }}" download class="btn btn-primary rounded-pill">
+                    <i class="fas fa-download me-2"></i>Télécharger
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% empty %}
+          <div class="col-12">
+            <div class="text-center py-5">
+              <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px; border-radius: 20px;">
+                <div class="card-body p-5">
+                  <div class="mb-4">
+                    <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: {{ topic.subject.color }}08; border-radius: 50%;">
+                      <i class="fas fa-book fa-2x" style="color: {{ topic.subject.color }}; opacity: 0.5;"></i>
+                    </div>
+                  </div>
+                  <h5 class="text-dark mb-3">Aucune leçon disponible</h5>
+                  <p class="text-muted">Les leçons seront bientôt ajoutées à ce thème.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Exercises Section -->
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <h2 class="fw-bold text-dark mb-0">
+            <i class="fas fa-pencil-alt me-3" style="color: {{ topic.subject.color }};"></i>
+            Exercices
+          </h2>
+        </div>
+
+        <!-- Upcoming Exercises -->
+        {% if upcoming_exercises %}
+        <h4 class="text-warning mb-3 fw-bold">
+          <i class="fas fa-clock me-2"></i>À venir
+        </h4>
+        <div class="row g-4 mb-5">
+          {% for exercise in upcoming_exercises %}
+          <div class="col-lg-6 col-md-6 col-12">
+            <div class="card exercise-card border-0 shadow-sm" 
+                 style="border-radius: 20px; transition: all 0.3s ease; background: linear-gradient(135deg, #fff8e1, #fff3c4);">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h5 class="card-title fw-bold text-dark mb-2">{{ exercise.name }}</h5>
+                    <p class="card-text text-muted" style="line-height: 1.6;">
+                      {{ exercise.description|truncatechars:120 }}
+                    </p>
+                  </div>
+                  <div class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                    {{ exercise.points }} pts
+                  </div>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  {% if exercise.difficulty == 'facile' %}
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  {% elif exercise.difficulty == 'moyen' %}
+                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  {% elif exercise.difficulty == 'difficile' %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  {% endif %}
+                  <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">{{ exercise.get_exercise_type_display }}</span>
+                </div>
+                
+                <div class="alert alert-warning border-0 mb-3" style="background: #fff8e1;">
+                  <i class="fas fa-calendar-alt me-2"></i>
+                  Disponible le {{ exercise.available_from|date:"d/m/Y à H:i" }}
+                </div>
+                
+                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">
+                  <i class="fas fa-lock me-1"></i>Non disponible
+                </span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Available Exercises -->
+        {% if available_exercises %}
+        <h4 class="text-success mb-3 fw-bold">
+          <i class="fas fa-play-circle me-2"></i>Disponibles
+        </h4>
+        <div class="row g-4 mb-5">
+          {% for exercise in available_exercises %}
+          <div class="col-lg-6 col-md-6 col-12">
+            <div class="card exercise-card border-0 shadow-sm" 
+                 style="border-radius: 20px; transition: all 0.3s ease; background: white;">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div class="flex-grow-1">
+                    <h5 class="card-title fw-bold text-dark mb-2">{{ exercise.name }}</h5>
+                    <p class="card-text text-muted" style="line-height: 1.6;">
+                      {{ exercise.description|truncatechars:120 }}
+                    </p>
+                  </div>
+                  <div class="badge rounded-pill px-3 py-2" style="background: {{ topic.subject.color }}15; color: {{ topic.subject.color }};">
+                    {{ exercise.points }} pts
+                  </div>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  {% if exercise.difficulty == 'facile' %}
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  {% elif exercise.difficulty == 'moyen' %}
+                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  {% elif exercise.difficulty == 'difficile' %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  {% endif %}
+                  <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">{{ exercise.get_exercise_type_display }}</span>
+                </div>
+
+                <!-- Exercise Results Display -->
+                {% if not exercise.latest_result %}
+                  <a href="{% url 'student_exercise_start' exercise.pk %}" 
+                     class="btn btn-primary rounded-pill px-4 py-2">
+                    <i class="fas fa-play me-2"></i>Commencer l'exercice
+                  </a>
+                {% else %}
+                  <div class="alert border-0 mb-3 {% if exercise.latest_result.score >= 70 %}alert-success{% elif exercise.latest_result.score >= 50 %}alert-warning{% else %}alert-danger{% endif %}" 
+                       style="background: {% if exercise.latest_result.score >= 70 %}#d4f8db{% elif exercise.latest_result.score >= 50 %}#fff8e1{% else %}#fde2e7{% endif %};">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-bold fs-5">
+                          {% if exercise.latest_result.score %}{{ exercise.latest_result.score|floatformat:1 }}{% else %}0{% endif %}%
+                        </div>
+                        <small class="opacity-75">
+                          {% if exercise.latest_result.earned_points %}{{ exercise.latest_result.earned_points }}{% else %}0{% endif %}/{% if exercise.latest_result.total_points %}{{ exercise.latest_result.total_points }}{% else %}0{% endif %} points
+                        </small>
+                        <div class="small text-muted mt-1">
+                          Terminé le {% if exercise.latest_result.completed_at %}{{ exercise.latest_result.completed_at|date:"d/m/Y à H:i" }}{% else %}récemment{% endif %}
+                        </div>
+                      </div>
+                      <div class="fs-3">
+                        {% if exercise.latest_result.score >= 70 %}
+                          <i class="fas fa-trophy text-warning"></i>
+                        {% elif exercise.latest_result.score >= 50 %}
+                          <i class="fas fa-check text-success"></i>
+                        {% else %}
+                          <i class="fas fa-times text-danger"></i>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2 flex-wrap">
+                    {% if exercise.latest_result.score < 70 %}
+                      <a href="{% url 'student_exercise_start' exercise.pk %}" 
+                         class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="fas fa-redo me-2"></i>Refaire
+                      </a>
+                    {% endif %}
+                    <button type="button" class="btn btn-outline-info rounded-pill px-4" 
+                            data-bs-toggle="modal" data-bs-target="#resultModal{{ exercise.pk }}">
+                      <i class="fas fa-eye me-2"></i>Détails
+                    </button>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Result Details Modal -->
+          {% if exercise.latest_result %}
+          <div class="modal fade" id="resultModal{{ exercise.pk }}" tabindex="-1" aria-labelledby="resultModalLabel{{ exercise.pk }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, {{ topic.subject.color }}05, {{ topic.subject.color }}08); border-radius: 20px 20px 0 0;">
+                  <h5 class="modal-title fw-bold" id="resultModalLabel{{ exercise.pk }}">Résultats - {{ exercise.name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                  <div class="row mb-4">
+                    <div class="col-md-4 text-center">
+                      <div class="p-3 rounded-3" style="background: {{ topic.subject.color }}08;">
+                        <h3 class="fw-bold mb-1" style="color: {{ topic.subject.color }};">{{ exercise.latest_result.score|floatformat:1 }}%</h3>
+                        <p class="text-muted mb-0 small">Score final</p>
+                      </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                      <div class="p-3 rounded-3" style="background: #d4f8db;">
+                        <h3 class="text-success fw-bold mb-1">{{ exercise.latest_result.earned_points }}</h3>
+                        <p class="text-muted mb-0 small">Points obtenus</p>
+                      </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                      <div class="p-3 rounded-3" style="background: #dbeafe;">
+                        <h3 class="text-info fw-bold mb-1">{{ exercise.latest_result.total_points }}</h3>
+                        <p class="text-muted mb-0 small">Points totaux</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <h6 class="fw-bold mb-3">Détails par question:</h6>
+                  {% for answer in exercise.latest_result.answers.all %}
+                  <div class="card mb-3 border-0 shadow-sm {% if answer.is_correct %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}" style="border-radius: 15px;">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                          <div class="small text-muted mb-1">Question {{ forloop.counter }}</div>
+                          <div class="fw-medium mb-2">{{ answer.question.question_text|truncatechars:60 }}</div>
+                          <div class="small">
+                            <strong>Votre réponse:</strong> {{ answer.student_answer|truncatechars:30 }}
+                          </div>
+                        </div>
+                        <div class="text-end">
+                          <div class="fs-4 mb-1">
+                            {% if answer.is_correct %}
+                              <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                              <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                          </div>
+                          <div class="small fw-bold">{{ answer.points_earned }}/{{ answer.question.points }} pts</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="modal-footer" style="background: #f8fafc;">
+                  <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                  {% if exercise.latest_result.score < 70 %}
+                    <a href="{% url 'student_exercise_start' exercise.pk %}" class="btn btn-primary rounded-pill">
+                      <i class="fas fa-redo me-2"></i>Refaire l'exercice
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Expired Exercises -->
+        {% if expired_exercises %}
+        <h4 class="text-danger mb-3 fw-bold">
+          <i class="fas fa-exclamation-triangle me-2"></i>Expirés
+        </h4>
+        <div class="row g-4 mb-5">
+          {% for exercise in expired_exercises %}
+          <div class="col-lg-6 col-md-6 col-12">
+            <div class="card exercise-card border-0 shadow-sm" 
+                 style="border-radius: 20px; transition: all 0.3s ease; background: linear-gradient(135div, #f8f9fa, #e9ecef); opacity: 0.8;">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h5 class="card-title fw-bold text-muted mb-2">{{ exercise.name }}</h5>
+                    <p class="card-text text-muted" style="line-height: 1.6;">
+                      {{ exercise.description|truncatechars:120 }}
+                    </p>
+                  </div>
+                  <div class="badge bg-secondary bg-opacity-25 text-muted rounded-pill px-3 py-2">
+                    {{ exercise.points }} pts
+                  </div>
+                </div>
+                
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <span class="badge bg-light text-muted rounded-pill px-3 py-2">{{ exercise.get_difficulty_display }}</span>
+                  <span class="badge bg-light text-muted rounded-pill px-3 py-2">{{ exercise.get_exercise_type_display }}</span>
+                </div>
+                
+                <div class="alert alert-light border mb-3">
+                  <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                  Échéance dépassée le {{ exercise.due_date|date:"d/m/Y à H:i" }}
+                </div>
+                
+                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">
+                  <i class="fas fa-times me-1"></i>Expiré
+                </span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not upcoming_exercises and not available_exercises and not expired_exercises %}
+        <div class="text-center py-5">
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px; border-radius: 20px;">
+            <div class="card-body p-5">
+              <div class="mb-4">
+                <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px; background: {{ topic.subject.color }}08; border-radius: 50%;">
+                  <i class="fas fa-pencil-alt fa-2x" style="color: {{ topic.subject.color }}; opacity: 0.5;"></i>
+                </div>
+              </div>
+              <h5 class="text-dark mb-3">Aucun exercice disponible</h5>
+              <p class="text-muted">Les exercices seront bientôt ajoutés à ce thème.</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  // PDF.js variables - Initialize as objects to track each lesson separately
+  let pdfDocs = {};
+  let pageNums = {};
+  let pageRendering = {};
+  let pageNumPending = {};
+  let scales = {};
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  function loadPDF(url, lessonId) {
+    const loadingDiv = document.getElementById(`pdfLoading${lessonId}`);
+    const errorDiv = document.getElementById(`pdfError${lessonId}`);
+    const canvas = document.getElementById(`pdfCanvas${lessonId}`);
+
+    // Show loading state
+    loadingDiv.style.display = 'block';
+    errorDiv.style.display = 'none';
+    canvas.style.display = 'none';
+
+    // Initialize variables for this lesson
+    pageNums[lessonId] = 1;
+    scales[lessonId] = 1.0;
+    pageRendering[lessonId] = false;
+    pageNumPending[lessonId] = null;
+
+    // Clear any existing PDF
+    if (pdfDocs[lessonId]) {
+      pdfDocs[lessonId].destroy();
+    }
+
+    pdfjsLib.getDocument(url).promise.then(function(pdf) {
+      pdfDocs[lessonId] = pdf;
+      document.getElementById(`pageCount${lessonId}`).textContent = pdf.numPages;
+
+      // Update page display
+      document.getElementById(`pageNum${lessonId}`).textContent = pageNums[lessonId];
+      document.getElementById(`zoomLevel${lessonId}`).textContent = '100%';
+
+      loadingDiv.style.display = 'none';
+      canvas.style.display = 'block';
+
+      renderPage(pageNums[lessonId], lessonId);
+    }).catch(function(error) {
+      console.error('Error loading PDF:', error);
+      loadingDiv.style.display = 'none';
+      errorDiv.style.display = 'block';
+    });
+  }
+
+  function renderPage(num, lessonId) {
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
+
+    if (num < 1 || num > pdfDocs[lessonId].numPages) {
+      console.error('Invalid page number:', num, 'for lesson', lessonId);
+      return;
+    }
+
+    pageRendering[lessonId] = true;
+
+    pdfDocs[lessonId].getPage(num).then(function(page) {
+      const canvas = document.getElementById(`pdfCanvas${lessonId}`);
+      const ctx = canvas.getContext('2d');
+      const viewport = page.getViewport({scale: scales[lessonId]});
+
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
+
+      const renderTask = page.render(renderContext);
+
+      renderTask.promise.then(function() {
+        pageRendering[lessonId] = false;
+
+        // Update page number display
+        document.getElementById(`pageNum${lessonId}`).textContent = num;
+        pageNums[lessonId] = num;
+
+        // If there was a pending page render, execute it
+        if (pageNumPending[lessonId] !== null) {
+          renderPage(pageNumPending[lessonId], lessonId);
+          pageNumPending[lessonId] = null;
+        }
+      }).catch(function(error) {
+        console.error('Error rendering page:', error);
+        pageRendering[lessonId] = false;
+      });
+    }).catch(function(error) {
+      console.error('Error getting page:', error);
+      pageRendering[lessonId] = false;
+    });
+  }
+
+  function queueRenderPage(num, lessonId) {
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
+
+    if (num < 1 || num > pdfDocs[lessonId].numPages) {
+      console.error('Invalid page number:', num);
+      return;
+    }
+
+    if (pageRendering[lessonId]) {
+      pageNumPending[lessonId] = num;
+    } else {
+      renderPage(num, lessonId);
+    }
+  }
+
+  function prevPage(lessonId) {
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
+
+    if (pageNums[lessonId] <= 1) {
+      console.log('Already at first page');
+      return;
+    }
+
+    const newPageNum = pageNums[lessonId] - 1;
+    queueRenderPage(newPageNum, lessonId);
+  }
+
+  function nextPage(lessonId) {
+    if (!pdfDocs[lessonId]) {
+      console.error('PDF not loaded for lesson', lessonId);
+      return;
+    }
+
+    if (pageNums[lessonId] >= pdfDocs[lessonId].numPages) {
+      console.log('Already at last page');
+      return;
+    }
+
+    const newPageNum = pageNums[lessonId] + 1;
+    queueRenderPage(newPageNum, lessonId);
+  }
+
+  function zoomIn(lessonId) {
+    if (!pdfDocs[lessonId]) return;
+
+    scales[lessonId] = Math.min(scales[lessonId] * 1.25, 3.0);
+    const zoomPercent = Math.round(scales[lessonId] * 100) + '%';
+    document.getElementById(`zoomLevel${lessonId}`).textContent = zoomPercent;
+    queueRenderPage(pageNums[lessonId], lessonId);
+  }
+
+  function zoomOut(lessonId) {
+    if (!pdfDocs[lessonId]) return;
+
+    scales[lessonId] = Math.max(scales[lessonId] * 0.8, 0.5);
+    const zoomPercent = Math.round(scales[lessonId] * 100) + '%';
+    document.getElementById(`zoomLevel${lessonId}`).textContent = zoomPercent;
+    queueRenderPage(pageNums[lessonId], lessonId);
+  }
+
+  // Clean up when modal is closed
+  document.addEventListener('DOMContentLoaded', function() {
+    {% for lesson in lessons %}
+      {% if lesson.media and lesson.media.name|slice:"-4:" == '.pdf' %}
+        const modal{{ lesson.pk }} = document.getElementById('pdfModal{{ lesson.pk }}');
+        if (modal{{ lesson.pk }}) {
+          // NEW: Load PDF when modal is shown
+          modal{{ lesson.pk }}.addEventListener('show.bs.modal', function () {
+            loadPDF('{{ lesson.media.url }}', {{ lesson.pk }});
+          });
+
+          // Keep existing cleanup on hide
+          modal{{ lesson.pk }}.addEventListener('hidden.bs.modal', function () {
+            // Clean up when modal is closed
+            if (pdfDocs[{{ lesson.pk }}]) {
+              // Don't destroy the PDF, just reset the canvas
+              const canvas = document.getElementById('pdfCanvas{{ lesson.pk }}');
+              if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+              }
+            }
+          });
+        }
+      {% endif %}
+    {% endfor %}
+  });
+</script>
+{% endblock %}

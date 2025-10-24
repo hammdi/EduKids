@@ -1,0 +1,411 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Page Header -->
+  <div class="container mb-5">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h1 class="fw-bold text-dark mb-2">
+              <i class="fas fa-book-open me-3" style="color: #3b82f6;"></i>
+              Gestion des Classes
+            </h1>
+            <p class="lead text-muted mb-0">
+              Organisez et gérez toutes vos classes d'enseignement
+            </p>
+          </div>
+          <button type="button" 
+                  class="btn btn-lg rounded-pill px-5" 
+                  style="background: #3b82f6; border: none; color: white; box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);"
+                  data-bs-toggle="modal" 
+                  data-bs-target="#addSubjectModal">
+            <i class="fas fa-plus me-2"></i>Ajouter une classe
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    {% if subjects %}
+      <!-- Stats Bar -->
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm" style="border-radius: 20px; background: white;">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                  <h6 class="text-muted mb-1 fw-bold">
+                    <i class="fas fa-graduation-cap me-2"></i>Total des classes
+                  </h6>
+                  <h3 class="fw-bold text-dark mb-0">{{ subjects|length }}</h3>
+                </div>
+                <div class="vr" style="height: 60px; opacity: 0.2;"></div>
+                <div>
+                  <h6 class="text-muted mb-1 fw-bold">
+                    <i class="fas fa-star me-2"></i>Statut
+                  </h6>
+                  <span class="badge bg-success rounded-pill px-3 py-2">
+                    <i class="fas fa-check-circle me-1"></i>Actif
+                  </span>
+                </div>
+                <div style="margin-left: auto;">
+                  <input type="text" 
+                         id="search-classes" 
+                         class="form-control rounded-pill px-4"
+                         placeholder="Rechercher une classe..."
+                         style="border: 2px solid #e2e8f0; min-width: 250px;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classes Grid -->
+      <div class="row g-4 mb-5">
+        {% for subject in subjects %}
+        <div class="col-lg-4 col-md-6 class-card-container">
+          <div class="card border-0 shadow-sm class-card h-100 position-relative" 
+               style="border-radius: 25px; overflow: hidden; transition: all 0.3s ease; cursor: pointer;"
+               data-subject-name="{{ subject.name|lower }}">
+            
+            <!-- Card Header -->
+            <div class="position-relative" style="height: 220px; overflow: hidden;">
+              {% if subject.image %}
+                <img src="{{ subject.image.url }}" 
+                     class="w-100 h-100" 
+                     alt="{{ subject.name }}"
+                     style="object-fit: cover; transition: transform 0.3s ease;">
+              {% else %}
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center" 
+                     style="background: linear-gradient(135deg, {{ subject.color }}08, {{ subject.color }}15);">
+                  {% if subject.icon %}
+                    <i class="fas {{ subject.icon }} fa-4x" style="color: {{ subject.color }}; opacity: 0.3;"></i>
+                  {% else %}
+                    <i class="fas fa-book fa-4x" style="color: {{ subject.color }}; opacity: 0.3;"></i>
+                  {% endif %}
+                </div>
+              {% endif %}
+              
+              <!-- Color Badge -->
+              <div class="position-absolute top-0 end-0 m-3">
+                <div class="rounded-circle" 
+                     style="width: 50px; height: 50px; background: {{ subject.color }}; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
+                </div>
+              </div>
+
+              <!-- Icon Badge -->
+              <div class="position-absolute top-0 start-0 m-3">
+                <div class="d-flex align-items-center justify-content-center rounded-3" 
+                     style="width: 60px; height: 60px; background: white; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                  {% if subject.icon %}
+                    <i class="fas {{ subject.icon }} fa-2x" style="color: {{ subject.color }};"></i>
+                  {% else %}
+                    <i class="fas fa-book fa-2x" style="color: {{ subject.color }};"></i>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body p-4">
+              <h5 class="fw-bold text-dark mb-2">{{ subject.name }}</h5>
+              <p class="text-muted small mb-3" style="line-height: 1.5;">
+                {{ subject.description|truncatechars:80 }}
+              </p>
+
+              <!-- Meta Info -->
+              <div class="d-flex align-items-center justify-content-between mt-4 pt-3 border-top">
+                <small class="text-muted">
+                  <i class="fas fa-sort-numeric-up me-1"></i>Ordre: {{ subject.order }}
+                </small>
+                <span class="badge rounded-pill" 
+                      style="background: {{ subject.color }}15; color: {{ subject.color }}; font-size: 0.75rem;">
+                  <i class="fas fa-check me-1"></i>Actif
+                </span>
+              </div>
+            </div>
+
+            <!-- Click overlay for navigation -->
+            <a href="{% url 'subject_detail' subject.pk %}" 
+               class="position-absolute top-0 start-0 w-100 h-100" 
+               style="z-index: 5;">
+            </a>
+
+            <!-- Card Actions Dropdown -->
+            <div class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+              <div class="dropdown">
+                <button class="btn btn-light rounded-circle p-2 shadow-sm" 
+                        type="button" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        style="width: 40px; height: 40px;">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu shadow-sm">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'subject_detail' subject.pk %}">
+                      <i class="fas fa-eye me-2"></i>Voir les sujets
+                    </a>
+                  </li>
+                  <li>
+                    <button class="dropdown-item edit-subject" type="button" data-subject-id="{{ subject.pk }}">
+                      <i class="fas fa-edit me-2"></i>Modifier
+                    </button>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form method="post" action="#" style="display: inline;"
+                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette classe ?')">
+                      {% csrf_token %}
+                      <button type="submit" class="dropdown-item text-danger">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                      </button>
+                    </form>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="row">
+        <div class="col-12">
+          <div class="text-center py-5">
+            <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px; border-radius: 25px;">
+              <div class="card-body p-5">
+                <div class="mb-4">
+                  <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                       style="width: 120px; height: 120px; background: #3b82f608; border-radius: 50%;">
+                    <i class="fas fa-book-open fa-3x" style="color: #3b82f6; opacity: 0.5;"></i>
+                  </div>
+                </div>
+                <h4 class="text-dark mb-3 fw-bold">Aucune classe disponible</h4>
+                <p class="text-muted mb-4 lead">
+                  Commencez par créer votre première classe pour organiser vos sujets d'enseignement.
+                </p>
+                <button type="button" 
+                        class="btn btn-lg rounded-pill px-5" 
+                        style="background: #3b82f6; border: none; color: white;"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#addSubjectModal">
+                  <i class="fas fa-plus me-2"></i>Créer la première classe
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Enhanced Modal for Adding Class -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      <div class="modal-header" 
+           style="background: linear-gradient(135deg, #3b82f608, #3b82f612); border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title fw-bold" id="addSubjectModalLabel">
+          <i class="fas fa-plus me-2" style="color: #3b82f6;"></i>
+          Ajouter une nouvelle classe
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="add_subject" value="1" />
+        
+        <div class="modal-body p-4">
+          <div class="alert alert-info border-0" style="background: #3b82f608; border-radius: 15px;">
+            <i class="fas fa-info-circle me-2" style="color: #3b82f6;"></i>
+            Créez une nouvelle classe pour organiser vos sujets d'enseignement.
+          </div>
+
+          <div class="row g-4">
+            <!-- Class Name -->
+            <div class="col-12">
+              <label for="{{ subject_form.name.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-tag me-2" style="color: #3b82f6;"></i>
+                Nom de la classe *
+              </label>
+              {{ subject_form.name }}
+              <small class="d-block text-muted mt-2">Exemple: Mathématiques, Français, Anglais</small>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label for="{{ subject_form.description.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-align-left me-2" style="color: #3b82f6;"></i>
+                Description
+              </label>
+              {{ subject_form.description }}
+              <small class="d-block text-muted mt-2">Description brève de la classe</small>
+            </div>
+
+            <!-- Icon -->
+            <div class="col-md-6">
+              <label for="{{ subject_form.icon.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-icons me-2" style="color: #3b82f6;"></i>
+                Icône
+              </label>
+              {{ subject_form.icon }}
+              <small class="d-block text-muted mt-2">
+                Exemple: fa-book, fa-calculator, fa-flask
+              </small>
+            </div>
+
+            <!-- Color -->
+            <div class="col-md-6">
+              <label for="{{ subject_form.color.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-palette me-2" style="color: #3b82f6;"></i>
+                Couleur
+              </label>
+              {{ subject_form.color }}
+              <small class="d-block text-muted mt-2">Couleur de la classe</small>
+            </div>
+
+            <!-- Order -->
+            <div class="col-md-6">
+              <label for="{{ subject_form.order.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-sort-numeric-up me-2" style="color: #3b82f6;"></i>
+                Ordre d'affichage
+              </label>
+              {{ subject_form.order }}
+              <small class="d-block text-muted mt-2">Position d'affichage</small>
+            </div>
+
+            <!-- Image -->
+            <div class="col-md-6">
+              <label for="{{ subject_form.image.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-image me-2" style="color: #3b82f6;"></i>
+                Image (optionnel)
+              </label>
+              {{ subject_form.image }}
+              <small class="d-block text-muted mt-2">JPG, PNG, GIF jusqu'à 5MB</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 20px 20px;">
+          <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-5" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Annuler
+          </button>
+          <button type="submit" class="btn btn-lg rounded-pill px-5" 
+                  style="background: #3b82f6; border: none; color: white;">
+            <i class="fas fa-save me-2"></i>Créer la classe
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .form-control, .form-select {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 25px !important;
+    padding: 12px 20px !important;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 0.3rem #3b82f620 !important;
+  }
+
+  textarea.form-control {
+    border-radius: 15px !important;
+  }
+
+  .class-card {
+    transition: all 0.3s ease;
+  }
+
+  .class-card:hover {
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
+    transform: translateY(-5px);
+  }
+
+  .class-card:hover img {
+    transform: scale(1.05);
+  }
+
+  .class-card:hover .card-body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  }
+
+  .class-card.d-none {
+    display: none !important;
+  }
+
+  @media (max-width: 768px) {
+    .d-flex.flex-wrap {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .vr {
+      display: none;
+    }
+
+    #search-classes {
+      min-width: 100% !important;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  // Search functionality
+  document.getElementById('search-classes')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.class-card-container');
+
+    cards.forEach(card => {
+      const subjectName = card.querySelector('.class-card')?.dataset.subjectName || '';
+      
+      if (subjectName.includes(searchTerm)) {
+        card.classList.remove('d-none');
+      } else {
+        card.classList.add('d-none');
+      }
+    });
+  });
+
+  // Add smooth animations on load
+  document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.class-card-container');
+    cards.forEach((card, index) => {
+      card.style.animation = `fadeInUp 0.5s ease-out ${index * 0.1}s backwards`;
+    });
+  });
+
+  // Prevent dropdown from closing card link
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+</script>
+{% endblock %}
