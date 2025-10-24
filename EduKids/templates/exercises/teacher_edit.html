@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+{% block title %}Edit Exercise{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="mb-3"><i class="fas fa-pen me-2"></i>Edit Exercise</h3>
+  <form method="post" class="card p-3">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-8">
+        <label class="form-label">Title</label>
+        <input name="title" class="form-control" value="{{ exercise.title }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Topic</label>
+        <select name="topic" class="form-select" required>
+          {% for t in topics %}
+            <option value="{{ t.id }}" {% if exercise.topic.id == t.id %}selected{% endif %}>{{ t.subject.name }} - {{ t.name }} ({{ t.grade_level }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Type</label>
+        <select name="exercise_type" class="form-select" required>
+          <option value="qcm" {% if exercise.exercise_type == 'qcm' %}selected{% endif %}>QCM</option>
+          <option value="vrai_faux" {% if exercise.exercise_type == 'vrai_faux' %}selected{% endif %}>Vrai/Faux</option>
+          <option value="text_field" {% if exercise.exercise_type == 'text_field' %}selected{% endif %}>Texte à trous</option>
+          <option value="dictee" {% if exercise.exercise_type == 'dictee' %}selected{% endif %}>Dictée</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Difficulty</label>
+        <select name="difficulty_level" class="form-select">
+          {% for i in '12345' %}
+          {% endfor %}
+          <option value="1" {% if exercise.difficulty_level == 1 %}selected{% endif %}>Très facile</option>
+          <option value="2" {% if exercise.difficulty_level == 2 %}selected{% endif %}>Facile</option>
+          <option value="3" {% if exercise.difficulty_level == 3 %}selected{% endif %}>Moyen</option>
+          <option value="4" {% if exercise.difficulty_level == 4 %}selected{% endif %}>Difficile</option>
+          <option value="5" {% if exercise.difficulty_level == 5 %}selected{% endif %}>Très difficile</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Estimated Time (min)</label>
+        <input type="number" name="estimated_time" class="form-control" value="{{ exercise.estimated_time }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Points</label>
+        <input type="number" name="points" class="form-control" value="{{ exercise.points }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Instructions</label>
+        <textarea name="instructions" class="form-control" rows="3">{{ exercise.instructions }}</textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="3">{{ exercise.description }}</textarea>
+      </div>
+    </div>
+    <div class="mt-3">
+      <button class="btn btn-primary">Save</button>
+      <a href="{% url 'exercises:teacher_exercises' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+
+

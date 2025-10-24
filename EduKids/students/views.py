@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -11,6 +11,12 @@ from .forms import StudentRegistrationForm, TeacherRegistrationForm
 def home(request):
     """Home page view"""
     return render(request, 'base/home.html')
+
+def logout_view(request):
+    """Custom logout view that handles GET requests"""
+    logout(request)
+    messages.success(request, 'You have been successfully logged out.')
+    return redirect('home')
 
 def register(request):
     """Registration view with role selection"""
