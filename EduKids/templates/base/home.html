@@ -68,7 +68,6 @@
                 <div class="hero-image-container">
                     <div class="floating-image-wrapper">
                         <img src="{% static 'images/landing.png' %}" alt="EduKids Magical Learning" class="hero-image floating-gentle">
-                        <div class="image-glow"></div>
                         <div class="floating-hearts">
                             <div class="heart heart-1"><i class="fas fa-heart"></i></div>
                             <div class="heart heart-2"><i class="fas fa-heart"></i></div>
@@ -93,7 +92,7 @@
         
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="magical-card h-100">
+                <div class="magical-card h-100 voice-magic-card" style="background-image: url('/static/images/VoiceMagic.png'); background-size: cover; background-position: center;">
                     <div class="card-body text-center p-4">
                         <div class="feature-icon magical-icon-voice mx-auto mb-3">
                             <i class="fas fa-microphone fa-2x"></i>
@@ -113,7 +112,7 @@
             </div>
             
             <div class="col-md-4">
-                <div class="magical-card h-100">
+                <div class="magical-card h-100 learning-quests-card" style="background-image: url('/static/images/LearningQuests.png'); background-size: cover; background-position: center;">
                     <div class="card-body text-center p-4">
                         <div class="feature-icon magical-icon-learn mx-auto mb-3">
                             <i class="fas fa-book fa-2x"></i>
@@ -133,7 +132,7 @@
             </div>
             
             <div class="col-md-4">
-                <div class="magical-card h-100">
+                <div class="magical-card h-100 growth-journey-card" style="background-image: url('/static/images/GrowthJourney.png'); background-size: cover; background-position: center;">
                     <div class="card-body text-center p-4">
                         <div class="feature-icon magical-icon-progress mx-auto mb-3">
                             <i class="fas fa-chart-line fa-2x"></i>
@@ -233,6 +232,91 @@
     /* Global Magical Styling */
     * {
         font-family: 'Nunito', sans-serif;
+    }
+    
+    /* Feature Cards with Background Images */
+    .voice-magic-card {
+        background-image: url('/static/images/VoiceMagic.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 15px;
+        overflow: hidden;
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .voice-magic-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .voice-magic-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .learning-quests-card {
+        background-image: url('/static/images/LearningQuests.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 15px;
+        overflow: hidden;
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .learning-quests-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .learning-quests-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .growth-journey-card {
+        background-image: url('/static/images/GrowthJourney.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 15px;
+        overflow: hidden;
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .growth-journey-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .growth-journey-card .card-body {
+        position: relative;
+        z-index: 2;
     }
     
     /* Magical Background */
@@ -532,23 +616,6 @@
         50% { transform: translateY(-15px) rotate(1deg); }
     }
     
-    .image-glow {
-        position: absolute;
-        top: -10px;
-        left: -10px;
-        right: -10px;
-        bottom: -10px;
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3));
-        border-radius: 30px;
-        filter: blur(20px);
-        z-index: 1;
-        animation: glowPulse 3s ease-in-out infinite;
-    }
-    
-    @keyframes glowPulse {
-        0%, 100% { opacity: 0.5; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.05); }
-    }
     
     /* Floating Hearts */
     .floating-hearts {
@@ -585,13 +652,13 @@
     }
     
     .magical-card {
-        background: rgba(255, 255, 255, 0.9);
+        background: transparent;
         border: none;
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
         position: relative;
+        backdrop-filter: blur(10px);
         overflow: hidden;
     }
     
@@ -667,12 +734,14 @@
         color: #7C3AED;
         font-weight: 700;
         margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9), 0 4px 8px rgba(255, 255, 255, 0.7);
     }
     
     .magical-card-text {
-        color: #6B7280;
-        font-weight: 500;
+        color: #374151;
+        font-weight: 600;
         line-height: 1.6;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(255, 255, 255, 0.7);
     }
     
     /* About Section */
