@@ -1,0 +1,319 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Breadcrumb -->
+  <div class="container mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'subject_detail' exercise.topic.subject.pk %}" class="text-decoration-none fw-medium">
+            {{ exercise.topic.subject.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'topic_detail' exercise.topic.pk %}" class="text-decoration-none fw-medium">
+            {{ exercise.topic.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'exercise_detail' exercise.pk %}" class="text-decoration-none fw-medium">
+            {{ exercise.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ exercise.topic.subject.color }};">
+          Aperçu IA
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Page Header -->
+  <div class="container mb-5">
+    <div class="row">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 25px;">
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}08, {{ exercise.topic.subject.color }}15); padding: 40px;">
+            <div class="d-flex align-items-center">
+              <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                   style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                <i class="fas fa-robot fa-2x" style="color: {{ exercise.topic.subject.color }};"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h1 class="mb-2 fw-bold text-dark">
+                  Questions générées par IA
+                  <span class="badge rounded-pill px-3 py-2 ms-3" 
+                        style="background: {{ exercise.topic.subject.color }}15; color: {{ exercise.topic.subject.color }}; font-size: 0.6rem;">
+                    {{ generated_questions|length }} question{{ generated_questions|length|pluralize }}
+                  </span>
+                </h1>
+                <p class="lead mb-0 text-dark opacity-75" style="font-size: 1rem;">
+                  Examinez les questions générées pour <strong>{{ exercise.name }}</strong>
+                </p>
+                <p class="mb-0 text-muted" style="font-size: 0.95rem;">
+                  Vérifiez chaque question avant de les ajouter à votre exercice
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    {% if generated_questions %}
+      <form method="post">
+        {% csrf_token %}
+        
+        <!-- Info Banner -->
+        <div class="alert border-0 mb-4" 
+             style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}08, {{ exercise.topic.subject.color }}12); border-radius: 20px; border-left: 5px solid {{ exercise.topic.subject.color }};">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle fa-2x me-3" style="color: {{ exercise.topic.subject.color }};"></i>
+            <div>
+              <h5 class="fw-bold text-dark mb-1">Aperçu des questions générées</h5>
+              <p class="mb-0 text-muted">
+                Examinez attentivement chaque question et ses réponses. Vous pouvez les modifier après l'enregistrement.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="row g-4 mb-5">
+          {% for question in generated_questions %}
+          <div class="col-12">
+            <div class="card border-0 shadow-sm question-preview-card" 
+                 style="border-radius: 20px; border-left: 5px solid {{ exercise.topic.subject.color }}; transition: all 0.3s ease;">
+              <div class="card-body p-4">
+                <!-- Question Header -->
+                <div class="d-flex align-items-start mb-3">
+                  <div class="question-number me-3 d-flex align-items-center justify-content-center fw-bold text-white" 
+                       style="width: 45px; height: 45px; background: {{ exercise.topic.subject.color }}; border-radius: 50%; flex-shrink: 0;">
+                    {{ forloop.counter }}
+                  </div>
+                  <div class="flex-grow-1">
+                    <h5 class="fw-bold text-dark mb-2">{{ question.text }}</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <span class="badge rounded-pill" 
+                            style="background: {{ exercise.topic.subject.color }}08; color: {{ exercise.topic.subject.color }};">
+                        <i class="fas fa-cogs me-1"></i>QCM
+                      </span>
+                      <span class="badge bg-light text-dark rounded-pill">
+                        <i class="fas fa-check-circle me-1"></i>{{ question.answers|length }} option{{ question.answers|length|pluralize }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Answers Section -->
+                {% if question.answers %}
+                  <div class="mt-4 ms-5">
+                    <h6 class="fw-bold text-dark mb-3">
+                      <i class="fas fa-list me-2" style="color: {{ exercise.topic.subject.color }};"></i>
+                      Réponses proposées:
+                    </h6>
+                    <div class="row g-2">
+                      {% for answer in question.answers %}
+                      <div class="col-12">
+                        <div class="d-flex align-items-start p-3 rounded-3" 
+                             style="background: {{ answer.correct|yesno:'#d4edda,#f8f9fa' }}; border: 2px solid {{ answer.correct|yesno:'#c3e6cb,#e2e8f0' }}; transition: all 0.3s ease;">
+                          <div class="me-3 mt-1">
+                            {% if answer.correct %}
+                              <i class="fas fa-check-circle fa-lg" style="color: #28a745;"></i>
+                            {% else %}
+                              <i class="fas fa-circle fa-lg" style="color: #6c757d; opacity: 0.3;"></i>
+                            {% endif %}
+                          </div>
+                          <div class="flex-grow-1">
+                            <span class="text-dark fw-medium">{{ answer.text }}</span>
+                            {% if answer.correct %}
+                              <span class="badge bg-success rounded-pill ms-2 px-2 py-1" style="font-size: 0.75rem;">
+                                <i class="fas fa-star me-1"></i>Correcte
+                              </span>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% else %}
+                  <div class="alert alert-warning border-0 mt-3 mx-5" style="border-radius: 15px;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Aucune réponse générée pour cette question
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card border-0 shadow-sm sticky-bottom mb-4" style="border-radius: 20px; bottom: 20px;">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="{% url 'exercise_detail' exercise.pk %}" class="btn btn-outline-secondary btn-lg rounded-pill px-5">
+                <i class="fas fa-times me-2"></i>Annuler
+              </a>
+              <div class="text-center">
+                <p class="mb-2 text-muted small">
+                  <i class="fas fa-info-circle me-1"></i>
+                  {{ generated_questions|length }} question{{ generated_questions|length|pluralize }} prête{{ generated_questions|length|pluralize }} à être enregistrée{{ generated_questions|length|pluralize }}
+                </p>
+              </div>
+              <button type="submit" class="btn btn-success btn-lg rounded-pill px-5">
+                <i class="fas fa-save me-2"></i>Enregistrer toutes les questions
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="row">
+        <div class="col-12">
+          <div class="text-center py-5">
+            <div class="card border-0 shadow-sm mx-auto" style="max-width: 600px; border-radius: 25px;">
+              <div class="card-body p-5">
+                <div class="mb-4">
+                  <div class="empty-icon mx-auto d-flex align-items-center justify-content-center" 
+                       style="width: 120px; height: 120px; background: #ffc10720; border-radius: 50%;">
+                    <i class="fas fa-robot fa-3x" style="color: #ffc107; opacity: 0.5;"></i>
+                  </div>
+                </div>
+                <h4 class="text-dark mb-3 fw-bold">Aucune question générée</h4>
+                <p class="text-muted mb-4 lead">
+                  L'IA n'a pas pu générer de questions pour cet exercice. Veuillez réessayer avec des paramètres différents.
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                  <a href="{% url 'exercise_detail' exercise.pk %}" class="btn btn-primary btn-lg rounded-pill px-5">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à l'exercice
+                  </a>
+                  <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-4" 
+                          data-bs-toggle="modal" data-bs-target="#generateAIModal">
+                    <i class="fas fa-redo me-2"></i>Réessayer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-weight: bold;
+    color: #6c757d;
+  }
+
+  .question-preview-card {
+    transition: all 0.3s ease;
+  }
+
+  .question-preview-card:hover {
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important;
+    transform: translateY(-2px);
+  }
+
+  .icon-container {
+    transition: transform 0.3s ease;
+  }
+
+  .icon-container:hover {
+    transform: scale(1.05);
+  }
+
+  .sticky-bottom {
+    position: sticky;
+    z-index: 100;
+  }
+
+  @media (max-width: 768px) {
+    .d-flex.justify-content-between {
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .sticky-bottom .btn {
+      width: 100%;
+    }
+  }
+
+  /* Smooth animations */
+  .card, .alert {
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Answer hover effect */
+  .d-flex.align-items-start.p-3:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+</style>
+
+<script>
+  // Add loading state to save button
+  document.querySelector('form')?.addEventListener('submit', function(e) {
+    // Set flag BEFORE showing loading state
+    formSubmitted = true;
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enregistrement en cours...';
+    }
+  });
+
+  // Add animation delay to cards
+  document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.question-preview-card');
+    cards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
+    });
+  });
+
+  // Confirm before leaving if questions not saved
+  let formSubmitted = false;
+
+  window.addEventListener('beforeunload', function(e) {
+    const hasQuestions = {{ generated_questions|length }} > 0;
+    
+    if (!formSubmitted && hasQuestions) {
+      e.preventDefault();
+      e.returnValue = 'Vous avez des questions non enregistrées. Êtes-vous sûr de vouloir quitter ?';
+      return e.returnValue;
+    }
+  });
+
+  // Also prevent alert when clicking cancel button
+  document.querySelector('a[href*="exercise_detail"]')?.addEventListener('click', function() {
+    formSubmitted = true;
+  });
+</script>
+{% endblock %}

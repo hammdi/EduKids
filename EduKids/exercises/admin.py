@@ -14,10 +14,11 @@ class TopicAdmin(admin.ModelAdmin):
 
 @admin.register(Exercise)
 class ExerciseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'difficulty_level', 'exercise_type', 'created_by')
-    list_filter = ('difficulty_level', 'exercise_type', 'created_by')
-    search_fields = ('title', 'description')
-    date_hierarchy = 'created_at'
+    list_display = ['name', 'difficulty', 'exercise_type', 'creator', 'is_active']  # Changed from 'title', 'difficulty_level', 'created_by'
+    list_filter = ['difficulty', 'exercise_type', 'creator', 'is_active']  # Changed from 'difficulty_level', 'created_by'
+    search_fields = ['name', 'description']
+    date_hierarchy = 'created_at'  # Now exists
+    ordering = ['-created_at']
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):

@@ -1,0 +1,394 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <!-- Breadcrumb -->
+  <div class="container mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'subject_detail' object.exercise.topic.subject.pk %}" class="text-decoration-none fw-medium">
+            {{ object.exercise.topic.subject.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'topic_detail' object.exercise.topic.pk %}" class="text-decoration-none fw-medium">
+            {{ object.exercise.topic.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'exercise_detail' object.exercise.pk %}" class="text-decoration-none fw-medium">
+            {{ object.exercise.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ object.exercise.topic.subject.color }};">
+          Modifier la question
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="container">
+    <!-- Page Header -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 25px;">
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ object.exercise.topic.subject.color }}08, {{ object.exercise.topic.subject.color }}15); padding: 40px;">
+            <div class="d-flex align-items-center">
+              <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                   style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                <i class="fas fa-edit fa-2x" style="color: {{ object.exercise.topic.subject.color }};"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h1 class="mb-2 fw-bold text-dark">
+                  Modifier la question
+                </h1>
+                <p class="lead mb-0 text-dark opacity-75" style="font-size: 1rem;">
+                  {{ object.exercise.name }}
+                </p>
+                <p class="mb-0 text-muted" style="font-size: 0.95rem;">
+                  Type: {{ object.question_type }}, Difficulté: {{ object.exercise.difficulty }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+          <div class="card-header border-0 p-4" 
+               style="background: linear-gradient(135deg, {{ object.exercise.topic.subject.color }}05, {{ object.exercise.topic.subject.color }}08); border-radius: 25px 25px 0 0;">
+            <h3 class="fw-bold text-dark mb-0">
+              <i class="fas fa-pen-fancy me-3" style="color: {{ object.exercise.topic.subject.color }};"></i>
+              Détails de la question
+            </h3>
+          </div>
+
+          <div class="card-body p-5">
+            <form method="post" id="question-form">
+              {% csrf_token %}
+
+              <!-- Question Text -->
+              <div class="form-group mb-4">
+                <label class="form-label fw-bold text-dark mb-2">
+                  <i class="fas fa-question me-2" style="color: {{ object.exercise.topic.subject.color }};"></i>
+                  Énoncé de la question *
+                </label>
+                {% if form.question_text %}
+                  <textarea name="question_text" id="id_question_text"
+                            class="form-control form-control-lg rounded-3 px-4 py-3"
+                            rows="4"
+                            placeholder="Formulez clairement votre question..."
+                            style="border: 2px solid #e2e8f0; resize: vertical;">{{ form.question_text.value|default:'' }}</textarea>
+                  <small class="d-block text-muted mt-2">
+                    <i class="fas fa-lightbulb me-1"></i>Soyez précis et clair. La question doit être compréhensible en une lecture.
+                  </small>
+                  <div class="mt-2">
+                    <small class="text-muted"><span id="char-count-question">{{ form.question_text.value|length|default:'0' }}</span>/500 caractères</small>
+                  </div>
+                  {% if form.question_text.errors %}
+                    <div class="alert alert-danger mt-2 rounded-3">
+                      {{ form.question_text.errors }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+              <!-- Question Type -->
+              <div class="form-group mb-4">
+                <label class="form-label fw-bold text-dark mb-2">
+                  <i class="fas fa-cogs me-2" style="color: {{ object.exercise.topic.subject.color }};"></i>
+                  Type de question *
+                </label>
+                {% if form.question_type %}
+                  {{ form.question_type.as_widget }}
+                  <small class="d-block text-muted mt-2">Format de la question</small>
+                  {% if form.question_type.errors %}
+                    <div class="alert alert-danger mt-2 rounded-3">
+                      {{ form.question_type.errors }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+              <!-- Points -->
+              <div class="form-group mb-4">
+                <label class="form-label fw-bold text-dark mb-2">
+                  <i class="fas fa-star me-2" style="color: {{ object.exercise.topic.subject.color }};"></i>
+                  Points *
+                </label>
+                {% if form.points %}
+                  <input type="number" name="points" id="id_points"
+                         class="form-control form-control-lg rounded-pill px-4"
+                         value="{{ form.points.value|default:1 }}" min="1" max="100"
+                         style="border: 2px solid #e2e8f0;" />
+                  <small class="d-block text-muted mt-2">Points attribués pour cette question</small>
+                  {% if form.points.errors %}
+                    <div class="alert alert-danger mt-2 rounded-3">
+                      {{ form.points.errors }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+              <!-- Hint -->
+              <div class="form-group mb-4">
+                <label class="form-label fw-bold text-dark mb-2">
+                  <i class="fas fa-lightbulb me-2" style="color: {{ object.exercise.topic.subject.color }};"></i>
+                  Indice (optionnel)
+                </label>
+                {% if form.hint %}
+                  <input type="text" name="hint" id="id_hint"
+                         class="form-control form-control-lg rounded-pill px-4"
+                         placeholder="Conseil pour les étudiants"
+                         value="{{ form.hint.value|default:'' }}"
+                         style="border: 2px solid #e2e8f0;" maxlength="100" />
+                  <small class="d-block text-muted mt-2">Conseil optionnel pour guider les étudiants</small>
+                  {% if form.hint.errors %}
+                    <div class="alert alert-danger mt-2 rounded-3">
+                      {{ form.hint.errors }}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+              <!-- Additional Fields from Form -->
+              {% for field in form %}
+                {% if field.name not in 'question_text,question_type,points,hint' %}
+                  <div class="form-group mb-4">
+                    <label class="form-label fw-bold text-dark mb-2">
+                      <i class="fas fa-info-circle me-2" style="color: {{ object.exercise.topic.subject.color }};"></i>
+                      {{ field.label|capfirst }}
+                      {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    
+                    {% if field.field.widget.input_type == 'textarea' %}
+                      <textarea name="{{ field.name }}" id="id_{{ field.name }}"
+                               class="form-control form-control-lg rounded-3 px-4 py-3"
+                               rows="3"
+                               style="border: 2px solid #e2e8f0; resize: vertical;">{{ field.value|default:'' }}</textarea>
+                    {% elif field.field.widget.input_type == 'checkbox' %}
+                      <div class="form-check form-switch" style="margin-top: 10px;">
+                        <input type="checkbox" name="{{ field.name }}" id="id_{{ field.name }}"
+                               class="form-check-input" {% if field.value %}checked{% endif %}
+                               style="width: 2.5em; height: 1.5em; cursor: pointer;">
+                        <label class="form-check-label fw-bold text-dark ms-2" for="id_{{ field.name }}">
+                          {{ field.label }}
+                        </label>
+                      </div>
+                    {% else %}
+                      {{ field.as_widget }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                      <small class="d-block text-muted mt-2">{{ field.help_text|safe }}</small>
+                    {% endif %}
+
+                    {% if field.errors %}
+                      <div class="alert alert-danger mt-2 rounded-3">
+                        {{ field.errors }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+
+              <!-- Info Box -->
+              <div class="alert border-0 mb-4" 
+                   style="background: linear-gradient(135deg, {{ object.exercise.topic.subject.color }}08, {{ object.exercise.topic.subject.color }}12); border-radius: 20px; border-left: 5px solid {{ object.exercise.topic.subject.color }};">
+                <div class="d-flex align-items-start">
+                  <i class="fas fa-info-circle fa-lg me-3 mt-1" style="color: {{ object.exercise.topic.subject.color }};"></i>
+                  <div>
+                    <h6 class="fw-bold text-dark mb-1">Conseils de rédaction</h6>
+                    <ul class="mb-0 ps-3 text-muted small">
+                      <li>Formulez votre question de manière claire et compréhensible</li>
+                      <li>Assurez-vous qu'il n'y a qu'une seule bonne réponse</li>
+                      <li>Les indices aident les étudiants sans donner la réponse</li>
+                      <li>Vérifiez l'orthographe et la grammaire</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-3 mt-5 pt-4 border-top">
+                <a href="{% url 'exercise_detail' object.exercise.pk %}" 
+                   class="btn btn-outline-secondary btn-lg rounded-pill px-5">
+                  <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 ms-auto">
+                  <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    font-weight: bold;
+    color: #6c757d;
+  }
+
+  .icon-container {
+    transition: transform 0.3s ease;
+  }
+
+  .icon-container:hover {
+    transform: scale(1.05);
+  }
+
+  .form-control, .form-select {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 25px !important;
+    padding: 12px 20px !important;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  textarea.form-control {
+    border-radius: 15px !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: {{ object.exercise.topic.subject.color }} !important;
+    box-shadow: 0 0 0 0.3rem {{ object.exercise.topic.subject.color }}20 !important;
+    transform: translateY(-2px);
+  }
+
+  .form-check-input {
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+  }
+
+  .form-check-input:checked {
+    background-color: {{ object.exercise.topic.subject.color }} !important;
+    border-color: {{ object.exercise.topic.subject.color }} !important;
+  }
+
+  .form-group {
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card {
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important;
+  }
+
+  .alert {
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .d-flex.gap-3 {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .ms-auto {
+      margin-left: 0 !important;
+    }
+  }
+</style>
+
+<script>
+  // Character counter for question text
+  document.getElementById('id_question_text')?.addEventListener('input', function() {
+    const count = this.value.length;
+    document.getElementById('char-count-question').textContent = count;
+    
+    // Change color if too long
+    if (count > 450) {
+      document.getElementById('char-count-question').style.color = '#ffc107';
+    } else if (count > 490) {
+      document.getElementById('char-count-question').style.color = '#dc3545';
+    } else {
+      document.getElementById('char-count-question').style.color = '#6c757d';
+    }
+  });
+
+  // Form validation before submit
+  document.getElementById('question-form')?.addEventListener('submit', function(e) {
+    const questionText = document.getElementById('id_question_text')?.value || '';
+    
+    if (!questionText.trim()) {
+      e.preventDefault();
+      alert('Veuillez entrer un énoncé pour la question');
+      document.getElementById('id_question_text')?.focus();
+      return false;
+    }
+  });
+
+  // Add visual feedback on input focus
+  document.querySelectorAll('.form-control, .form-select').forEach(input => {
+    input.addEventListener('focus', function() {
+      this.parentElement.classList.add('focused');
+    });
+
+    input.addEventListener('blur', function() {
+      this.parentElement.classList.remove('focused');
+    });
+  });
+
+  // Confirm before leaving if form has changes
+  let formChanged = false;
+
+  document.querySelectorAll('.form-control, .form-select').forEach(input => {
+    input.addEventListener('change', function() {
+      formChanged = true;
+    });
+  });
+
+  document.getElementById('question-form')?.addEventListener('submit', function() {
+    formChanged = false;
+  });
+
+  window.addEventListener('beforeunload', function(e) {
+    if (formChanged) {
+      e.preventDefault();
+      e.returnValue = 'Vous avez des modifications non enregistrées.';
+      return e.returnValue;
+    }
+  });
+
+  // Allow cancel without warning
+  document.querySelector('a[href*="exercise_detail"]')?.addEventListener('click', function() {
+    formChanged = false;
+  });
+</script>
+{% endblock %}

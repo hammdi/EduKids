@@ -1,0 +1,839 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  .exercise-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+  }
+  
+  .question-slide {
+    transition: all 0.3s ease;
+  }
+  
+  .progress-container {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+  
+  .answer-choice:hover {
+    background: {{ exercise.topic.subject.color }}08;
+    transform: translateX(5px);
+  }
+  
+  .dictee-controls {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border-radius: 15px;
+    padding: 20px;
+  }
+  
+  .fill-blank-input:focus {
+    border-color: {{ exercise.topic.subject.color }};
+    box-shadow: 0 0 0 0.2rem {{ exercise.topic.subject.color }}25;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb bg-white rounded-pill px-4 py-3 shadow-sm">
+        <li class="breadcrumb-item">
+          <a href="{% url 'student_subjects_list' %}" class="text-decoration-none fw-medium">
+            <i class="fas fa-home me-2"></i>Mes Matières
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'student_subject_detail' exercise.topic.subject.pk %}" class="text-decoration-none fw-medium">
+            {{ exercise.topic.subject.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'student_topic_detail' exercise.topic.pk %}" class="text-decoration-none fw-medium">
+            {{ exercise.topic.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: {{ exercise.topic.subject.color }};">
+          {{ exercise.name }}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Exercise Header -->
+    <div class="row mb-5" id="exerciseHeader">
+      <div class="col-12">
+        <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+          <div class="position-relative" 
+               style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}08, {{ exercise.topic.subject.color }}15); border-radius: 25px 25px 0 0; padding: 40px;">
+            <div class="d-flex align-items-center mb-4">
+              <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                   style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                <i class="fas fa-pencil-alt fa-2x" style="color: {{ exercise.topic.subject.color }};"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h1 class="mb-2 fw-bold text-dark">{{ exercise.name }}</h1>
+                <p class="lead mb-0 text-dark opacity-75" style="font-size: 1.1rem;">
+                  {{ exercise.description }}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body p-4">
+            <!-- Exercise Stats -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="stat-card p-3 rounded-3 text-center" 
+                     style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 1px solid #93c5fd;">
+                  <div class="fw-bold text-info mb-1">{{ exercise.get_exercise_type_display }}</div>
+                  <small class="text-muted">Type d'exercice</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-card p-3 rounded-3 text-center" 
+                     style="background: {% if exercise.difficulty == 'facile' %}linear-gradient(135deg, #d4f8db, #c3f5cb); border: 1px solid #a7f3d0;{% elif exercise.difficulty == 'moyen' %}linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f9d71c;{% else %}linear-gradient(135deg, #fde2e7, #fbb6ce); border: 1px solid #f87171;{% endif %}">
+                  <div class="fw-bold mb-1" style="color: {% if exercise.difficulty == 'facile' %}#059669{% elif exercise.difficulty == 'moyen' %}#d97706{% else %}#dc2626{% endif %};">
+                    {{ exercise.get_difficulty_display }}
+                  </div>
+                  <small class="text-muted">Difficulté</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-card p-3 rounded-3 text-center" 
+                     style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}08, {{ exercise.topic.subject.color }}15); border: 1px solid {{ exercise.topic.subject.color }}30;">
+                  <div class="fw-bold mb-1" style="color: {{ exercise.topic.subject.color }};">{{ exercise.points }}</div>
+                  <small class="text-muted">Points max</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-card p-3 rounded-3 text-center" 
+                     style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border: 1px solid #c4b5fd;">
+                  <div class="fw-bold text-purple mb-1">{{ questions.count }}</div>
+                  <small class="text-muted">Question{{ questions.count|pluralize }}</small>
+                </div>
+              </div>
+            </div>
+
+            {% if exercise.instructions %}
+            <div class="alert border-0 mb-4" style="background: linear-gradient(135deg, #fff8e1, #fff3c4);">
+              <h6 class="fw-bold text-dark mb-2">
+                <i class="fas fa-info-circle me-2" style="color: {{ exercise.topic.subject.color }};"></i>
+                Instructions importantes
+              </h6>
+              <p class="mb-0 text-dark">{{ exercise.instructions }}</p>
+            </div>
+            {% endif %}
+
+            <div class="text-center">
+              <button type="button" class="btn btn-lg px-5 py-3 rounded-pill shadow-sm" 
+                      style="background: {{ exercise.topic.subject.color }}; border: none; color: white;"
+                      onclick="startExercise()">
+                <i class="fas fa-play me-2"></i>Commencer l'exercice
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exercise Interface (Hidden initially) -->
+    <div id="exerciseInterface" style="display: none">
+      <!-- Progress Section -->
+      <div class="progress-container mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0">Progression</h5>
+          <span class="badge rounded-pill px-3 py-2" style="background: {{ exercise.topic.subject.color }}15; color: {{ exercise.topic.subject.color }};">
+            Question <span id="currentQuestion">1</span> sur <span id="totalQuestions">{{ questions.count }}</span>
+          </span>
+        </div>
+        <div class="progress" style="height: 12px; border-radius: 10px;">
+          <div class="progress-bar" role="progressbar" id="progressBar" 
+               style="width: 0%; background: {{ exercise.topic.subject.color }}; border-radius: 10px;"></div>
+        </div>
+      </div>
+
+      <!-- Question Container -->
+      <div id="questionContainer">
+        {% for question in questions %}
+        <div class="question-slide" data-question-id="{{ question.pk }}" style="display: none">
+          <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="card-header border-0 p-4" 
+                 style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}05, {{ exercise.topic.subject.color }}08); border-radius: 25px 25px 0 0;">
+              <div class="d-flex align-items-center">
+                <div class="question-icon me-3 d-flex align-items-center justify-content-center" 
+                     style="width: 50px; height: 50px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                  <span class="fw-bold" style="color: {{ exercise.topic.subject.color }};">{{ forloop.counter }}</span>
+                </div>
+                <div class="flex-grow-1">
+                  <h4 class="card-title mb-0 fw-bold text-dark">Question {{ forloop.counter }}</h4>
+                  <small class="text-muted">{{ exercise.get_exercise_type_display }}</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body p-4">
+              {% if question.image %}
+              <div class="text-center mb-4">
+                <img src="{{ question.image.url }}" alt="Question image" 
+                     class="img-fluid rounded-3 shadow-sm" style="max-height: 300px;" />
+              </div>
+              {% endif %}
+
+              <!-- QCM Answers -->
+              {% if exercise.exercise_type == 'QCM' %}
+              <div class="mb-4">
+                <h5 class="fw-bold text-dark mb-3">{{ question.question_text }}</h5>
+                <div class="answer-choices">
+                  {% for answer in question.answer_choices %}
+                  <div class="answer-choice p-3 mb-3 rounded-3 border" 
+                       style="cursor: pointer; transition: all 0.3s ease; background: white;">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" 
+                             name="question_{{ question.pk }}" 
+                             id="answer_{{ answer.pk }}" 
+                             value="{{ answer.pk }}"
+                             style="transform: scale(1.2);" />
+                      <label class="form-check-label fw-medium ms-2" for="answer_{{ answer.pk }}">
+                        {{ answer.answer_text }}
+                      </label>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Texte à trous -->
+              {% if exercise.exercise_type == 'texte_à_trous' %}
+              <div class="fill-blanks-container">
+                <div class="mb-4">
+                  <h5 class="fw-bold text-dark mb-3">
+                    <i class="fas fa-edit me-2" style="color: {{ exercise.topic.subject.color }};"></i>
+                    Complétez le texte
+                  </h5>
+                  <div class="p-4 rounded-3 border" style="background: linear-gradient(135deg, #f8fafc, #e2e8f0);">
+                    <p class="lead mb-0 text-dark">{{ question.question_text }}</p>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <h6 class="fw-bold text-dark mb-3">Mots manquants :</h6>
+                  {% for answer in question.answer_choices %}
+                  <div class="mb-3">
+                    <label class="form-label fw-medium">Mot {{ forloop.counter }} :</label>
+                    <input type="text" class="form-control form-control-lg fill-blank-input rounded-pill px-4"
+                           data-blank-number="{{ forloop.counter }}"
+                           placeholder="Tapez le mot manquant..."
+                           style="border: 2px solid #e2e8f0; transition: all 0.3s ease;" />
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Dictée -->
+              {% if exercise.exercise_type == 'dictée' %}
+              <div class="dictee-container">
+                <div class="alert border-0 mb-4" style="background: linear-gradient(135deg, #e0f2fe, #b3e5fc);">
+                  <h5 class="fw-bold text-info mb-3">
+                    <i class="fas fa-headphones me-2"></i>Instructions pour la dictée
+                  </h5>
+                  <ul class="mb-0 text-dark">
+                    <li>Cliquez sur "Écouter" pour entendre la dictée</li>
+                    <li>Vous pouvez l'écouter plusieurs fois</li>
+                    <li>Écrivez exactement ce que vous entendez</li>
+                    <li>Faites attention à l'orthographe et à la ponctuation</li>
+                  </ul>
+                </div>
+
+                <!-- Audio controls -->
+                <div class="dictee-controls mb-4">
+                  <div class="text-center">
+                    <button type="button" class="btn btn-lg me-3 mb-2 rounded-pill px-4"
+                            style="background: {{ exercise.topic.subject.color }}; border: none; color: white;"
+                            id="playDictationBtn_{{ question.pk }}"
+                            onclick="playDictation('{{ question.question_text|escapejs }}', {{ question.pk }})">
+                      <i class="fas fa-play me-2"></i>Écouter la dictée
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary btn-lg me-3 mb-2 rounded-pill px-4"
+                            onclick="playSlowDictation('{{ question.question_text|escapejs }}', {{ question.pk }})">
+                      <i class="fas fa-turtle me-2"></i>Écouter lentement
+                    </button>
+
+                    <button type="button" class="btn btn-outline-danger btn-lg mb-2 rounded-pill px-4"
+                            onclick="stopDictation()">
+                      <i class="fas fa-stop me-2"></i>Arrêter
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Progress indicator -->
+                <div id="speechProgress_{{ question.pk }}" class="mb-3" style="display: none">
+                  <div class="alert border-0" style="background: linear-gradient(135deg, #fff8e1, #fff3c4);">
+                    <div class="text-center">
+                      <i class="fas fa-volume-up me-2"></i>
+                      <span id="speechStatus_{{ question.pk }}">Lecture en cours...</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Writing area -->
+                <div class="mb-4">
+                  <label class="form-label h5 fw-bold text-dark mb-3">
+                    <i class="fas fa-pencil-alt me-2" style="color: {{ exercise.topic.subject.color }};"></i>
+                    Écrivez ce que vous entendez :
+                  </label>
+                  <textarea class="form-control form-control-lg rounded-3"
+                            name="question_{{ question.pk }}"
+                            id="dicteeAnswer_{{ question.pk }}"
+                            placeholder="Écrivez ici ce que vous entendez..."
+                            rows="6"
+                            style="font-size: 1.1em; line-height: 1.6; border: 2px solid #e2e8f0; resize: vertical;"
+                            oninput="updateCharCount({{ question.pk }})"></textarea>
+                  <div class="d-flex justify-content-between mt-2">
+                    <small class="text-muted">
+                      <i class="fas fa-lightbulb me-1"></i>
+                      Conseil : Écoutez d'abord entièrement, puis réécoutez en écrivant
+                    </small>
+                    <small class="text-muted">
+                      Caractères : <span id="charCount_{{ question.pk }}" class="fw-bold">0</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Hint Section -->
+              {% if question.hint %}
+              <div class="mt-4">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                        onclick="toggleHint({{ question.pk }})">
+                  <i class="fas fa-lightbulb me-2"></i>Voir l'indice
+                </button>
+                <div id="hint_{{ question.pk }}" class="alert border-0 mt-3" 
+                     style="display: none; background: linear-gradient(135deg, #f0f9ff, #e0f2fe);">
+                  <i class="fas fa-info-circle text-info me-2"></i>
+                  {{ question.hint }}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px; border-radius: 20px;">
+            <div class="card-body p-5">
+              <div class="mb-4">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning opacity-50"></i>
+              </div>
+              <h4 class="text-dark mb-3">Aucune question trouvée</h4>
+              <p class="text-muted">Cet exercice ne contient pas de questions.</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-4"
+                    id="prevBtn" onclick="previousQuestion()" disabled>
+              <i class="fas fa-arrow-left me-2"></i>Précédent
+            </button>
+            
+            <div class="text-center">
+              <small class="text-muted">Navigation entre les questions</small>
+            </div>
+            
+            <button type="button" class="btn btn-lg rounded-pill px-4"
+                    style="background: {{ exercise.topic.subject.color }}; border: none; color: white;"
+                    id="nextBtn" onclick="nextQuestion()">
+              Suivant <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+            
+            <button type="button" class="btn btn-success btn-lg rounded-pill px-4"
+                    id="submitBtn" onclick="submitExercise()" style="display: none">
+              <i class="fas fa-check me-2"></i>Terminer l'exercice
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" style="display: none">
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="card-header border-0 p-4 text-center" 
+                 style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}08, {{ exercise.topic.subject.color }}15); border-radius: 25px 25px 0 0;">
+              <h2 class="fw-bold text-dark mb-0">
+                <i class="fas fa-trophy me-3" style="color: {{ exercise.topic.subject.color }};"></i>
+                Résultats de l'exercice
+              </h2>
+            </div>
+            <div class="card-body p-5">
+              <div class="row g-4">
+                <div class="col-md-4 text-center">
+                  <div class="p-4 rounded-3" style="background: linear-gradient(135deg, {{ exercise.topic.subject.color }}08, {{ exercise.topic.subject.color }}15);">
+                    <h1 class="fw-bold mb-2" style="color: {{ exercise.topic.subject.color }};" id="scoreDisplay">0%</h1>
+                    <p class="text-muted mb-0">Score final</p>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #d4f8db, #c3f5cb);">
+                    <h1 class="text-success fw-bold mb-2" id="correctDisplay">0</h1>
+                    <p class="text-muted mb-0">Réponses correctes</p>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="p-4 rounded-3" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe);">
+                    <h1 class="text-info fw-bold mb-2" id="totalDisplay">0</h1>
+                    <p class="text-muted mb-0">Questions totales</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Results -->
+      <div class="row">
+        <div class="col-12">
+          <h3 class="fw-bold text-dark mb-4">
+            <i class="fas fa-list-alt me-3" style="color: {{ exercise.topic.subject.color }};"></i>
+            Correction détaillée
+          </h3>
+          <div id="detailedResults"></div>
+        </div>
+      </div>
+
+      <div class="row mt-5">
+        <div class="col-12 text-center">
+          <a href="{% url 'student_topic_detail' exercise.topic.pk %}" 
+             class="btn btn-lg rounded-pill px-5"
+             style="background: {{ exercise.topic.subject.color }}; border: none; color: white;">
+            <i class="fas fa-arrow-left me-2"></i>Retour aux exercices
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentQuestionIndex = 0;
+    let totalQuestions = {{ questions.count|default:0 }};
+    let studentAnswers = {};
+    let currentUtterance = null;
+
+    // Add error checking
+    if (totalQuestions === 0) {
+        console.error('No questions found in exercise');
+        alert('Aucune question trouvée dans cet exercice.');
+    }
+
+    function startExercise() {
+        document.getElementById('exerciseHeader').style.display = 'none';
+        document.getElementById('exerciseInterface').style.display = 'block';
+        showQuestion(0);
+    }
+
+    function showQuestion(index) {
+        // Hide all questions
+        const questions = document.querySelectorAll('.question-slide');
+        questions.forEach(q => q.style.display = 'none');
+
+        // Show current question
+        if (questions[index]) {
+            questions[index].style.display = 'block';
+            currentQuestionIndex = index;
+
+            // Update progress
+            const progress = ((index + 1) / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = index + 1;
+
+            // Update total questions display
+            const totalQuestionsSpan = document.getElementById('totalQuestions');
+            if (totalQuestionsSpan) {
+                totalQuestionsSpan.textContent = totalQuestions;
+            }
+
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').style.display = index === totalQuestions - 1 ? 'none' : 'block';
+            document.getElementById('submitBtn').style.display = index === totalQuestions - 1 ? 'block' : 'none';
+        }
+    }
+
+    function nextQuestion() {
+        saveCurrentAnswer();
+        if (currentQuestionIndex < totalQuestions - 1) {
+            showQuestion(currentQuestionIndex + 1);
+        }
+    }
+
+    function previousQuestion() {
+        saveCurrentAnswer();
+        if (currentQuestionIndex > 0) {
+            showQuestion(currentQuestionIndex - 1);
+        }
+    }
+
+    function saveCurrentAnswer() {
+      const currentSlide = document.querySelector('.question-slide[style*="block"]');
+      if (!currentSlide) return;
+
+      const questionId = currentSlide.dataset.questionId;
+
+      // Save QCM answer
+      const radioInput = currentSlide.querySelector('input[type="radio"]:checked');
+      if (radioInput) {
+          studentAnswers[questionId] = radioInput.value;
+          console.log(`Saved QCM answer for question ${questionId}:`, radioInput.value);
+      }
+
+      // Save dictée answer - IMPROVED
+      const textArea = currentSlide.querySelector('textarea[name^="question_"]');
+      if (textArea) {
+          const answerText = textArea.value.trim();
+          studentAnswers[questionId] = answerText;
+          console.log(`Saved dictée answer for question ${questionId}:`, answerText);
+          console.log(`Answer length: ${answerText.length} characters`);
+      }
+
+      // Save fill-in-the-blanks answers
+      const fillBlankInputs = currentSlide.querySelectorAll('.fill-blank-input');
+      if (fillBlankInputs.length > 0) {
+          const blankAnswers = [];
+          fillBlankInputs.forEach((input, index) => {
+              blankAnswers.push(input.value.trim());
+          });
+          studentAnswers[questionId] = blankAnswers;
+          console.log(`Saved fill-in-blanks answers for question ${questionId}:`, blankAnswers);
+      }
+
+      console.log('Current studentAnswers:', studentAnswers);
+  }
+
+    function submitExercise() {
+        saveCurrentAnswer();
+
+        console.log('Submitting answers:', studentAnswers);
+
+        // Check if we have any answers
+        if (Object.keys(studentAnswers).length === 0) {
+            alert('Aucune réponse détectée. Veuillez vérifier vos réponses.');
+            return;
+        }
+
+        // Submit answers to server
+        fetch("{% url 'submit_exercise' exercise.pk %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify(studentAnswers)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Server response:', data);
+            if (data.success) {
+                showResults(data);
+            } else {
+                alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue lors de la soumission.');
+        });
+    }
+
+    function showResults(data) {
+        document.getElementById('exerciseInterface').style.display = 'none';
+        document.getElementById('resultsSection').style.display = 'block';
+
+        // Update score display
+        document.getElementById('scoreDisplay').textContent = data.score_percentage + '%';
+        document.getElementById('correctDisplay').textContent = data.correct_answers;
+        document.getElementById('totalDisplay').textContent = data.total_questions;
+
+        // Show detailed results
+        const detailedContainer = document.getElementById('detailedResults');
+        let resultsHTML = '';
+
+        data.results.forEach((result, index) => {
+            const statusClass = result.is_correct ? 'success' : 'danger';
+            const statusIcon = result.is_correct ? 'check' : 'times';
+            const bgGradient = result.is_correct ? 
+                'linear-gradient(135deg, #d4f8db, #c3f5cb)' : 
+                'linear-gradient(135deg, #fde2e7, #fbb6ce)';
+
+            resultsHTML += `
+                <div class="card mb-3 border-0 shadow-sm" style="border-radius: 15px;">
+                    <div class="card-header border-0 p-3" style="background: ${bgGradient}; border-radius: 15px 15px 0 0;">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-${statusIcon} text-${statusClass} me-2"></i>
+                            Question ${index + 1}
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p><strong>Votre réponse:</strong> <span class="text-muted">${result.submitted_answer || 'Aucune réponse'}</span></p>
+                        <p><strong>Réponse correcte:</strong> <span class="text-success">${result.correct_answer}</span></p>
+                        ${result.explanation ? `<p><strong>Explication:</strong> <span class="text-info">${result.explanation}</span></p>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        detailedContainer.innerHTML = resultsHTML;
+
+        // Auto-redirect after delay
+        setTimeout(() => {
+            const topicUrl = document.querySelector('a[href*="student_topic_detail"]').href;
+            if (topicUrl) {
+                window.location.href = topicUrl;
+            }
+        }, 5000);
+    }
+
+    function toggleHint(questionId) {
+        const hint = document.getElementById('hint_' + questionId);
+        hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Enhanced dictée functions with word-by-word speech
+    function playDictation(text, questionId) {
+        playDictationWordByWord(text, questionId, 0.6, 1500); // Normal speed with 1.5s pauses
+    }
+
+    function playSlowDictation(text, questionId) {
+        playDictationWordByWord(text, questionId, 0.4, 2500); // Slow speed with 2.5s pauses
+    }
+
+    function playDictationWordByWord(text, questionId, speed, pauseDuration) {
+        if ('speechSynthesis' in window) {
+            // Stop any ongoing speech
+            stopDictation();
+
+            // Show progress indicator
+            const progressDiv = document.getElementById(`speechProgress_${questionId}`);
+            const statusSpan = document.getElementById(`speechStatus_${questionId}`);
+            const playBtn = document.getElementById(`playDictationBtn_${questionId}`);
+
+            if (progressDiv && statusSpan && playBtn) {
+                progressDiv.style.display = 'block';
+                statusSpan.textContent = speed <= 0.4 ? 'Dictée lente en cours...' : 'Dictée en cours...';
+                playBtn.disabled = true;
+                playBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>En cours...';
+            }
+
+            // Clean and split text into words
+            const cleanText = text.replace(/[.,!?;:]/g, '').trim();
+            const words = cleanText.split(/\s+/).filter(word => word.length > 0);
+
+            let currentWordIndex = 0;
+            let isPlaying = true;
+
+            function speakNextWord() {
+                if (!isPlaying || currentWordIndex >= words.length) {
+                    // Finished or stopped
+                    finishDictation();
+                    return;
+                }
+
+                const word = words[currentWordIndex];
+
+                // Update status to show current word
+                if (statusSpan) {
+                    statusSpan.innerHTML = `
+                        <strong>Mot ${currentWordIndex + 1}/${words.length}:</strong> "${word}"
+                        <br><small>Pause de ${pauseDuration/1000}s après chaque mot...</small>
+                    `;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(word);
+
+                // Configure speech settings
+                utterance.lang = 'fr-FR';
+                utterance.rate = speed;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.9;
+
+                // Try to use a French voice if available
+                const voices = speechSynthesis.getVoices();
+                const frenchVoice = voices.find(voice =>
+                    voice.lang.startsWith('fr') && voice.name.includes('Female')
+                ) || voices.find(voice => voice.lang.startsWith('fr'));
+
+                if (frenchVoice) {
+                    utterance.voice = frenchVoice;
+                }
+
+                // Set up event handlers
+                utterance.onend = function() {
+                    if (isPlaying) {
+                        currentWordIndex++;
+
+                        // Show pause indicator
+                        if (statusSpan && currentWordIndex < words.length) {
+                            statusSpan.innerHTML = `
+                                <i class="fas fa-clock me-1"></i>
+                                Pause... Prochain mot: "${words[currentWordIndex]}" dans ${pauseDuration/1000}s
+                            `;
+                        }
+
+                        // Wait before speaking next word
+                        setTimeout(() => {
+                            if (isPlaying) {
+                                speakNextWord();
+                            }
+                        }, pauseDuration);
+                    } else {
+                        finishDictation();
+                    }
+                };
+
+                utterance.onerror = function(e) {
+                    console.error('Speech synthesis error:', e);
+                    finishDictation();
+                    alert('Erreur lors de la lecture audio. Vérifiez vos paramètres.');
+                };
+
+                // Store reference and speak
+                currentUtterance = utterance;
+                speechSynthesis.speak(utterance);
+            }
+
+            function finishDictation() {
+                isPlaying = false;
+                if (progressDiv && playBtn && statusSpan) {
+                    progressDiv.style.display = 'none';
+                    playBtn.disabled = false;
+                    playBtn.innerHTML = '<i class="fas fa-play me-2"></i>Écouter la dictée';
+                }
+                currentUtterance = null;
+            }
+
+            // Override the stop function for this session
+            window.currentDictationStopper = function() {
+                isPlaying = false;
+                speechSynthesis.cancel();
+                finishDictation();
+            };
+
+            // Start the word-by-word dictation
+            speakNextWord();
+
+        } else {
+            alert('La synthèse vocale n\'est pas supportée par votre navigateur.');
+        }
+    }
+
+    function stopDictation() {
+        // Call the current session stopper if it exists
+        if (window.currentDictationStopper) {
+            window.currentDictationStopper();
+            window.currentDictationStopper = null;
+        }
+
+        if (speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+        }
+
+        // Reset all progress indicators
+        document.querySelectorAll('[id^="speechProgress_"]').forEach(div => {
+            div.style.display = 'none';
+        });
+
+        document.querySelectorAll('[id^="playDictationBtn_"]').forEach(btn => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-play me-2"></i>Écouter la dictée';
+        });
+
+        currentUtterance = null;
+    }
+
+    // Character counter for dictée
+    function updateCharCount(questionId) {
+      const textarea = document.getElementById(`dicteeAnswer_${questionId}`);
+      const charCount = document.getElementById(`charCount_${questionId}`);
+
+      if (textarea && charCount) {
+          charCount.textContent = textarea.value.length;
+
+          // Visual feedback
+          if (textarea.value.length > 0) {
+              textarea.style.borderColor = '{{ exercise.topic.subject.color }}';
+              textarea.style.boxShadow = '0 0 0 0.2rem {{ exercise.topic.subject.color }}25';
+          } else {
+              textarea.style.borderColor = '#e2e8f0';
+              textarea.style.boxShadow = 'none';
+          }
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add character counters to dictée textareas
+        document.querySelectorAll('[id^="dicteeAnswer_"]').forEach(textarea => {
+            const questionId = textarea.id.split('_')[1];
+            const charCountSpan = document.getElementById(`charCount_${questionId}`);
+
+            if (charCountSpan) {
+                // Update counter on input
+                textarea.addEventListener('input', function() {
+                    charCountSpan.textContent = this.value.length;
+                });
+
+                // Initial count
+                charCountSpan.textContent = textarea.value.length;
+            }
+        });
+
+        // Load voices when available
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = function() {
+                console.log('Voices loaded:', speechSynthesis.getVoices().length);
+            };
+        }
+
+        // Add click handlers for answer choices
+        document.querySelectorAll('.answer-choice').forEach(choice => {
+            choice.addEventListener('click', function() {
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    
+                    // Visual feedback
+                    document.querySelectorAll('.answer-choice').forEach(c => {
+                        c.style.background = 'white';
+                        c.style.borderColor = '#e2e8f0';
+                    });
+                    
+                    this.style.background = '{{ exercise.topic.subject.color }}08';
+                    this.style.borderColor = '{{ exercise.topic.subject.color }}';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
