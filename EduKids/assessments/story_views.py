@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
-from .story_models import Story, StoryProgress, Badge, StudentBadge
+from django.views.decorators.http import require_http_methods
+from .story_models import Story, StoryProgress, Badge, StudentBadge, StoryAssessment
 from .story_service import StoryGeneratorService
 import json
 
@@ -327,3 +328,122 @@ def student_badges(request):
     }
     
     return render(request, 'assessments/student_badges.html', context)
+
+
+@login_required
+def story_correction(request):
+    """
+    AI Story Correction - Display form and previous submissions
+    """
+    if not hasattr(request.user, 'student_profile'):
+        messages.error(request, "Only students can access story correction.")
+        return redirect('home')
+    
+    student = request.user.student_profile
+    
+    # Get previous submissions
+    previous_assessments = StoryAssessment.objects.filter(
+        student=student
+    ).order_by('-created_at')[:5]  # Last 5 submissions
+    
+    context = {
+        'previous_assessments': previous_assessments,
+    }
+    
+    return render(request, 'assessments/story_correction.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def submit_story_correction(request):
+    """
+    Submit story for AI correction and feedback
+    """
+    if not hasattr(request.user, 'student_profile'):
+        return JsonResponse({
+            'success': False,
+            'error': 'Only students can submit stories.'
+        }, status=403)
+    
+    student = request.user.student_profile
+    
+    # Get story text from POST
+    story_text = request.POST.get('story_text', '').strip()
+    
+    # Validate input
+    if not story_text:
+        return JsonResponse({
+            'success': False,
+            'error': 'Please write a story before submitting!'
+        }, status=400)
+    
+    if len(story_text) < 20:
+        return JsonResponse({
+            'success': False,
+            'error': 'Your story is too short! Please write at least 20 characters.'
+        }, status=400)
+    
+    if len(story_text) > 5000:
+        return JsonResponse({
+            'success': False,
+            'error': 'Your story is too long! Please keep it under 5000 characters.'
+        }, status=400)
+    
+    try:
+        # Call Gemini API for correction
+        generator = StoryGeneratorService()
+        result = generator.correct_story(story_text)
+        
+        # Save to database
+        assessment = StoryAssessment.objects.create(
+            student=student,
+            original_story=story_text,
+            corrected_story=result['corrected_story'],
+            feedback=result['feedback'],
+            questions=result['questions'],
+            badge=result['badge'],
+            creativity_score=result.get('creativity_score', 5)
+        )
+        
+        # Return success response with data
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'corrected_story': result['corrected_story'],
+                'feedback': result['feedback'],
+                'questions': result['questions'],
+                'badge': result['badge'],
+                'creativity_score': result.get('creativity_score', 5),
+                'assessment_id': assessment.id
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in story correction: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Sorry, something went wrong. Please try again!'
+        }, status=500)
+
+
+@login_required
+def view_story_assessment(request, assessment_id):
+    """
+    View a specific story assessment
+    """
+    if not hasattr(request.user, 'student_profile'):
+        messages.error(request, "Access denied.")
+        return redirect('home')
+    
+    student = request.user.student_profile
+    assessment = get_object_or_404(
+        StoryAssessment,
+        id=assessment_id,
+        student=student
+    )
+    
+    context = {
+        'assessment': assessment,
+    }
+    
+    return render(request, 'assessments/view_assessment.html', context)

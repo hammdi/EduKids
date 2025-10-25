@@ -77,10 +77,16 @@
                 <i class="fas fa-book me-1"></i>Mes Matières
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'assessments:story_list' %}">
-                Stories
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="storiesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-book-open me-1"></i>Stories
               </a>
+              <ul class="dropdown-menu" aria-labelledby="storiesDropdown">
+                <li><a class="dropdown-item" href="{% url 'assessments:story_list' %}">📚 Read Stories</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:story_correction' %}">✍️ AI Story Correction</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:student_badges' %}">🏆 My Badges</a></li>
+              </ul>
             </li>
             {% elif user.user_type == 'teacher' %}
             <!-- Teacher Navigation -->

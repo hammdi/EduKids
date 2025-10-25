@@ -29,6 +29,11 @@ urlpatterns = [
     path('stories/<int:story_id>/results/', story_views.story_results, name='story_results'),
     path('badges/', story_views.student_badges, name='student_badges'),
     
+    # AI Story Correction
+    path('story-correction/', story_views.story_correction, name='story_correction'),
+    path('story-correction/submit/', story_views.submit_story_correction, name='submit_story_correction'),
+    path('story-correction/view/<int:assessment_id>/', story_views.view_story_assessment, name='view_story_assessment'),
+    
     # API
     path('api/voice-assessment/analyze/', views.voice_assessment_analyze, name='voice_analyze_api'),
 ]
