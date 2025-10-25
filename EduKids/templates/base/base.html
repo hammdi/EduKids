@@ -59,6 +59,11 @@
                 <i class="fas fa-book me-1"></i>Mes Matières
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'assessments:story_list' %}">
+                Stories
+              </a>
+            </li>
             {% elif user.user_type == 'teacher' %}
             <!-- Teacher Navigation -->
             <li class="nav-item">
@@ -71,10 +76,20 @@
                 <i class="fas fa-book me-1"></i>Subjects
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'assessments:story_list' %}">
+                Stories
+              </a>
+            </li>
             {% else %}
-            <!-- Fallback for other user types -->
+            <!-- Fallback for other user types (Admin, etc.) -->
             <li class="nav-item">
               <a class="nav-link" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'assessments:story_list' %}">
+                Stories
+              </a>
             </li>
             {% endif %} {% else %}
             <!-- Non-authenticated users -->
