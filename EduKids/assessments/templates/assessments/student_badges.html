@@ -1,0 +1,210 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Badges - EduKids{% endblock %}
+
+{% block content %}
+<div class="badges-section">
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold magical-title mb-3">
+                <i class="fas fa-trophy me-3"></i>My Magical Badges
+            </h1>
+            <p class="lead text-muted">
+                Collect badges by reading stories and answering questions!
+            </p>
+        </div>
+
+        <!-- Earned Badges -->
+        <div class="mb-5">
+            <h2 class="section-title mb-4">
+                <i class="fas fa-star me-2"></i>Earned Badges ({{ earned_badges.count }})
+            </h2>
+            
+            {% if earned_badges %}
+            <div class="badges-grid">
+                {% for student_badge in earned_badges %}
+                <div class="badge-card earned" style="background: {{student_badge.badge.color}};">
+                    <div class="badge-icon-xl">{{student_badge.badge.icon}}</div>
+                    <h4 class="badge-title">{{student_badge.badge.name}}</h4>
+                    <p class="badge-description">{{student_badge.badge.description}}</p>
+                    <div class="badge-date">
+                        <i class="fas fa-calendar me-1"></i>
+                        Earned {{ student_badge.earned_at|date:"M d, Y" }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-trophy fa-4x mb-3" style="color: #DDD;"></i>
+                <h4>No Badges Yet</h4>
+                <p class="text-muted">Start reading stories to earn your first badge!</p>
+                <a href="{% url 'assessments:story_list' %}" class="btn btn-magical-primary mt-3">
+                    <i class="fas fa-book-reader me-2"></i>Read Stories
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Locked Badges -->
+        {% if unearned_badges %}
+        <div>
+            <h2 class="section-title mb-4">
+                <i class="fas fa-lock me-2"></i>Locked Badges
+            </h2>
+            
+            <div class="badges-grid">
+                {% for badge in unearned_badges %}
+                <div class="badge-card locked">
+                    <div class="lock-overlay">
+                        <i class="fas fa-lock fa-2x"></i>
+                    </div>
+                    <div class="badge-icon-xl grayscale">{{badge.icon}}</div>
+                    <h4 class="badge-title">{{badge.name}}</h4>
+                    <p class="badge-description">{{badge.description}}</p>
+                    <div class="badge-requirement">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Keep reading to unlock!
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .badges-section {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 100%);
+        min-height: 100vh;
+    }
+    
+    .magical-title {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .section-title {
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    /* Badges Grid */
+    .badges-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+    
+    .badge-card {
+        padding: 2.5rem;
+        border-radius: 25px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .badge-card.earned {
+        animation: badgeShine 2s ease-in-out infinite;
+    }
+    
+    @keyframes badgeShine {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    .badge-card.earned:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    
+    .badge-card.locked {
+        background: #F3F4F6;
+        opacity: 0.7;
+    }
+    
+    .lock-overlay {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        color: #9CA3AF;
+    }
+    
+    .badge-icon-xl {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        animation: iconFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .grayscale {
+        filter: grayscale(100%);
+        opacity: 0.5;
+    }
+    
+    .badge-title {
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.8rem;
+        font-size: 1.3rem;
+    }
+    
+    .badge-description {
+        color: #6B7280;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .badge-date {
+        color: #374151;
+        font-weight: 600;
+        font-size: 0.85rem;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .badge-requirement {
+        color: #6B7280;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .btn-magical-primary {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        border: none;
+        color: white;
+        border-radius: 20px;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-magical-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+</style>
+{% endblock %}

@@ -9,6 +9,9 @@ from exercises.models import Exercise, Question
 # Import des modèles d'évaluation vocale
 from .voice_models import VoiceAssessment, VoiceAssessmentCriteria
 
+# Import des modèles de génération d'histoires
+from .story_models import Story, StoryProgress, Badge, StudentBadge
+
 
 class Assessment(models.Model):
     """

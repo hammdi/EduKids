@@ -3,6 +3,7 @@ URLs pour l'application assessments
 """
 from django.urls import path
 from . import views
+from . import story_views
 
 app_name = 'assessments'
 
@@ -19,6 +20,14 @@ urlpatterns = [
     path('voice-assessment/results/<int:assessment_id>/', views.voice_assessment_results, name='voice_results'),
     path('voice-assessment/history/', views.voice_assessment_history, name='voice_history'),
     path('voice-assessment/history/<int:student_id>/', views.voice_assessment_history, name='voice_history_student'),
+    
+    # Story Generation & Reading
+    path('stories/', story_views.story_list, name='story_list'),
+    path('stories/generate/', story_views.generate_story, name='generate_story'),
+    path('stories/<int:story_id>/', story_views.story_detail, name='story_detail'),
+    path('stories/<int:story_id>/submit/', story_views.submit_answers, name='submit_answers'),
+    path('stories/<int:story_id>/results/', story_views.story_results, name='story_results'),
+    path('badges/', story_views.student_badges, name='student_badges'),
     
     # API
     path('api/voice-assessment/analyze/', views.voice_assessment_analyze, name='voice_analyze_api'),

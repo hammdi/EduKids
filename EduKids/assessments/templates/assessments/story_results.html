@@ -1,0 +1,300 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Results - {{ story.title }} - EduKids{% endblock %}
+
+{% block content %}
+<div class="story-results-section">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Results Card -->
+                <div class="results-card">
+                    <!-- Score Display -->
+                    <div class="score-display text-center mb-5">
+                        <div class="score-circle">
+                            <div class="score-number">{{ progress.score }}/5</div>
+                            <div class="score-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= progress.score %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <h2 class="feedback-title mt-4">{{ progress.feedback_given }}</h2>
+                        
+                        {% if progress.emotion_detected %}
+                        <p class="emotion-feedback">
+                            <i class="fas fa-smile me-2"></i>
+                            You were feeling {{ progress.emotion_detected }} while reading!
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- New Badges -->
+                    {% if new_badges %}
+                    <div class="new-badges-section mb-5">
+                        <h3 class="text-center mb-4">
+                            <i class="fas fa-trophy me-2"></i>New Badges Earned!
+                        </h3>
+                        <div class="badges-grid">
+                            {% for student_badge in new_badges %}
+                            <div class="badge-earned" style="background: {{student_badge.badge.color}};">
+                                <div class="badge-icon-large">{{student_badge.badge.icon}}</div>
+                                <h5 class="badge-name">{{student_badge.badge.name}}</h5>
+                                <p class="badge-desc">{{student_badge.badge.description}}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Review Answers -->
+                    <div class="answers-review mb-5">
+                        <h4 class="mb-4">
+                            <i class="fas fa-clipboard-check me-2"></i>Your Answers
+                        </h4>
+                        
+                        {% for question_data in story.questions %}
+                        <div class="answer-review-card mb-3">
+                            <div class="question-header">
+                                <span class="q-number">Q{{ forloop.counter }}</span>
+                                <span class="q-text">{{ question_data.question }}</span>
+                            </div>
+                            <div class="answer-content">
+                                <strong>Your Answer:</strong>
+                                <p>{{ progress.answers|get_item:forloop.counter0 }}</p>
+                            </div>
+                            <div class="correct-answer">
+                                <strong>Expected Answer:</strong>
+                                <p>{{ question_data.answer }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons text-center">
+                        <a href="{% url 'assessments:story_detail' story.id %}" class="btn btn-magical-retry">
+                            <i class="fas fa-redo me-2"></i>Try Again
+                        </a>
+                        <a href="{% url 'assessments:story_list' %}" class="btn btn-magical-continue">
+                            <i class="fas fa-book-reader me-2"></i>Read More Stories
+                        </a>
+                        <a href="{% url 'assessments:student_badges' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-trophy me-2"></i>View All Badges
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .story-results-section {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 100%);
+        min-height: 100vh;
+    }
+    
+    /* Override font for navbar brand */
+    .navbar-brand .brand-text {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    .results-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 30px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    }
+    
+    /* Score Display */
+    .score-display {
+        padding: 2rem;
+        background: linear-gradient(135deg, #F3E8FF, #FCE7F3);
+        border-radius: 25px;
+    }
+    
+    .score-circle {
+        display: inline-block;
+        background: white;
+        padding: 2rem;
+        border-radius: 50%;
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+    }
+    
+    .score-number {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .score-stars {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .score-stars .fas.fa-star {
+        color: #FBBF24;
+    }
+    
+    .score-stars .far.fa-star {
+        color: #D1D5DB;
+    }
+    
+    .feedback-title {
+        color: #1F2937;
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+    
+    .emotion-feedback {
+        color: #6B7280;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+    }
+    
+    /* New Badges */
+    .new-badges-section {
+        background: #FEF3C7;
+        padding: 2rem;
+        border-radius: 20px;
+        border: 3px dashed #F59E0B;
+    }
+    
+    .badges-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .badge-earned {
+        padding: 2rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        animation: badgePop 0.5s ease-out;
+    }
+    
+    @keyframes badgePop {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .badge-icon-large {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .badge-name {
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .badge-desc {
+        color: #6B7280;
+        font-size: 0.9rem;
+    }
+    
+    /* Answers Review */
+    .answers-review h4 {
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    .answer-review-card {
+        background: #F9FAFB;
+        padding: 1.5rem;
+        border-radius: 15px;
+        border-left: 4px solid #8B5CF6;
+    }
+    
+    .question-header {
+        margin-bottom: 1rem;
+    }
+    
+    .q-number {
+        display: inline-block;
+        background: #8B5CF6;
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+    }
+    
+    .q-text {
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    .answer-content, .correct-answer {
+        margin-top: 1rem;
+    }
+    
+    .answer-content p, .correct-answer p {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+        color: #374151;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .btn-magical-retry {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        border: none;
+        color: white;
+        border-radius: 20px;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-magical-retry:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        color: white;
+    }
+    
+    .btn-magical-continue {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        border: none;
+        color: white;
+        border-radius: 20px;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-magical-continue:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+</style>
+
+<!-- Template Filter -->
+{% load story_filters %}
+{% endblock %}
