@@ -201,7 +201,69 @@ def check_and_award_badges(student):
         score=5
     ).count()
     
-    # Story Explorer: Complete 5 stories
+    # Get stories with good scores (4 or 5)
+    good_scores = StoryProgress.objects.filter(
+        student=student,
+        score__gte=4
+    ).count()
+    
+    # 📖 Enchanted Storybook: Complete your first story!
+    if completed_count >= 1:
+        badge, created = Badge.objects.get_or_create(
+            badge_type='enchanted_storybook',
+            defaults={
+                'name': 'Enchanted Storybook',
+                'description': 'Completed your first magical story! 📖',
+                'icon': '📖',
+                'color': '#FFE5E5',
+                'requirement': {'stories_completed': 1}
+            }
+        )
+        StudentBadge.objects.get_or_create(student=student, badge=badge)
+    
+    # 📜 Adventure Scroll: Complete 3 stories
+    if completed_count >= 3:
+        badge, created = Badge.objects.get_or_create(
+            badge_type='adventure_scroll',
+            defaults={
+                'name': 'Adventure Scroll',
+                'description': 'Completed 3 exciting adventures! 📜',
+                'icon': '📜',
+                'color': '#FFF4E0',
+                'requirement': {'stories_completed': 3}
+            }
+        )
+        StudentBadge.objects.get_or_create(student=student, badge=badge)
+    
+    # 🎭 Fantasy Narrator: Complete 5 stories with good scores
+    if completed_count >= 5 and good_scores >= 5:
+        badge, created = Badge.objects.get_or_create(
+            badge_type='fantasy_narrator',
+            defaults={
+                'name': 'Fantasy Narrator',
+                'description': 'Completed 5 stories with great understanding! 🎭',
+                'icon': '🎭',
+                'color': '#E5F3FF',
+                'requirement': {'stories_completed': 5, 'good_scores': 5}
+            }
+        )
+        StudentBadge.objects.get_or_create(student=student, badge=badge)
+    
+    # 🌟 Imagination Explorer: Complete 10 stories
+    if completed_count >= 10:
+        badge, created = Badge.objects.get_or_create(
+            badge_type='imagination_explorer',
+            defaults={
+                'name': 'Imagination Explorer',
+                'description': 'Explored 10 amazing worlds of imagination! 🌟',
+                'icon': '🌟',
+                'color': '#F0E5FF',
+                'requirement': {'stories_completed': 10}
+            }
+        )
+        StudentBadge.objects.get_or_create(student=student, badge=badge)
+    
+    # Story Explorer: Complete 5 stories (legacy badge)
     if completed_count >= 5:
         badge, created = Badge.objects.get_or_create(
             badge_type='story_explorer',

@@ -173,6 +173,10 @@ class Badge(models.Model):
     Gamification badges for story achievements
     """
     BADGE_TYPE_CHOICES = (
+        ('enchanted_storybook', 'Enchanted Storybook'),
+        ('adventure_scroll', 'Adventure Scroll'),
+        ('fantasy_narrator', 'Fantasy Narrator'),
+        ('imagination_explorer', 'Imagination Explorer'),
         ('story_explorer', 'Story Explorer'),
         ('super_reader', 'Super Reader'),
         ('perfect_score', 'Perfect Score'),

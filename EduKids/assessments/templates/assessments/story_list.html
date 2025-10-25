@@ -140,9 +140,17 @@
 </div>
 
 <style>
-    /* Global Font Override */
-    * {
+    /* Global Font Override - Exclude emojis */
+    body, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, select, .btn, .card {
         font-family: 'Nunito', sans-serif !important;
+    }
+    
+    /* Emoji Support - MUST use emoji fonts */
+    .badge-icon, .emoji, span.badge-icon {
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        font-variant: normal !important;
     }
     
     /* Story Section Styling */

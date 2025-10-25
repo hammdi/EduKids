@@ -1,5 +1,6 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load story_filters %}
 
 {% block title %}Results - {{ story.title }} - EduKids{% endblock %}
 
@@ -44,7 +45,19 @@
                         <div class="badges-grid">
                             {% for student_badge in new_badges %}
                             <div class="badge-earned" style="background: {{student_badge.badge.color}};">
-                                <div class="badge-icon-large">{{student_badge.badge.icon}}</div>
+                                <div class="badge-icon-large">
+                                    {% if student_badge.badge.badge_type == 'enchanted_storybook' %}
+                                        <img src="{% static 'images/enchanted_storybook.png' %}" alt="Enchanted Storybook" class="badge-result-image">
+                                    {% elif student_badge.badge.badge_type == 'adventure_scroll' %}
+                                        <img src="{% static 'images/adventure_scroll.png' %}" alt="Adventure Scroll" class="badge-result-image">
+                                    {% elif student_badge.badge.badge_type == 'fantasy_narrator' %}
+                                        <img src="{% static 'images/fantasy_narrator.png' %}" alt="Fantasy Narrator" class="badge-result-image">
+                                    {% elif student_badge.badge.badge_type == 'imagination_explorer' %}
+                                        <img src="{% static 'images/imagination_explorer.png' %}" alt="Imagination Explorer" class="badge-result-image">
+                                    {% else %}
+                                        {{student_badge.badge.icon}}
+                                    {% endif %}
+                                </div>
                                 <h5 class="badge-name">{{student_badge.badge.name}}</h5>
                                 <p class="badge-desc">{{student_badge.badge.description}}</p>
                             </div>
@@ -196,6 +209,20 @@
     .badge-icon-large {
         font-size: 4rem;
         margin-bottom: 1rem;
+    }
+    
+    /* Badge Result Image Styling */
+    .badge-result-image {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        animation: badgeBounce 1s ease-in-out infinite;
+    }
+    
+    @keyframes badgeBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
     
     .badge-name {
