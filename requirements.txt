@@ -45,9 +45,9 @@ ffmpeg-python==0.2.0  # Conversion formats audio
 praat-parselmouth==0.4.5  # Analyse prosodique (pitch, intonation)
 
 # ============================================
-# TRAITEMENT ASYNCHRONE
+# IMAGES ET MEDIA
 # ============================================
-celery==5.4.0
+# Pillow==10.4.0  # Gestion des images (avatars, badges) - Conflit résolu en installant séparément
 redis==5.2.1
 
 # ============================================

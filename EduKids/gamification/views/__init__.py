@@ -1,31 +1,31 @@
 """
-Vues API pour l'application gamification - EduKids
+Vues pour l'API gamification - EduKids
 
-Points de terminaison REST pour la gestion des missions, badges, avatars et accessoires.
+API REST pour la gestion des missions, badges, avatars et accessoires.
 """
-from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
-from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 
-from .models import (
-    Badge, UserBadge, Mission, UserMission,
+from ..models import (
+    Mission, UserMission, Badge, UserBadge,
     Avatar, Accessory, UserAccessory
 )
-from .serializers import (
-    BadgeSerializer, UserBadgeSerializer, MissionSerializer, UserMissionSerializer,
+from ..serializers import (
+    MissionSerializer, UserMissionSerializer, BadgeSerializer, UserBadgeSerializer,
     AvatarSerializer, AccessorySerializer, UserAccessorySerializer
 )
-from .services import attribuer_points_et_badges
+from ..services import attribuer_points_et_badges
 
 User = get_user_model()
 
 
-class MissionViewSet(viewsets.ReadOnlyModelViewSet):
+class MissionViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour les missions
     """
@@ -36,13 +36,12 @@ class MissionViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def du_jour(self, request):
         """
-        Retourne les missions du jour pour l'utilisateur
+        Récupère les missions du jour pour l'utilisateur connecté
         """
-        missions = Mission.objects.filter(
-            actif=True,
-            date_expiration__gte=timezone.now().date()
-        ).order_by('created_at')[:5]  # Limiter à 5 missions
-
+        user = request.user
+        # Pour simplifier, on retourne toutes les missions actives
+        # En production, filtrer par date ou attribution spécifique
+        missions = self.get_queryset()
         serializer = self.get_serializer(missions, many=True)
         return Response(serializer.data)
 
@@ -51,14 +50,15 @@ class UserMissionViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour les missions des utilisateurs
     """
+    queryset = UserMission.objects.all()
     serializer_class = UserMissionSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Filtre les missions de l'utilisateur connecté
+        """
         return UserMission.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
     @action(detail=True, methods=['post'])
     def update_progression(self, request, pk=None):
@@ -68,24 +68,52 @@ class UserMissionViewSet(viewsets.ModelViewSet):
         user_mission = self.get_object()
         nouvelle_progression = request.data.get('progression', 0)
 
-        if nouvelle_progression >= user_mission.mission.objectif:
-            user_mission.progression = user_mission.mission.objectif
-            user_mission.statut = 'terminee'
+        if nouvelle_progression < 0:
+            return Response(
+                {'error': 'La progression ne peut pas être négative'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user_mission.progression = min(nouvelle_progression, user_mission.mission.objectif)
+
+        # Vérifier si la mission est terminée
+        if user_mission.progression >= user_mission.mission.objectif:
+            user_mission.statut = 'termine'
             user_mission.date_terminee = timezone.now()
-            user_mission.save()
 
-            # Attribuer les points et badges
-            attribuer_points_et_badges(user_mission.user, user_mission.mission.points)
+            # Attribution automatique des points et badges
+            result = attribuer_points_et_badges(user_mission)
 
-        else:
-            user_mission.progression = nouvelle_progression
-            user_mission.save()
+        user_mission.save()
+        serializer = self.get_serializer(user_mission)
+        return Response(serializer.data)
 
+    @action(detail=True, methods=['post'])
+    def terminer(self, request, pk=None):
+        """
+        Marque une mission comme terminée
+        """
+        user_mission = self.get_object()
+
+        if user_mission.statut == 'termine':
+            return Response(
+                {'error': 'La mission est déjà terminée'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user_mission.progression = user_mission.mission.objectif
+        user_mission.statut = 'termine'
+        user_mission.date_terminee = timezone.now()
+
+        # Attribution automatique des points et badges
+        result = attribuer_points_et_badges(user_mission)
+
+        user_mission.save()
         serializer = self.get_serializer(user_mission)
         return Response(serializer.data)
 
 
-class BadgeViewSet(viewsets.ReadOnlyModelViewSet):
+class BadgeViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour les badges
     """
@@ -94,14 +122,18 @@ class BadgeViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class UserBadgeViewSet(viewsets.ReadOnlyModelViewSet):
+class UserBadgeViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour les badges des utilisateurs
     """
+    queryset = UserBadge.objects.all()
     serializer_class = UserBadgeSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Filtre les badges de l'utilisateur connecté
+        """
         return UserBadge.objects.filter(user=self.request.user)
 
 
@@ -246,6 +278,7 @@ class UserAccessoryViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour les accessoires des utilisateurs
     """
+    queryset = UserAccessory.objects.all()
     serializer_class = UserAccessorySerializer
     permission_classes = [IsAuthenticated]
 
@@ -296,3 +329,37 @@ class UserAccessoryViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(user_accessory)
         return Response(serializer.data)
+
+
+# Vue Django pour la page avatar
+@login_required
+def avatar_view(request):
+    """
+    Vue pour la page de personnalisation d'avatar
+    """
+    # Récupérer ou créer l'avatar de l'utilisateur
+    avatar, created = Avatar.objects.get_or_create(
+        student=request.user,
+        defaults={
+            'name': f"Avatar de {request.user.first_name}",
+            'is_active': True
+        }
+    )
+
+    # Récupérer tous les accessoires disponibles
+    accessories = Accessory.objects.filter(is_active=True).prefetch_related(
+        'user_accessories'
+    )
+
+    # Annoter les accessoires avec les informations de possession
+    for accessory in accessories:
+        user_accessory = accessory.user_accessories.filter(student=request.user).first()
+        accessory.is_owned_by_user = user_accessory is not None
+        accessory.is_equipped = user_accessory and user_accessory.status == 'equipped' if user_accessory else False
+
+    context = {
+        'avatar': avatar,
+        'accessories': accessories,
+    }
+
+    return render(request, 'gamification/avatar.html', context)
