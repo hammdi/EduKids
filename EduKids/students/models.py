@@ -38,12 +38,55 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
     
+    # Champs pour la vérification email
+    email_verification_token = models.UUIDField(
+        unique=True,
+        blank=True,
+        null=True,
+        verbose_name="Token de vérification email"
+    )
+    email_verified = models.BooleanField(
+        default=False,
+        verbose_name="Email vérifié"
+    )
+    
     class Meta:
         verbose_name = "Utilisateur"
         verbose_name_plural = "Utilisateurs"
     
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_user_type_display()})"
+    
+    @classmethod
+    def generate_username(cls, user_type, school_id=None, teacher_username=None):
+        """Génère automatiquement un nom d'utilisateur basé sur le type d'utilisateur"""
+        import uuid
+        
+        if user_type == 'student':
+            if school_id:
+                # Pour les étudiants liés à une école
+                base_username = school_id
+            else:
+                # Pour les étudiants auto-apprenants
+                base_username = f"student{uuid.uuid4().hex[:6]}"
+        elif user_type == 'teacher':
+            if school_id:
+                # Pour les enseignants liés à une école
+                base_username = f"teacher_{school_id}"
+            else:
+                # Pour les enseignants indépendants
+                base_username = f"teacher{uuid.uuid4().hex[:6]}"
+        else:
+            base_username = f"{user_type}{uuid.uuid4().hex[:6]}"
+        
+        # Vérifier l'unicité
+        username = base_username
+        counter = 1
+        while cls.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        
+        return username
 
 
 class Student(models.Model):
@@ -70,6 +113,30 @@ class Student(models.Model):
         on_delete=models.CASCADE,
         related_name='student_profile',
         verbose_name="Utilisateur"
+    )
+    # Nouveaux champs pour le système d'inscription amélioré
+    school_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Identifiant scolaire",
+        help_text="Code d'invitation ou identifiant de l'école"
+    )
+    assigned_teacher = models.ForeignKey(
+        'Teacher',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Enseignant assigné"
+    )
+    parent_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name="Email du parent"
+    )
+    auto_generated_username = models.BooleanField(
+        default=False,
+        verbose_name="Nom d'utilisateur généré automatiquement"
     )
     grade_level = models.CharField(
         max_length=3,
@@ -137,6 +204,17 @@ class Teacher(models.Model):
         on_delete=models.CASCADE,
         related_name='teacher_profile',
         verbose_name="Utilisateur"
+    )
+    # Nouveaux champs pour le système d'inscription amélioré
+    school_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="Nom de l'école"
+    )
+    auto_generated_username = models.BooleanField(
+        default=False,
+        verbose_name="Nom d'utilisateur généré automatiquement"
     )
     subject_specialties = models.JSONField(
         default=list,
