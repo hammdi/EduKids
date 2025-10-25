@@ -405,6 +405,30 @@ def submit_story_correction(request):
             creativity_score=result.get('creativity_score', 5)
         )
         
+        # Award badge to student (if they don't already have it)
+        badge_type = result['badge']
+        try:
+            # Get or create the badge in the Badge model
+            badge_obj, created = Badge.objects.get_or_create(
+                badge_type=badge_type,
+                defaults={
+                    'name': badge_type.replace('_', ' ').title(),
+                    'description': f'Earned by writing creative stories',
+                    'icon': '✍️',
+                    'color': '#8B5CF6',
+                    'requirement': {'type': 'story_writing', 'count': 1}
+                }
+            )
+            
+            # Award badge to student (only if they don't have it)
+            StudentBadge.objects.get_or_create(
+                student=student,
+                badge=badge_obj
+            )
+        except Exception as badge_error:
+            print(f"Error awarding badge: {str(badge_error)}")
+            # Continue even if badge awarding fails
+        
         # Return success response with data
         return JsonResponse({
             'success': True,
