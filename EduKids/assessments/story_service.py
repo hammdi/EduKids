@@ -197,3 +197,93 @@ class StoryGeneratorService:
         
         import random
         return random.choice(messages)
+    
+    def correct_story(self, story_text):
+        """
+        Correct a child's story and provide feedback, questions, and badge
+        
+        Args:
+            story_text: The original story written by the child
+        
+        Returns:
+            dict: Corrected story, feedback, questions, badge, and creativity score
+        """
+        
+        prompt = f"""
+You are an educational assistant for young children (ages 6–12).
+Read the story written by the child below, and return:
+1. A corrected version of the story (grammar + spelling) - keep the child's creativity and voice
+2. Friendly, encouraging feedback (2-3 sentences) about what they did well
+3. 3 comprehension/reflection questions about their story
+4. A badge suggestion based on creativity and writing effort (choose from: enchanted_storybook, adventure_scroll, fantasy_narrator, imagination_explorer)
+5. A creativity score from 1-10 based on originality, imagination, and storytelling
+
+Return ONLY a valid JSON object in this exact format (no markdown, no extra text):
+{{
+    "corrected_story": "The corrected version here...",
+    "feedback": "Encouraging feedback here...",
+    "questions": ["Question 1?", "Question 2?", "Question 3?"],
+    "badge": "badge_type_here",
+    "creativity_score": 8
+}}
+
+Child's story:
+{story_text}
+"""
+        
+        try:
+            response = self.model.generate_content(prompt)
+            response_text = response.text.strip()
+            
+            # Clean up response (remove markdown code blocks if present)
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+            
+            response_text = response_text.strip()
+            
+            # Parse JSON
+            result = json.loads(response_text)
+            
+            # Validate required fields
+            required_fields = ['corrected_story', 'feedback', 'questions', 'badge', 'creativity_score']
+            for field in required_fields:
+                if field not in result:
+                    raise ValueError(f"Missing required field: {field}")
+            
+            # Validate badge choice
+            valid_badges = ['enchanted_storybook', 'adventure_scroll', 'fantasy_narrator', 'imagination_explorer']
+            if result['badge'] not in valid_badges:
+                result['badge'] = 'enchanted_storybook'  # Default badge
+            
+            # Validate creativity score
+            if not isinstance(result['creativity_score'], int) or result['creativity_score'] < 1 or result['creativity_score'] > 10:
+                result['creativity_score'] = 5  # Default score
+            
+            return result
+            
+        except json.JSONDecodeError as e:
+            # Fallback response if JSON parsing fails
+            return self._get_fallback_correction(story_text)
+        except Exception as e:
+            print(f"Error in story correction: {str(e)}")
+            return self._get_fallback_correction(story_text)
+    
+    def _get_fallback_correction(self, story_text):
+        """
+        Fallback response if AI fails
+        """
+        return {
+            "corrected_story": story_text,
+            "feedback": "🌟 What a wonderful story! Keep writing and let your imagination soar! ✨",
+            "questions": [
+                "What was your favorite part of writing this story?",
+                "If you could add one more character, who would it be?",
+                "What happens next in your story?"
+            ],
+            "badge": "enchanted_storybook",
+            "creativity_score": 7
+        }

@@ -245,3 +245,67 @@ class StudentBadge(models.Model):
     
     def __str__(self):
         return f"{self.student} - {self.badge.name}"
+
+
+class StoryAssessment(models.Model):
+    """
+    AI Story Correction - Children write stories and get corrections, feedback, and badges
+    """
+    BADGE_CHOICES = (
+        ('enchanted_storybook', 'Enchanted Storybook'),
+        ('adventure_scroll', 'Adventure Scroll'),
+        ('fantasy_narrator', 'Fantasy Narrator'),
+        ('imagination_explorer', 'Imagination Explorer'),
+    )
+    
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='story_assessments',
+        verbose_name="Student"
+    )
+    original_story = models.TextField(
+        verbose_name="Original Story",
+        help_text="The child's original story text"
+    )
+    corrected_story = models.TextField(
+        verbose_name="Corrected Story",
+        help_text="AI-corrected version with grammar and spelling fixes"
+    )
+    feedback = models.TextField(
+        verbose_name="AI Feedback",
+        help_text="Encouraging feedback from AI"
+    )
+    questions = models.JSONField(
+        verbose_name="Reflection Questions",
+        help_text="3 comprehension/reflection questions"
+    )
+    badge = models.CharField(
+        max_length=30,
+        choices=BADGE_CHOICES,
+        verbose_name="Badge Earned"
+    )
+    creativity_score = models.IntegerField(
+        default=0,
+        verbose_name="Creativity Score (0-10)",
+        help_text="AI-assessed creativity level"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    
+    class Meta:
+        verbose_name = "Story Assessment"
+        verbose_name_plural = "Story Assessments"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.student} - Story Assessment ({self.created_at.strftime('%Y-%m-%d')})"
+    
+    def get_badge_display_name(self):
+        """Return user-friendly badge name"""
+        badge_names = {
+            'enchanted_storybook': '📖 Enchanted Storybook',
+            'adventure_scroll': '📜 Adventure Scroll',
+            'fantasy_narrator': '🎭 Fantasy Narrator',
+            'imagination_explorer': '🌟 Imagination Explorer',
+        }
+        return badge_names.get(self.badge, self.badge)
