@@ -187,3 +187,26 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Custom User Model for EduKids
 AUTH_USER_MODEL = 'students.User'
+
+# CSRF Configuration
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+
+# Email Configuration for Account Activation
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'hamdikbaier8@gmail.com'
+EMAIL_HOST_PASSWORD = 'pwnh ttjb zlax sjco'
+DEFAULT_FROM_EMAIL = 'EduKids Platform <hamdikbaier8@gmail.com>'
+
+# Email Verification Settings
+EMAIL_VERIFICATION_REQUIRED = True
+EMAIL_VERIFICATION_TIMEOUT = 24  # hours
+SITE_URL = 'http://127.0.0.1:8000'  # Change to your domain in production

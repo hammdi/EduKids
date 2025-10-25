@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Resend Verification - EduKids{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+                    <div class="card-header border-0 p-4" 
+                         style="background: linear-gradient(135deg, #667eea08, #667eea15); border-radius: 25px 25px 0 0;">
+                        <div class="text-center">
+                            <div class="icon-container mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                                <i class="fas fa-envelope fa-2x" style="color: #667eea;"></i>
+                            </div>
+                            <h2 class="fw-bold text-dark mb-2">Resend Verification Email</h2>
+                            <p class="text-muted mb-0">Enter your email address to receive a new verification link</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-5">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-bold text-dark mb-2">
+                                    <i class="fas fa-envelope me-2" style="color: #667eea;"></i>
+                                    Email Address
+                                </label>
+                                <input type="email" 
+                                       class="form-control form-control-lg rounded-pill px-4" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="Enter your email address"
+                                       style="border: 2px solid #e2e8f0;" 
+                                       required>
+                                <small class="text-muted mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    We'll send a new verification link to this email address
+                                </small>
+                            </div>
+                            
+                            <div class="d-grid gap-3">
+                                <button type="submit" class="btn btn-lg rounded-pill px-4" 
+                                        style="background: #667eea; border: none; color: white;">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Verification Email
+                                </button>
+                                
+                                <div class="text-center">
+                                    <a href="{% url 'login' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Login
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="mt-4">
+                            <div class="alert border-0" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-radius: 15px;">
+                                <h6 class="fw-bold text-dark mb-2">
+                                    <i class="fas fa-lightbulb me-2" style="color: #2196f3;"></i>
+                                    Didn't receive the email?
+                                </h6>
+                                <ul class="mb-0 ps-3 text-muted small">
+                                    <li>Check your spam/junk folder</li>
+                                    <li>Make sure you entered the correct email address</li>
+                                    <li>Wait a few minutes and try again</li>
+                                    <li>Contact support if the problem persists</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-container:hover {
+        transform: scale(1.02);
+        transition: transform 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 0.2rem #667eea25 !important;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

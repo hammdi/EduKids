@@ -6,7 +6,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('register/', views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
@@ -17,6 +17,10 @@ urlpatterns = [
     path('admin/users/<int:user_id>/', views.user_detail, name='user_detail'),
     path('admin/users/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('admin/users/<int:user_id>/delete/', views.user_delete, name='user_delete'),
+    
+    # Email verification URLs
+    path('verify-email/<uuid:token>/', views.verify_email, name='verify_email'),
+    path('resend-verification/', views.resend_verification, name='resend_verification'),
     
     # Redirect old Django default URLs
     path('accounts/profile/', views.profile, name='old_profile'),

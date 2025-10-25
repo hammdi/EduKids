@@ -36,9 +36,147 @@
                         {% endif %}
                     </div>
                     
-                    <form method="post">
+                    <form method="post" id="registrationForm">
                         {% csrf_token %}
-                        {{ form|crispy }}
+                        
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.last_name|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.email|as_crispy_field }}
+                            </div>
+                            {% if user_type == 'student' %}
+                            <div class="col-md-6">
+                                {{ form.birth_date|as_crispy_field }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Teacher Registration (simplified) -->
+                        {% if user_type == 'teacher' %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.subject_specialties|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.teaching_experience|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ form.certification_level|as_crispy_field }}
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Student Type Selection (only for students) -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-user-graduate me-2"></i>Type d'inscription
+                            </h5>
+                            <div class="row">
+                                <!-- Self Learning Option -->
+                                <div class="col-md-4">
+                                    <div class="card h-100 student-type-card" data-type="self_learning" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body text-center">
+                                            <input type="radio" name="student_type" value="self_learning" id="id_student_type_0" style="display: none;">
+                                            <i class="fas fa-user fa-2x text-primary mb-2"></i>
+                                            <h6 class="fw-bold">Auto-apprentissage</h6>
+                                            <small class="text-muted">Étudiant indépendant</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Classroom Option -->
+                                <div class="col-md-4">
+                                    <div class="card h-100 student-type-card" data-type="classroom" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body text-center">
+                                            <input type="radio" name="student_type" value="classroom" id="id_student_type_1" style="display: none;">
+                                            <i class="fas fa-chalkboard-teacher fa-2x text-success mb-2"></i>
+                                            <h6 class="fw-bold">Classe d'enseignant</h6>
+                                            <small class="text-muted">Lié à une classe</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Parent Monitored Option -->
+                                <div class="col-md-4">
+                                    <div class="card h-100 student-type-card" data-type="parent_monitored" style="cursor: pointer; transition: all 0.3s ease;">
+                                        <div class="card-body text-center">
+                                            <input type="radio" name="student_type" value="parent_monitored" id="id_student_type_2" style="display: none;">
+                                            <i class="fas fa-users fa-2x text-warning mb-2"></i>
+                                            <h6 class="fw-bold">Surveillé par parent</h6>
+                                            <small class="text-muted">Sous surveillance parentale</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Conditional Fields -->
+                        <div id="conditional-fields" style="display: none;">
+                            <div id="classroom-fields" class="mb-3" style="display: none;">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Entrez le code d'invitation de votre enseignant (ex: 211JMT6535) pour rejoindre sa classe.
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.teacher_invitation_code.id_for_label }}" class="form-label fw-bold">{{ form.teacher_invitation_code.label }}</label>
+                                    {{ form.teacher_invitation_code }}
+                                    <small class="form-text text-muted">{{ form.teacher_invitation_code.help_text }}</small>
+                                </div>
+                            </div>
+                            
+                            <div id="parent-fields" class="mb-3" style="display: none;">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-users me-2"></i>
+                                    Votre parent sera notifié de votre inscription.
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form.parent_email.id_for_label }}" class="form-label fw-bold">{{ form.parent_email.label }}</label>
+                                    {{ form.parent_email }}
+                                    <small class="form-text text-muted">{{ form.parent_email.help_text }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Academic Information (only for students) -->
+                        {% if user_type == 'student' %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.grade_level|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.learning_style|as_crispy_field }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Password Fields -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.password1|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.password2|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- Username Info (only for students) -->
+                        {% if user_type == 'student' %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nom d'utilisateur :</strong> Votre nom d'utilisateur sera généré automatiquement selon votre type d'inscription.
+                        </div>
+                        {% endif %}
                         
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg">
@@ -58,4 +196,162 @@
         </div>
     </div>
 </div>
+
+<style>
+    .student-type-card {
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .student-type-card:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        background: #fff;
+    }
+    
+    .student-type-card .form-check-input:checked + .form-check-label {
+        color: #667eea;
+    }
+    
+    .student-type-card .form-check-input:checked ~ * {
+        color: #667eea;
+    }
+    
+    .student-type-card.selected {
+        border-color: #667eea;
+        background: #e3f2fd;
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        position: relative;
+    }
+    
+    .student-type-card.selected::before {
+        content: '✓';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .student-type-card i {
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .student-type-card h6 {
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .student-type-card small {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    
+    .conditional-fields {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const studentTypeRadios = document.querySelectorAll('input[name="student_type"]');
+    const conditionalFields = document.getElementById('conditional-fields');
+    const classroomFields = document.getElementById('classroom-fields');
+    const parentFields = document.getElementById('parent-fields');
+    
+    // Handle student type selection
+    studentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                // Show conditional fields
+                conditionalFields.style.display = 'block';
+                
+                // Hide all conditional sections first
+                classroomFields.style.display = 'none';
+                parentFields.style.display = 'none';
+                
+                // Show relevant section based on selection
+                if (this.value === 'classroom') {
+                    classroomFields.style.display = 'block';
+                } else if (this.value === 'parent_monitored') {
+                    parentFields.style.display = 'block';
+                }
+                
+                // Remove selected class from all cards
+                document.querySelectorAll('.student-type-card').forEach(c => c.classList.remove('selected'));
+                // Add selected class to parent card
+                const parentCard = this.closest('.student-type-card');
+                if (parentCard) {
+                    parentCard.classList.add('selected');
+                }
+            }
+        });
+    });
+    
+    // Handle card clicks and selection effects
+    document.querySelectorAll('.student-type-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            const cardType = this.getAttribute('data-type');
+            
+            if (radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+                
+                // Remove selected class from all cards
+                document.querySelectorAll('.student-type-card').forEach(c => c.classList.remove('selected'));
+                // Add selected class to clicked card
+                this.classList.add('selected');
+            }
+        });
+    });
+    
+    
+    // Form validation
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        const selectedType = document.querySelector('input[name="student_type"]:checked');
+        
+        if (selectedType) {
+            if (selectedType.value === 'classroom') {
+                const invitationCode = document.querySelector('input[name="teacher_invitation_code"]').value.trim();
+                if (!invitationCode) {
+                    e.preventDefault();
+                    alert('Veuillez entrer votre code d\'invitation pour une classe d\'enseignant.');
+                    return false;
+                }
+            } else if (selectedType.value === 'parent_monitored') {
+                const parentEmail = document.querySelector('input[name="parent_email"]').value.trim();
+                if (!parentEmail) {
+                    e.preventDefault();
+                    alert('Veuillez entrer l\'email de votre parent.');
+                    return false;
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

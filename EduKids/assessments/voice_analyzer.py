@@ -92,9 +92,34 @@ class VoiceAnalyzer:
         - Diversité lexicale
         - Concepts innovants
         - Connexions créatives
+        - DÉTECTION DE VIOLATION DE LANGUE (pénalité sévère)
+        - DÉTECTION DE TRICHERIE (lecture, répétition, etc.)
         """
+        print(f"\n{'='*60}")
+        print(f"🎨 ANALYSE D'ORIGINALITÉ")
+        print(f"{'='*60}")
+        
         doc = self.nlp(transcription) if self.nlp else None
         prompt_doc = self.nlp(prompt) if self.nlp else None
+        
+        # DÉTECTION DE VIOLATION DE LANGUE
+        language_violation = self._detect_language_violation(transcription, prompt)
+        print(f"🌍 Détection de langue:")
+        print(f"   Langue du prompt: {language_violation['prompt_language']}")
+        print(f"   Langue de la transcription: {language_violation['transcription_language']}")
+        print(f"   Correspondance: {'✅ OUI' if language_violation['language_match'] else '❌ NON'}")
+        print(f"   Pourcentage de correspondance: {language_violation['match_percentage']}%")
+        print(f"   Sévérité de la violation: {language_violation['violation_severity']}")
+        
+        # DÉTECTION DE TRICHERIE
+        cheating_detection = self._detect_cheating(transcription, prompt)
+        print(f"🚨 Détection de tricherie:")
+        print(f"   Score de tricherie: {cheating_detection['cheating_score']}/100")
+        print(f"   Sévérité: {cheating_detection['severity']}")
+        if cheating_detection['violations']:
+            print(f"   Violations détectées:")
+            for violation in cheating_detection['violations']:
+                print(f"      - {violation}")
         
         # Extraire les mots-clés
         transcription_words = set(transcription.lower().split())
@@ -114,10 +139,13 @@ class VoiceAnalyzer:
         if doc:
             named_entities = [ent.text for ent in doc.ents]
         
-        # Score d'originalité (0-100)
+        # Score d'originalité (0-100) avec pénalités pour violations
         originality_score = self._calculate_originality_score(
-            unique_words, lexical_diversity, named_entities, total_words
+            unique_words, lexical_diversity, named_entities, total_words, language_violation, cheating_detection
         )
+        
+        print(f"\n📊 Score d'originalité final: {originality_score}/100")
+        print(f"{'='*60}\n")
         
         return {
             'unique_words': list(unique_words)[:20],  # Top 20
@@ -125,18 +153,248 @@ class VoiceAnalyzer:
             'lexical_diversity': round(lexical_diversity, 3),
             'named_entities': named_entities,
             'creative_connections': self._detect_creative_connections(transcription),
+            'language_violation': language_violation,
+            'cheating_detection': cheating_detection,
             'score': originality_score
         }
     
-    def _calculate_originality_score(self, unique_words, lexical_diversity, entities, total_words) -> float:
-        """Calcule le score d'originalité"""
-        # Pondérations
+    def _detect_language_violation(self, transcription: str, prompt: str) -> Dict:
+        """
+        Détecte si l'étudiant parle dans une langue différente de celle demandée
+        """
+        # Détecter la langue du prompt (français, anglais, arabe)
+        prompt_language = self._detect_language(prompt)
+        transcription_language = self._detect_language(transcription)
+        
+        # Vérifier si les langues correspondent (incluant langues mixtes)
+        language_match = prompt_language == transcription_language
+        
+        # DÉTECTION DE LANGUE MIXTE = VIOLATION SEULEMENT si vraiment mixte
+        if 'mixed' in transcription_language:
+            language_match = False
+            # Pénalité proportionnelle au mélange
+            if transcription_language == 'mixed_english_french':
+                match_percentage = 20  # Pénalité mais pas échec total
+            else:
+                match_percentage = 20
+        
+        # Calculer le pourcentage de correspondance
+        if not language_match:
+            # Analyser les mots communs entre les langues
+            prompt_words = set(prompt.lower().split())
+            transcription_words = set(transcription.lower().split())
+            common_words = prompt_words.intersection(transcription_words)
+            match_percentage = len(common_words) / max(len(transcription_words), 1) * 100
+        else:
+            match_percentage = 100
+        
+        return {
+            'prompt_language': prompt_language,
+            'transcription_language': transcription_language,
+            'language_match': language_match,
+            'match_percentage': round(match_percentage, 2),
+            'violation_severity': 'high' if match_percentage < 30 else 'medium' if match_percentage < 60 else 'low'
+        }
+    
+    def _detect_language(self, text: str) -> str:
+        """
+        Détecte la langue d'un texte avec analyse avancée (français, anglais, arabe)
+        """
+        text_lower = text.lower()
+        words = text_lower.split()
+        
+        # Mots-clés français (plus complets)
+        french_words = [
+            'le', 'la', 'les', 'de', 'du', 'des', 'et', 'ou', 'mais', 'donc', 'alors', 'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles',
+            'un', 'une', 'ce', 'cette', 'ces', 'son', 'sa', 'ses', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes',
+            'avec', 'sans', 'pour', 'dans', 'sur', 'par', 'vers', 'chez', 'entre', 'pendant', 'depuis',
+            'très', 'plus', 'moins', 'bien', 'mal', 'beaucoup', 'peu', 'assez', 'trop', 'si', 'que', 'qui', 'quoi', 'où', 'quand', 'comment', 'pourquoi'
+        ]
+        french_count = sum(1 for word in words if word in french_words)
+        
+        # Mots-clés anglais (plus complets)
+        english_words = [
+            'the', 'a', 'an', 'and', 'or', 'but', 'so', 'then', 'i', 'you', 'he', 'she', 'we', 'they', 'is', 'are', 'was', 'were',
+            'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those',
+            'with', 'without', 'for', 'in', 'on', 'by', 'to', 'from', 'at', 'between', 'during', 'since',
+            'very', 'more', 'less', 'good', 'bad', 'much', 'little', 'enough', 'too', 'if', 'that', 'what', 'where', 'when', 'how', 'why',
+            'super', 'power', 'magic', 'magical', 'have', 'can', 'could', 'would', 'should', 'will', 'shall'
+        ]
+        english_count = sum(1 for word in words if word in english_words)
+        
+        # Mots-clés arabes (caractères arabes)
+        arabic_chars = sum(1 for char in text if '\u0600' <= char <= '\u06FF')
+        arabic_count = arabic_chars / max(len(text), 1) * 100
+        
+        # Analyse des patterns linguistiques
+        french_patterns = [
+            r'\b(je|tu|il|elle|nous|vous|ils|elles)\b',  # Pronoms
+            r'\b(le|la|les|un|une|des|du|de|d\w+)\b',    # Articles
+            r'\b(est|sont|était|étaient|sera|seront)\b', # Verbes être
+            r'\b(ai|as|a|avons|avez|ont|avais|avait|avions|aviez|avaient)\b'  # Avoir
+        ]
+        
+        english_patterns = [
+            r'\b(i|you|he|she|we|they)\b',  # Pronouns
+            r'\b(the|a|an)\b',              # Articles
+            r'\b(is|are|was|were|will|would)\b',  # Be verbs
+            r'\b(have|has|had|having)\b'   # Have
+        ]
+        
+        # Compter les patterns
+        import re
+        french_pattern_count = sum(len(re.findall(pattern, text_lower)) for pattern in french_patterns)
+        english_pattern_count = sum(len(re.findall(pattern, text_lower)) for pattern in english_patterns)
+        
+        # Score total par langue
+        french_score = french_count + french_pattern_count
+        english_score = english_count + english_pattern_count
+        
+        print(f"🌍 LANGUAGE DEBUG: French={french_score}, English={english_score}")
+        
+        # DÉTECTION DE LANGUE AMÉLIORÉE
+        if arabic_count > 20:
+            return 'arabic'
+        elif english_score > 0 and french_score > 0:
+            # Langue mixte si les deux langues sont présentes
+            if english_score >= 3 and french_score >= 3:  # Seuils plus bas
+                if english_score > french_score:
+                    return 'mixed_english_french'
+                else:
+                    return 'mixed_french_english'
+            elif english_score > french_score * 1.5:  # Anglais dominant (seuil plus bas)
+                return 'english'
+            elif french_score > english_score * 1.5:  # Français dominant (seuil plus bas)
+                return 'french'
+            else:
+                # Si scores proches, détecter comme mixte
+                return 'mixed_french_english'
+        elif english_score > french_score and english_score > 1:
+            return 'english'
+        elif french_score > english_score and french_score > 2:
+            return 'french'
+        else:
+            result = 'english'  # Par défaut anglais
+        
+        print(f"🌍 FINAL LANGUAGE: {result}")
+        return result
+    
+    def _calculate_originality_score(self, unique_words, lexical_diversity, entities, total_words, language_violation, cheating_detection) -> float:
+        """Calcule le score d'originalité avec pénalités pour violations et tricherie"""
+        # Score de base
         unique_score = min(len(unique_words) / max(total_words * 0.5, 1) * 100, 100)  # 40%
         diversity_score = lexical_diversity * 100  # 40%
         entity_score = min(len(entities) / max(total_words * 0.1, 1) * 100, 100)  # 20%
         
-        final_score = (unique_score * 0.4) + (diversity_score * 0.4) + (entity_score * 0.2)
-        return round(min(final_score, 100), 2)
+        base_score = (unique_score * 0.4) + (diversity_score * 0.4) + (entity_score * 0.2)
+        
+        # PÉNALITÉ ULTRA-SÉVÈRE pour violation de langue
+        if not language_violation['language_match']:
+            if language_violation['violation_severity'] == 'high':
+                base_score = 0  # 100% de pénalité - ÉCHEC TOTAL
+            elif language_violation['violation_severity'] == 'medium':
+                base_score *= 0.05  # 95% de pénalité
+            else:
+                base_score *= 0.2  # 80% de pénalité
+        
+        # PÉNALITÉ ULTRA-SÉVÈRE pour tricherie
+        if cheating_detection['cheating_score'] > 0:
+            if cheating_detection['severity'] == 'high':
+                base_score = 0  # 100% de pénalité - ÉCHEC TOTAL
+            elif cheating_detection['severity'] == 'medium':
+                base_score = 0  # 100% de pénalité - ÉCHEC TOTAL
+            else:
+                base_score *= 0.1  # 90% de pénalité
+        
+        return round(min(base_score, 100), 2)
+    
+    def _detect_cheating(self, transcription: str, prompt: str) -> Dict:
+        """
+        Détecte les tentatives de tricherie
+        """
+        import re
+        
+        cheating_indicators = {
+            'reading_from_script': False,
+            'repetitive_content': False,
+            'insufficient_content': False,
+            'copy_paste_detection': False,
+            'artificial_patterns': False,
+            'violations': []
+        }
+        
+        # 1. Détection de lecture de script (patterns trop parfaits)
+        perfect_patterns = [
+            r'\b(je vais vous parler|i will talk about|let me explain)\b',  # Phrases de présentation
+            r'\b(premièrement|deuxièmement|troisièmement|first|second|third)\b',  # Structure trop formelle
+            r'\b(en conclusion|pour conclure|in conclusion|to conclude)\b'  # Phrases de conclusion
+        ]
+        
+        perfect_count = sum(len(re.findall(pattern, transcription.lower())) for pattern in perfect_patterns)
+        if perfect_count >= 2:
+            cheating_indicators['reading_from_script'] = True
+            cheating_indicators['violations'].append("Lecture de script détectée")
+        
+        # 2. Détection de contenu répétitif - PLUS SÉVÈRE
+        words = transcription.lower().split()
+        if len(words) > 0:
+            word_freq = {}
+            for word in words:
+                if len(word) > 3:
+                    word_freq[word] = word_freq.get(word, 0) + 1
+            
+            # Si un mot apparaît plus de 20% du temps (plus sévère)
+            max_freq = max(word_freq.values()) if word_freq else 0
+            repetition_ratio = max_freq / len(words)
+            
+            if repetition_ratio > 0.5:  # Plus de 50% de répétition = ÉCHEC TOTAL
+                cheating_indicators['repetitive_content'] = True
+                cheating_indicators['violations'].append("Contenu extrêmement répétitif")
+            elif repetition_ratio > 0.3:  # Plus de 30% = SÉVÈRE
+                cheating_indicators['repetitive_content'] = True
+                cheating_indicators['violations'].append("Contenu très répétitif")
+            elif repetition_ratio > 0.2:  # Plus de 20% = MODÉRÉ
+                cheating_indicators['repetitive_content'] = True
+                cheating_indicators['violations'].append("Contenu répétitif")
+        
+        # 3. Détection de contenu insuffisant
+        if len(transcription.split()) < 10:
+            cheating_indicators['insufficient_content'] = True
+            cheating_indicators['violations'].append("Contenu insuffisant (moins de 10 mots)")
+        
+        # 4. Détection de copier-coller (mots identiques à la question)
+        prompt_words = set(prompt.lower().split())
+        transcription_words = set(transcription.lower().split())
+        common_words = prompt_words.intersection(transcription_words)
+        
+        if len(common_words) / max(len(transcription_words), 1) > 0.7:
+            cheating_indicators['copy_paste_detection'] = True
+            cheating_indicators['violations'].append("Copie excessive de la question")
+        
+        # 5. Détection de patterns artificiels
+        artificial_patterns = [
+            r'\b(um|uh|euh|ah|oh)\b',  # Hésitations excessives
+            r'\b(je pense que|i think that)\b',  # Phrases de remplissage
+            r'\b(très|very|really|vraiment)\b'  # Adverbes excessifs
+        ]
+        
+        artificial_count = sum(len(re.findall(pattern, transcription.lower())) for pattern in artificial_patterns)
+        if artificial_count > len(transcription.split()) * 0.2:
+            cheating_indicators['artificial_patterns'] = True
+            cheating_indicators['violations'].append("Patterns artificiels détectés")
+        
+        # Calculer le score de tricherie - PLUS SÉVÈRE
+        violation_count = len(cheating_indicators['violations'])
+        cheating_score = min(violation_count * 30, 100)  # 30 points par violation (plus sévère)
+        
+        # Si répétition extrême, score maximum
+        if any("extrêmement répétitif" in v for v in cheating_indicators['violations']):
+            cheating_score = 100
+        
+        cheating_indicators['cheating_score'] = cheating_score
+        cheating_indicators['severity'] = 'high' if violation_count >= 2 else 'medium' if violation_count >= 1 else 'low'
+        
+        return cheating_indicators
     
     def _detect_creative_connections(self, text: str) -> List[str]:
         """Détecte les connexions créatives (métaphores, comparaisons)"""
@@ -183,9 +441,24 @@ class VoiceAnalyzer:
         }
     
     def _analyze_structure(self, text: str) -> Dict:
-        """Analyse la structure du discours"""
+        """Analyse la structure du discours avec détection d'hésitations"""
         sentences = text.split('.')
         sentences = [s.strip() for s in sentences if s.strip()]
+        
+        # DÉTECTION D'HÉSITATIONS NATURELLES (plus tolérant)
+        hesitation_words = ['euh', 'uh', 'um', 'ah', 'oh', 'ben', 'donc', 'alors', 'je sais pas', 'je ne sais pas']
+        hesitation_count = sum(text.lower().count(word) for word in hesitation_words)
+        
+        # HÉSITATIONS NORMALES vs EXCESSIVES
+        total_words = len(text.split())
+        hesitation_ratio = hesitation_count / max(total_words, 1)
+        
+        # Répétitions (signe d'hésitation)
+        words = text.lower().split()
+        repetition_count = 0
+        for i in range(len(words) - 1):
+            if words[i] == words[i + 1]:
+                repetition_count += 1
         
         # Connecteurs logiques
         connectors = ['donc', 'alors', 'ensuite', 'puis', 'enfin', 'parce que', 'car', 'mais', 'cependant']
@@ -195,9 +468,9 @@ class VoiceAnalyzer:
         has_introduction = any(word in text.lower()[:100] for word in ['bonjour', 'je vais', 'je pense'])
         has_conclusion = any(word in text.lower()[-100:] for word in ['donc', 'enfin', 'voilà', 'merci'])
         
-        # Score de structure
+        # Score de structure avec pénalités pour hésitations
         structure_score = self._calculate_structure_score(
-            len(sentences), connector_count, has_introduction, has_conclusion
+            len(sentences), connector_count, has_introduction, has_conclusion, hesitation_count, repetition_count, hesitation_ratio
         )
         
         return {
@@ -209,20 +482,36 @@ class VoiceAnalyzer:
             'score': structure_score
         }
     
-    def _calculate_structure_score(self, sent_count, connectors, intro, conclusion) -> float:
-        """Calcule le score de structure"""
-        score = 50  # Base
+    def _calculate_structure_score(self, sent_count, connectors, intro, conclusion, hesitation_count, repetition_count, hesitation_ratio) -> float:
+        """Calcule le score de structure avec évaluation réaliste des hésitations"""
+        score = 60  # Base plus élevée
         
-        # Nombre de phrases approprié
+        # ÉVALUATION RÉALISTE DES HÉSITATIONS
+        if hesitation_ratio > 0.15:  # Plus de 15% d'hésitations = problématique
+            score = 30  # MAUVAIS
+        elif hesitation_ratio > 0.10:  # Plus de 10% d'hésitations = modéré
+            score = 50  # MOYEN
+        elif hesitation_ratio > 0.05:  # Plus de 5% d'hésitations = acceptable
+            score = 70  # BIEN
+        else:  # Moins de 5% d'hésitations = excellent
+            score = 85  # EXCELLENT
+        
+        # PÉNALITÉS LÉGÈRES pour répétitions excessives
+        if repetition_count > 5:
+            score = max(score - 15, 40)  # Pénalité modérée
+        elif repetition_count > 3:
+            score = max(score - 10, 50)  # Pénalité légère
+        
+        # BONUS pour structure
         if 3 <= sent_count <= 10:
-            score += 20
+            score += 15
         elif sent_count > 2:
             score += 10
         
-        # Connecteurs
-        score += min(connectors * 5, 20)
+        # BONUS pour connecteurs
+        score += min(connectors * 3, 15)
         
-        # Organisation
+        # BONUS pour organisation
         if intro:
             score += 5
         if conclusion:
@@ -454,7 +743,7 @@ class VoiceAnalyzer:
                 'avg_pause_duration': 0.5,
                 'total_pause_time': 1.0,
                 'pauses_distribution': [0.3, 0.7],
-                'score': 75  # Default good score
+                'score': 20  # Default LOW score for short responses
             }
         
         try:
@@ -479,8 +768,13 @@ class VoiceAnalyzer:
             avg_pause = sum(pauses) / len(pauses) if pauses else 0
             total_pause_time = sum(pauses)
             
-            # Timing score
-            timing_score = self._calculate_timing_score(pause_count, avg_pause, len(intervals))
+            # Calculate total duration
+            total_duration = len(y) / sr
+            print(f"🎯 DURATION DEBUG: {total_duration:.2f} seconds")
+            
+            # Timing score with duration penalty
+            timing_score = self._calculate_timing_score(pause_count, avg_pause, len(intervals), total_duration)
+            print(f"🎯 TIMING SCORE: {timing_score}")
             
             return {
                 'speech_segments': len(intervals),
@@ -498,17 +792,29 @@ class VoiceAnalyzer:
                 'score': 75  # Default good score
             }
     
-    def _calculate_timing_score(self, pause_count, avg_pause, segments) -> float:
-        """Calcule le score de temporalité"""
-        score = 70  # Base
+    def _calculate_timing_score(self, pause_count, avg_pause, segments, total_duration) -> float:
+        """Calcule le score de temporalité avec pénalité de durée"""
+        score = 0  # Start from 0
         
-        # Présence de pauses appropriées
+        # PÉNALITÉ MODÉRÉE pour durée insuffisante
+        if total_duration < 60:  # Moins de 1 minute
+            return 20  # TRÈS MAUVAIS
+        elif total_duration < 90:  # Moins de 1.5 minutes
+            return 40  # MAUVAIS
+        elif total_duration < 120:  # Moins de 2 minutes
+            return 60  # MOYEN
+        elif total_duration < 150:  # Moins de 2.5 minutes
+            return 75  # BIEN
+        else:  # 2.5+ minutes
+            score = 85  # Base pour durée excellente
+        
+        # Bonus pour pauses appropriées
         if 2 <= pause_count <= 8:
             score += 15
         elif pause_count > 0:
             score += 5
         
-        # Durée moyenne des pauses (0.3-1.0s optimal)
+        # Bonus pour durée moyenne des pauses
         if 0.3 <= avg_pause <= 1.0:
             score += 15
         elif 0.1 <= avg_pause < 0.3 or 1.0 < avg_pause <= 1.5:
@@ -519,28 +825,125 @@ class VoiceAnalyzer:
     # ========== 4. SCORING ET FEEDBACK ==========
     
     def calculate_scores(self, originality: Dict, verbal: Dict, paraverbal: Dict) -> Dict:
-        """Consolide tous les scores"""
+        """Consolide tous les scores avec pénalités ULTRA-SÉVÈRES"""
+        
+        # Scores de base
+        originality_score = originality['score']
+        structure_score = verbal['structure']['score']
+        fluency_score = verbal['fluency']['score']
+        vocabulary_score = verbal['vocabulary']['score']
+        intonation_score = paraverbal['intonation']['score']
+        rhythm_score = paraverbal['rhythm']['score']
+        timing_score = paraverbal['timing']['score']
+        
+        # COHÉRENCE DES SCORES - Si paraverbal est bas, verbal doit être ajusté
+        avg_paraverbal = (intonation_score + rhythm_score + timing_score) / 3
+        avg_verbal = (structure_score + fluency_score + vocabulary_score) / 3
+        
+        print(f"📊 COHÉRENCE DEBUG: Paraverbal={avg_paraverbal:.1f}, Verbal={avg_verbal:.1f}")
+        
+        # Si paraverbal est beaucoup plus bas que verbal, ajuster verbal
+        if avg_paraverbal < avg_verbal - 20:  # Différence de plus de 20 points
+            adjustment_factor = (avg_paraverbal + 20) / avg_verbal
+            print(f"🔧 AJUSTEMENT: Verbal réduit par {adjustment_factor:.2f}")
+            structure_score *= adjustment_factor
+            fluency_score *= adjustment_factor
+            vocabulary_score *= adjustment_factor
+        
+        # Si verbal est beaucoup plus bas que paraverbal, ajuster paraverbal
+        elif avg_verbal < avg_paraverbal - 20:  # Différence de plus de 20 points
+            adjustment_factor = (avg_verbal + 20) / avg_paraverbal
+            print(f"🔧 AJUSTEMENT: Paraverbal réduit par {adjustment_factor:.2f}")
+            intonation_score *= adjustment_factor
+            rhythm_score *= adjustment_factor
+            timing_score *= adjustment_factor
+        
+        # PÉNALITÉS PROPORTIONNELLES pour violation de langue
+        if 'language_violation' in originality and not originality['language_violation']['language_match']:
+            violation = originality['language_violation']
+            if violation['violation_severity'] == 'high':
+                # PÉNALITÉ SÉVÈRE mais pas échec total
+                originality_score *= 0.3
+                structure_score *= 0.5
+                fluency_score *= 0.5
+                vocabulary_score *= 0.5
+                intonation_score *= 0.5
+                rhythm_score *= 0.5
+                timing_score *= 0.5
+            elif violation['violation_severity'] == 'medium':
+                # PÉNALITÉ MODÉRÉE
+                originality_score *= 0.6
+                structure_score *= 0.7
+                fluency_score *= 0.7
+                vocabulary_score *= 0.7
+                intonation_score *= 0.7
+                rhythm_score *= 0.7
+                timing_score *= 0.7
+        
+        # PÉNALITÉS ULTRA-SÉVÈRES pour tricherie
+        if 'cheating_detection' in originality and originality['cheating_detection']['cheating_score'] > 0:
+            cheating = originality['cheating_detection']
+            if cheating['severity'] in ['high', 'medium']:
+                # ÉCHEC TOTAL pour tricherie
+                originality_score = 0
+                structure_score = 0
+                fluency_score = 0
+                vocabulary_score = 0
+                intonation_score = 0
+                rhythm_score = 0
+                timing_score = 0
+            else:
+                # PÉNALITÉ DE 80%
+                originality_score *= 0.2
+                structure_score *= 0.2
+                fluency_score *= 0.2
+                vocabulary_score *= 0.2
+                intonation_score *= 0.2
+                rhythm_score *= 0.2
+                timing_score *= 0.2
+        
         return {
-            'originality_score': originality['score'],
-            'verbal_structure_score': verbal['structure']['score'],
-            'verbal_fluency_score': verbal['fluency']['score'],
-            'verbal_vocabulary_score': verbal['vocabulary']['score'],
-            'paraverbal_intonation_score': paraverbal['intonation']['score'],
-            'paraverbal_rhythm_score': paraverbal['rhythm']['score'],
-            'paraverbal_timing_score': paraverbal['timing']['score'],
+            'originality_score': originality_score,
+            'verbal_structure_score': structure_score,
+            'verbal_fluency_score': fluency_score,
+            'verbal_vocabulary_score': vocabulary_score,
+            'paraverbal_intonation_score': intonation_score,
+            'paraverbal_rhythm_score': rhythm_score,
+            'paraverbal_timing_score': timing_score,
         }
     
     def generate_feedback(self, scores: Dict, originality: Dict, verbal: Dict, paraverbal: Dict) -> str:
         """Génère un feedback personnalisé"""
         feedback_parts = []
         
-        # Feedback originalité
-        if scores['originality_score'] >= 75:
-            feedback_parts.append("✨ Excellente créativité! Tes idées sont originales et bien développées.")
-        elif scores['originality_score'] >= 50:
-            feedback_parts.append("💡 Bonne réflexion, tu peux encore enrichir tes idées avec plus de détails.")
-        else:
-            feedback_parts.append("🌱 N'hésite pas à développer davantage tes idées et à être plus créatif.")
+        # FEEDBACK CRITIQUE pour violation de langue
+        if 'language_violation' in originality and not originality['language_violation']['language_match']:
+            violation = originality['language_violation']
+            if violation['violation_severity'] == 'high':
+                feedback_parts.append("🚨 VIOLATION MAJEURE: Tu as parlé en " + violation['transcription_language'] + " alors que l'exercice était en " + violation['prompt_language'] + ". Score sévèrement pénalisé!")
+            elif violation['violation_severity'] == 'medium':
+                feedback_parts.append("⚠️ VIOLATION: Tu as mélangé les langues. Respecte la langue demandée pour une meilleure évaluation.")
+            else:
+                feedback_parts.append("💡 Attention: Essaie de rester dans la langue demandée pour l'exercice.")
+        
+        # FEEDBACK CRITIQUE pour tricherie
+        if 'cheating_detection' in originality and originality['cheating_detection']['cheating_score'] > 0:
+            cheating = originality['cheating_detection']
+            if cheating['severity'] == 'high':
+                feedback_parts.append("🚨 TRICHERIE DÉTECTÉE: " + ", ".join(cheating['violations']) + ". Score sévèrement pénalisé!")
+            elif cheating['severity'] == 'medium':
+                feedback_parts.append("⚠️ TRICHERIE: " + ", ".join(cheating['violations']) + ". Respecte les règles d'évaluation.")
+            else:
+                feedback_parts.append("💡 Attention: " + ", ".join(cheating['violations']) + ". Améliore ton approche.")
+        
+        # Feedback originalité (seulement si pas de violation majeure)
+        if not ('language_violation' in originality and originality['language_violation']['violation_severity'] == 'high'):
+            if scores['originality_score'] >= 75:
+                feedback_parts.append("✨ Excellente créativité! Tes idées sont originales et bien développées.")
+            elif scores['originality_score'] >= 50:
+                feedback_parts.append("💡 Bonne réflexion, tu peux encore enrichir tes idées avec plus de détails.")
+            else:
+                feedback_parts.append("🌱 N'hésite pas à développer davantage tes idées et à être plus créatif.")
         
         # Feedback verbal
         avg_verbal = (scores['verbal_structure_score'] + scores['verbal_fluency_score'] + scores['verbal_vocabulary_score']) / 3
@@ -561,4 +964,72 @@ class VoiceAnalyzer:
             feedback_parts.append("⏸️ Bravo, tu gères bien les pauses dans ton discours!")
         
         return " ".join(feedback_parts)
+    
+    def generate_recommendations(self, scores: Dict, originality: Dict, verbal: Dict, paraverbal: Dict) -> List[str]:
+        """Génère des recommandations personnalisées pour français et anglais"""
+        recommendations = []
+        
+        # Détecter la langue pour des recommandations spécifiques
+        language = 'french'  # Par défaut
+        if 'language_violation' in originality:
+            language = originality['language_violation'].get('transcription_language', 'french')
+        
+        # Recommandations basées sur les scores
+        if scores['originality_score'] < 50:
+            if language == 'french':
+                recommendations.append("💡 Développe tes idées personnelles en français. Utilise des expressions comme 'je pense que', 'à mon avis', 'selon moi'.")
+            else:
+                recommendations.append("💡 Develop your personal ideas in English. Use expressions like 'I think that', 'in my opinion', 'from my perspective'.")
+        
+        if scores['verbal_structure_score'] < 60:
+            if language == 'french':
+                recommendations.append("📝 Améliore la structure de tes phrases françaises. Utilise la structure SVO (Sujet-Verbe-Objet) et évite les phrases trop longues.")
+            else:
+                recommendations.append("📝 Improve your English sentence structure. Use proper SVO (Subject-Verb-Object) order and avoid run-on sentences.")
+        
+        if scores['verbal_fluency_score'] < 60:
+            if language == 'french':
+                recommendations.append("🗣️ Parle plus couramment en français. Évite les 'euh', 'ben', 'alors' et utilise des connecteurs comme 'donc', 'cependant', 'par ailleurs'.")
+            else:
+                recommendations.append("🗣️ Speak more fluently in English. Avoid 'um', 'uh', 'like' and use connectors like 'therefore', 'however', 'moreover'.")
+        
+        if scores['verbal_vocabulary_score'] < 60:
+            if language == 'french':
+                recommendations.append("📚 Enrichis ton vocabulaire français. Utilise des synonymes, des adjectifs précis, et évite les répétitions.")
+            else:
+                recommendations.append("📚 Expand your English vocabulary. Use synonyms, precise adjectives, and avoid repetitions.")
+        
+        if scores['paraverbal_intonation_score'] < 60:
+            if language == 'french':
+                recommendations.append("🎵 Varie ton intonation française. Utilise les accents toniques et les modulations de voix pour exprimer tes émotions.")
+            else:
+                recommendations.append("🎵 Vary your English intonation. Use stress patterns and voice modulation to express your emotions.")
+        
+        if scores['paraverbal_rhythm_score'] < 60:
+            if language == 'french':
+                recommendations.append("⏰ Améliore le rythme de ta parole française. Respecte les pauses naturelles et la musicalité de la langue.")
+            else:
+                recommendations.append("⏰ Improve your English speech rhythm. Respect natural pauses and the musicality of the language.")
+        
+        if scores['paraverbal_timing_score'] < 60:
+            if language == 'french':
+                recommendations.append("⏱️ Gère mieux le timing de tes pauses en français. Utilise les silences pour structurer ton discours.")
+            else:
+                recommendations.append("⏱️ Better manage your English pause timing. Use silences to structure your speech.")
+        
+        # Recommandations spécifiques pour la tricherie
+        if 'cheating_detection' in originality and originality['cheating_detection']['cheating_score'] > 0:
+            if language == 'french':
+                recommendations.append("🚨 ÉVITE LA TRICHERIE: Parle naturellement, évite de lire un script, et développe tes propres idées.")
+            else:
+                recommendations.append("🚨 AVOID CHEATING: Speak naturally, avoid reading from a script, and develop your own ideas.")
+        
+        # Recommandations pour améliorer la créativité
+        if scores['originality_score'] < 70:
+            if language == 'french':
+                recommendations.append("✨ Pour plus de créativité: Utilise des métaphores, des comparaisons, et des exemples personnels.")
+            else:
+                recommendations.append("✨ For more creativity: Use metaphors, comparisons, and personal examples.")
+        
+        return recommendations
 
