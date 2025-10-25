@@ -228,12 +228,12 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="d-grid gap-3">
-                <a href="/assessments/voice-audio-only/" class="btn btn-primary btn-lg rounded-pill">
-                    <i class="fas fa-play me-2"></i>Start New Exercise
-                </a>
-                <a href="/assessments/voice-audio-only/" class="btn btn-success btn-lg rounded-pill">
-                    <i class="fas fa-microphone me-2"></i>Voice Assessment OPENAI
-                </a>
+                        <a href="{% url 'student_exercises' %}" class="btn btn-primary btn-lg rounded-pill">
+                            <i class="fas fa-play me-2"></i>Start New Exercise
+                        </a>
+                        <a href="{% url 'assessments:voice_assessment' %}" class="btn btn-success btn-lg rounded-pill">
+                            <i class="fas fa-microphone me-2"></i>Voice Assessment
+                        </a>
                         <a href="#" class="btn btn-outline-primary rounded-pill">
                             <i class="fas fa-chart-bar me-2"></i>View Progress
                         </a>
