@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+{% block title %}Take Exercise{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="mb-3"><i class="fas fa-play me-2"></i>{{ exercise.title }}</h3>
+  <div class="card mb-3">
+    <div class="card-body">
+      <p class="text-muted mb-1">{{ exercise.topic.subject.name }} • {{ exercise.topic.name }} ({{ exercise.topic.grade_level }})</p>
+      <p>{{ exercise.instructions }}</p>
+    </div>
+  </div>
+
+  <form method="post" class="card p-3">
+    {% csrf_token %}
+    <p class="text-muted">Questions UI will be added next. Submit to simulate.</p>
+    <div class="d-flex gap-2">
+      <button class="btn btn-success">Submit</button>
+      <a href="{% url 'exercises:student_exercises' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+
+
