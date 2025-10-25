@@ -1,0 +1,33 @@
+{% if user.is_authenticated %}
+<aside class="sidebar" style="min-width: 260px;">
+  <div class="p-4">
+    <div class="d-flex align-items-center mb-4 animate-fadeInUp">
+      <div class="me-3">
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+          <i class="fas fa-user fa-lg"></i>
+        </div>
+      </div>
+      <div>
+        <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
+        <small class="text-muted">{{ user.get_user_type_display }}</small>
+      </div>
+    </div>
+    <hr class="my-4">
+    <ul class="nav flex-column">
+      {% if user.student %}
+        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'student_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'exercises:student_exercises' %}"><i class="fas fa-book me-2"></i>Exercises</a></li>
+        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'assessments:voice_assessment' %}"><i class="fas fa-microphone me-2"></i>Voice Assessment</a></li>
+      {% elif user.teacher %}
+        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'teacher_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'exercises:teacher_exercises' %}"><i class="fas fa-edit me-2"></i>My Exercises</a></li>
+        <li class="nav-item mb-2"><a class="nav-link" href="{% url 'teacher_assessments' %}"><i class="fas fa-chart-bar me-2"></i>Assessments</a></li>
+      {% endif %}
+      <hr class="my-3">
+      <li class="nav-item mb-2"><a class="nav-link" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+      <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+    </ul>
+  </div>
+</aside>
+{% endif %}
+
