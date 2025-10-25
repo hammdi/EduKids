@@ -18,8 +18,8 @@ def story_list(request):
     
     # Get student's progress if student
     progress_data = {}
-    if hasattr(request.user, 'student'):
-        student = request.user.student
+    if hasattr(request.user, 'student_profile'):
+        student = request.user.student_profile
         progress = StoryProgress.objects.filter(student=student)
         progress_data = {p.story_id: p for p in progress}
         
@@ -83,8 +83,8 @@ def story_detail(request, story_id):
     
     # Get or create progress for student
     progress = None
-    if hasattr(request.user, 'student'):
-        student = request.user.student
+    if hasattr(request.user, 'student_profile'):
+        student = request.user.student_profile
         progress, created = StoryProgress.objects.get_or_create(
             student=student,
             story=story
@@ -106,11 +106,11 @@ def submit_answers(request, story_id):
     
     story = get_object_or_404(Story, id=story_id)
     
-    if not hasattr(request.user, 'student'):
+    if not hasattr(request.user, 'student_profile'):
         messages.error(request, "Only students can submit answers.")
         return redirect('assessments:story_detail', story_id=story_id)
     
-    student = request.user.student
+    student = request.user.student_profile
     progress = get_object_or_404(StoryProgress, student=student, story=story)
     
     # Collect answers
@@ -163,10 +163,10 @@ def story_results(request, story_id):
     """Display story results and feedback"""
     story = get_object_or_404(Story, id=story_id)
     
-    if not hasattr(request.user, 'student'):
+    if not hasattr(request.user, 'student_profile'):
         return redirect('assessments:story_detail', story_id=story_id)
     
-    student = request.user.student
+    student = request.user.student_profile
     progress = get_object_or_404(StoryProgress, student=student, story=story)
     
     # Get newly earned badges (last 5 minutes)
@@ -247,11 +247,11 @@ def check_and_award_badges(student):
 @login_required
 def student_badges(request):
     """Display all student badges"""
-    if not hasattr(request.user, 'student'):
+    if not hasattr(request.user, 'student_profile'):
         messages.error(request, "Only students can view badges.")
         return redirect('home')
     
-    student = request.user.student
+    student = request.user.student_profile
     earned_badges = StudentBadge.objects.filter(student=student).select_related('badge')
     all_badges = Badge.objects.all()
     

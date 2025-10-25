@@ -12,9 +12,10 @@ class StoryGeneratorService:
     """
     
     def __init__(self):
-        # Configure Gemini API
-        genai.configure(api_key="AIzaSyD19fEQdWAy8LMILMWvtKtWylTz7diTE6E")
-        self.model = genai.GenerativeModel('gemini-pro')
+        # Configure Gemini API from settings
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        # Use Gemini 2.0 Flash - stable, fast, and free
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
     
     def generate_story(self, theme, age_group='6-7', difficulty=1):
         """
@@ -55,10 +56,13 @@ class StoryGeneratorService:
         """
         
         try:
+            print(f"🤖 Calling Gemini API to generate story about {theme}...")
             response = self.model.generate_content(prompt)
+            print(f"✅ Gemini API responded successfully!")
             
             # Extract JSON from response
             response_text = response.text.strip()
+            print(f"📝 Raw response: {response_text[:200]}...")
             
             # Remove markdown code blocks if present
             if response_text.startswith('```'):
@@ -69,12 +73,17 @@ class StoryGeneratorService:
             
             # Parse JSON
             story_data = json.loads(response_text)
+            print(f"✨ Successfully generated story: {story_data.get('title', 'Unknown')}")
             
             return story_data
             
         except Exception as e:
-            print(f"Error generating story: {e}")
+            print(f"❌ ERROR generating story with Gemini API: {e}")
+            print(f"❌ Error type: {type(e).__name__}")
+            import traceback
+            print(f"❌ Full traceback:\n{traceback.format_exc()}")
             # Return fallback story
+            print(f"⚠️ Using fallback story instead...")
             return self._get_fallback_story(theme)
     
     def _get_fallback_story(self, theme):

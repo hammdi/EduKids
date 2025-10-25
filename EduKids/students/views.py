@@ -47,7 +47,7 @@ def register(request):
 def student_dashboard(request):
     """Student dashboard view"""
     try:
-        student = request.user.student
+        student = request.user.student_profile
     except Student.DoesNotExist:
         messages.error(request, 'Student profile not found.')
         return redirect('home')
@@ -61,7 +61,7 @@ def student_dashboard(request):
 def teacher_dashboard(request):
     """Teacher dashboard view"""
     try:
-        teacher = request.user.teacher
+        teacher = request.user.teacher_profile
     except Teacher.DoesNotExist:
         messages.error(request, 'Teacher profile not found.')
         return redirect('home')
