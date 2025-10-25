@@ -26,7 +26,19 @@
             <div class="badges-grid">
                 {% for student_badge in earned_badges %}
                 <div class="badge-card earned" style="background: {{student_badge.badge.color}};">
-                    <div class="badge-icon-xl">{{student_badge.badge.icon}}</div>
+                    <div class="badge-icon-xl">
+                        {% if student_badge.badge.badge_type == 'enchanted_storybook' %}
+                            <img src="{% static 'images/enchanted_storybook.png' %}" alt="Enchanted Storybook" class="badge-image">
+                        {% elif student_badge.badge.badge_type == 'adventure_scroll' %}
+                            <img src="{% static 'images/adventure_scroll.png' %}" alt="Adventure Scroll" class="badge-image">
+                        {% elif student_badge.badge.badge_type == 'fantasy_narrator' %}
+                            <img src="{% static 'images/fantasy_narrator.png' %}" alt="Fantasy Narrator" class="badge-image">
+                        {% elif student_badge.badge.badge_type == 'imagination_explorer' %}
+                            <img src="{% static 'images/imagination_explorer.png' %}" alt="Imagination Explorer" class="badge-image">
+                        {% else %}
+                            {{student_badge.badge.icon}}
+                        {% endif %}
+                    </div>
                     <h4 class="badge-title">{{student_badge.badge.name}}</h4>
                     <p class="badge-description">{{student_badge.badge.description}}</p>
                     <div class="badge-date">
@@ -61,7 +73,19 @@
                     <div class="lock-overlay">
                         <i class="fas fa-lock fa-2x"></i>
                     </div>
-                    <div class="badge-icon-xl grayscale">{{badge.icon}}</div>
+                    <div class="badge-icon-xl grayscale">
+                        {% if badge.badge_type == 'enchanted_storybook' %}
+                            <img src="{% static 'images/enchanted_storybook.png' %}" alt="Enchanted Storybook" class="badge-image">
+                        {% elif badge.badge_type == 'adventure_scroll' %}
+                            <img src="{% static 'images/adventure_scroll.png' %}" alt="Adventure Scroll" class="badge-image">
+                        {% elif badge.badge_type == 'fantasy_narrator' %}
+                            <img src="{% static 'images/fantasy_narrator.png' %}" alt="Fantasy Narrator" class="badge-image">
+                        {% elif badge.badge_type == 'imagination_explorer' %}
+                            <img src="{% static 'images/imagination_explorer.png' %}" alt="Imagination Explorer" class="badge-image">
+                        {% else %}
+                            {{badge.icon}}
+                        {% endif %}
+                    </div>
                     <h4 class="badge-title">{{badge.name}}</h4>
                     <p class="badge-description">{{badge.description}}</p>
                     <div class="badge-requirement">
@@ -143,6 +167,20 @@
         animation: iconFloat 3s ease-in-out infinite;
     }
     
+    /* Badge Image Styling */
+    .badge-image {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        transition: all 0.3s ease;
+    }
+    
+    .badge-card.earned:hover .badge-image {
+        transform: scale(1.1) rotate(5deg);
+        filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+    }
+    
     @keyframes iconFloat {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-10px); }
@@ -151,6 +189,10 @@
     .grayscale {
         filter: grayscale(100%);
         opacity: 0.5;
+    }
+    
+    .grayscale .badge-image {
+        filter: grayscale(100%) opacity(0.5);
     }
     
     .badge-title {
