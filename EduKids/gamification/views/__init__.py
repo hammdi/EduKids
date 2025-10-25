@@ -158,7 +158,8 @@ class AvatarViewSet(viewsets.ModelViewSet):
         Retourne l'avatar de l'utilisateur actuel
         """
         try:
-            student = request.user.student_profile
+            from students.models import Student
+            student = Student.objects.get(user=request.user)
         except Exception:
             return Response(
                 {'error': 'Profil étudiant non trouvé'},
@@ -180,7 +181,8 @@ class AvatarViewSet(viewsets.ModelViewSet):
         Upload une nouvelle image pour l'avatar de l'utilisateur connecté
         """
         try:
-            student = request.user.student_profile
+            from students.models import Student
+            student = Student.objects.get(user=request.user)
         except Exception:
             return Response(
                 {'error': 'Profil étudiant non trouvé'},
@@ -237,7 +239,8 @@ class AvatarViewSet(viewsets.ModelViewSet):
         
         # Récupérer le profil étudiant
         try:
-            student = request.user.student_profile
+            from students.models import Student
+            student = Student.objects.get(user=request.user)
         except Exception:
             return Response(
                 {'error': 'Profil étudiant non trouvé'},
@@ -284,7 +287,8 @@ class AvatarViewSet(viewsets.ModelViewSet):
         
         # Récupérer le profil étudiant
         try:
-            student = request.user.student_profile
+            from students.models import Student
+            student = Student.objects.get(user=request.user)
         except Exception:
             return Response(
                 {'error': 'Profil étudiant non trouvé'},
@@ -370,7 +374,8 @@ class UserAccessoryViewSet(viewsets.ModelViewSet):
         
         # Récupérer le profil étudiant
         try:
-            student = request.user.student_profile
+            from students.models import Student
+            student = Student.objects.get(user=request.user)
         except Exception:
             return Response(
                 {'error': 'Profil étudiant non trouvé'},
@@ -425,16 +430,16 @@ def avatar_view(request):
     Vue pour la page de personnalisation d'avatar
     """
     try:
-        student = request.user.student_profile
-    except Exception:
+        from students.models import Student
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
         messages.error(request, "Aucun profil étudiant associé à ce compte. Veuillez vous inscrire comme élève.")
         return redirect('home')
 
     avatar, created = Avatar.objects.get_or_create(
         student=student,
         defaults={
-            'name': f"Avatar de {request.user.first_name}",
-            'is_active': True
+            'level': 1
         }
     )
 

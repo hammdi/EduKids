@@ -1,0 +1,738 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Personnaliser mon Avatar - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles de base */
+.customize-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.customize-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Avatar Section */
+.avatar-showcase {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  position: sticky;
+  top: 20px;
+  transition: all 0.3s ease;
+}
+
+.avatar-showcase.loading {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.9);
+  }
+}
+
+.avatar-image-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.avatar-display {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  object-fit: cover;
+  background: #f8f9fa;
+}
+
+.avatar-placeholder {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 5px solid white;
+  background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  color: #999;
+}
+
+.avatar-level {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Upload Section */
+.upload-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+}
+
+.upload-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Inventory Grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.accessory-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.accessory-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.accessory-card.equipped {
+  border: 3px solid #4caf50;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.accessory-image {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #f8f9fa;
+  margin-bottom: 1rem;
+}
+
+.accessory-info h5 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.accessory-type {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.type-head {
+  background: #ffeb3b;
+  color: #333;
+}
+
+.type-body {
+  background: #2196f3;
+  color: white;
+}
+
+.type-tool {
+  background: #ff9800;
+  color: white;
+}
+
+.accessory-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.equipped-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #4caf50;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+/* Buttons */
+.btn-equip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.btn-equip:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-equip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-unequip {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.btn-unequip:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+}
+
+.btn-back {
+  background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(132, 250, 176, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+.loading-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Success Message */
+.success-message {
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+  z-index: 10000;
+  animation: slideIn 0.3s ease;
+}
+
+.success-message.active {
+  display: block;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Error Message */
+.error-message {
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+  z-index: 10000;
+  animation: slideIn 0.3s ease;
+}
+
+.error-message.active {
+  display: block;
+}
+
+/* Stats Section */
+.stats-section {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customize-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="text-white">
+            <i class="fas fa-user-astronaut"></i> Personnaliser mon Avatar
+          </h1>
+          <a href="{% url 'student_dashboard' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour au Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Avatar Preview Section -->
+      <div class="col-md-4">
+        <div class="avatar-showcase" id="avatarShowcase">
+          <h3 class="mb-3">
+            <i class="fas fa-star"></i> Mon Avatar
+          </h3>
+          
+          <div class="avatar-image-container">
+            {% if avatar and avatar.image %}
+              <img src="{{ avatar.image.url }}" alt="Avatar" class="avatar-display" id="avatarImage">
+            {% else %}
+              <div class="avatar-placeholder">
+                <i class="fas fa-user"></i>
+              </div>
+            {% endif %}
+            
+            {% if avatar %}
+              <div class="avatar-level">
+                <i class="fas fa-trophy"></i> Niveau {{ avatar.level }}
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Upload Section -->
+          <div class="upload-section">
+            <h5 class="mb-3">
+              <i class="fas fa-cloud-upload-alt"></i> Changer mon avatar
+            </h5>
+            <form id="uploadForm" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+              <button type="button" class="upload-btn" onclick="document.getElementById('avatarFileInput').click()">
+                <i class="fas fa-upload"></i> Choisir une image
+              </button>
+            </form>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-section">
+            <div class="stat-item">
+              <div class="stat-value">{{ total_items }}</div>
+              <div class="stat-label">Accessoires</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ equipped_count }}</div>
+              <div class="stat-label">Équipés</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Section -->
+      <div class="col-md-8">
+        <div class="customize-card">
+          <h3 class="mb-4">
+            <i class="fas fa-gem"></i> Mes Accessoires
+            <span class="badge bg-primary">{{ total_items }}</span>
+          </h3>
+
+          {% if inventory %}
+            <div class="inventory-grid">
+              {% for item in inventory %}
+                <div class="accessory-card {% if item.is_equipped %}equipped{% endif %}" id="accessory-{{ item.id }}">
+                  {% if item.is_equipped %}
+                    <div class="equipped-badge">
+                      <i class="fas fa-check-circle"></i> Équipé
+                    </div>
+                  {% endif %}
+
+                  {% if item.accessory.image %}
+                    <img src="{{ item.accessory.image.url }}" alt="{{ item.accessory.name }}" class="accessory-image">
+                  {% else %}
+                    <div class="accessory-image d-flex align-items-center justify-content-center">
+                      <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                  {% endif %}
+
+                  <div class="accessory-info">
+                    <h5>{{ item.accessory.name }}</h5>
+                    <span class="accessory-type type-{{ item.accessory.accessory_type }}">
+                      {% if item.accessory.accessory_type == 'head' %}
+                        <i class="fas fa-hat-wizard"></i> Tête
+                      {% elif item.accessory.accessory_type == 'body' %}
+                        <i class="fas fa-tshirt"></i> Corps
+                      {% elif item.accessory.accessory_type == 'tool' %}
+                        <i class="fas fa-magic"></i> Outil
+                      {% endif %}
+                    </span>
+                    <p class="accessory-description">{{ item.accessory.description|truncatewords:15 }}</p>
+
+                    {% if item.is_equipped %}
+                      <button class="btn-unequip" onclick="unequipAccessory({{ item.id }})">
+                        <i class="fas fa-times"></i> Déséquiper
+                      </button>
+                    {% else %}
+                      <button class="btn-equip" onclick="equipAccessory({{ item.accessory.id }})">
+                        <i class="fas fa-check"></i> Équiper
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <i class="fas fa-box-open"></i>
+              <h4>Aucun accessoire pour le moment</h4>
+              <p>Visite la boutique pour acheter des accessoires !</p>
+              <a href="{% url 'student_store' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-shopping-cart"></i> Aller à la boutique
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <h4>Équipement en cours...</h4>
+    <p>Veuillez patienter</p>
+  </div>
+</div>
+
+<!-- Success Message -->
+<div class="success-message" id="successMessage">
+  <i class="fas fa-check-circle"></i> <span id="successText">Accessoire équipé avec succès !</span>
+</div>
+
+<!-- Error Message -->
+<div class="error-message" id="errorMessage">
+  <i class="fas fa-exclamation-circle"></i> <span id="errorText">Une erreur est survenue</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF Token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Show/Hide Loading
+function showLoading() {
+  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('avatarShowcase').classList.add('loading');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
+  document.getElementById('avatarShowcase').classList.remove('loading');
+}
+
+// Show Success Message
+function showSuccess(message) {
+  const successMsg = document.getElementById('successMessage');
+  document.getElementById('successText').textContent = message;
+  successMsg.classList.add('active');
+  setTimeout(() => {
+    successMsg.classList.remove('active');
+  }, 3000);
+}
+
+// Show Error Message
+function showError(message) {
+  const errorMsg = document.getElementById('errorMessage');
+  document.getElementById('errorText').textContent = message;
+  errorMsg.classList.add('active');
+  setTimeout(() => {
+    errorMsg.classList.remove('active');
+  }, 3000);
+}
+
+// Equip Accessory with AI
+async function equipAccessory(accessoryId) {
+  showLoading();
+  
+  try {
+    // Utiliser l'endpoint avec IA pour appliquer l'accessoire sur l'avatar
+    const response = await fetch(`/api/gamification/ai/equip/${accessoryId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showSuccess(data.message || 'Accessoire équipé avec succès !');
+      
+      // Update avatar image immediately with new AI-generated image
+      if (data.avatar_url) {
+        const avatarImg = document.getElementById('avatarImage');
+        if (avatarImg) {
+          // Add timestamp to force reload and avoid cache
+          avatarImg.src = data.avatar_url + '?t=' + new Date().getTime();
+        } else {
+          // If placeholder exists, replace it with image
+          const placeholder = document.querySelector('.avatar-placeholder');
+          if (placeholder) {
+            placeholder.outerHTML = `<img src="${data.avatar_url}?t=${new Date().getTime()}" alt="Avatar" class="avatar-display" id="avatarImage">`;
+          }
+        }
+      }
+      
+      // Reload page to update UI after showing the new avatar
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } else {
+      showError(data.message || 'Erreur lors de l\'équipement');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showError('Erreur de connexion au serveur');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Unequip Accessory
+async function unequipAccessory(accessoryId) {
+  showLoading();
+  
+  try {
+    const response = await fetch(`/api/gamification/unequip/${accessoryId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      showSuccess(data.message || 'Accessoire déséquipé avec succès !');
+      
+      // Reload page to update UI
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      showError(data.message || 'Erreur lors du déséquipement');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showError('Erreur de connexion au serveur');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Upload Avatar Image
+document.getElementById('avatarFileInput').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showError('Veuillez sélectionner une image valide');
+    return;
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showError('L\'image est trop grande (max 5MB)');
+    return;
+  }
+
+  showLoading();
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const response = await fetch('/gamification/api/avatars/my-avatar/upload_image/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrftoken
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showSuccess('Avatar mis à jour avec succès !');
+      
+      // Update avatar image
+      if (data.image) {
+        const avatarImg = document.getElementById('avatarImage');
+        if (avatarImg) {
+          avatarImg.src = data.image;
+        } else {
+          // Create image if placeholder exists
+          const placeholder = document.querySelector('.avatar-placeholder');
+          if (placeholder) {
+            placeholder.outerHTML = `<img src="${data.image}" alt="Avatar" class="avatar-display" id="avatarImage">`;
+          }
+        }
+      }
+    } else {
+      showError(data.error || 'Erreur lors du téléchargement');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showError('Erreur de connexion au serveur');
+  } finally {
+    hideLoading();
+  }
+});
+</script>
+{% endblock %}

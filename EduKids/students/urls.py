@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from . import gamification_views
 from . import api_views
+from . import ai_views
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -34,6 +35,11 @@ urlpatterns = [
     path('api/student/avatar/inventory', api_views.get_avatar_inventory, name='api_avatar_inventory'),
     path('api/student/avatar/equip/<int:item_id>', api_views.equip_item, name='api_equip_item'),
     path('api/student/avatar/unequip/<int:item_id>', api_views.unequip_item, name='api_unequip_item'),
+    
+    # AI Equip Routes (NEW)
+    path('api/gamification/equip/<int:accessory_id>/', ai_views.equip_accessory_manual, name='api_equip_manual'),
+    path('api/gamification/ai/equip/<int:accessory_id>/', ai_views.equip_accessory_with_ai, name='api_equip_ai'),
+    path('api/gamification/unequip/<int:accessory_id>/', ai_views.unequip_accessory, name='api_unequip'),
     
     # Admin CRUD operations
     path('admin/users/', views.user_management, name='user_management'),

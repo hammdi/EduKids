@@ -473,3 +473,265 @@ def unequip_item(request, item_id):
         return Response({'error': 'Accessoire non équipé'}, status=status.HTTP_404_NOT_FOUND)
     except Student.DoesNotExist:
         return Response({'error': 'Profil étudiant non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_user_accessories(request):
+    """
+    GET /api/gamification/user-accessories/
+    Liste tous les accessoires possédés par l'utilisateur
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        accessories = UserAccessory.objects.filter(
+            student=student
+        ).select_related('accessory').order_by('-date_obtained')
+        
+        accessories_data = []
+        equipped_count = 0
+        
+        for ua in accessories:
+            is_equipped = ua.status == 'equipped'
+            if is_equipped:
+                equipped_count += 1
+            
+            accessories_data.append({
+                'id': ua.id,
+                'accessory_id': ua.accessory.id,
+                'name': ua.accessory.name,
+                'type': ua.accessory.accessory_type,
+                'description': ua.accessory.description,
+                'image_url': ua.accessory.image.url if ua.accessory.image else None,
+                'is_equipped': is_equipped,
+                'date_obtained': ua.date_obtained.isoformat()
+            })
+        
+        return Response({
+            'success': True,
+            'accessories': accessories_data,
+            'total': len(accessories_data),
+            'equipped_count': equipped_count
+        })
+        
+    except Student.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Profil étudiant non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'success': False,
+            'message': f'Erreur serveur: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def buy_accessory(request, accessory_id):
+    """
+    POST /api/gamification/buy-accessory/<accessory_id>/
+    Acheter un accessoire avec les points de l'étudiant
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        # Récupérer l'accessoire
+        try:
+            accessory = Accessory.objects.get(id=accessory_id, is_active=True)
+        except Accessory.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Accessoire non trouvé ou non disponible'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Vérifier si l'étudiant possède déjà cet accessoire
+        if UserAccessory.objects.filter(student=student, accessory=accessory).exists():
+            return Response({
+                'success': False,
+                'message': 'Tu possèdes déjà cet accessoire'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Vérifier si l'étudiant a assez de points
+        if student.total_points < accessory.cost:
+            return Response({
+                'success': False,
+                'message': f'Points insuffisants. Il te faut {accessory.cost} points, tu en as {student.total_points}.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Débiter les points
+        student.total_points -= accessory.cost
+        student.save()
+        
+        # Ajouter l'accessoire à l'inventaire
+        user_accessory = UserAccessory.objects.create(
+            student=student,
+            accessory=accessory,
+            status='owned',
+            date_obtained=timezone.now()
+        )
+        
+        return Response({
+            'success': True,
+            'message': f'🎉 {accessory.name} acheté avec succès !',
+            'accessory': {
+                'id': user_accessory.id,
+                'name': accessory.name,
+                'type': accessory.accessory_type,
+                'image_url': accessory.image.url if accessory.image else None
+            },
+            'remaining_points': student.total_points
+        })
+        
+    except Student.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Profil étudiant non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'success': False,
+            'message': f'Erreur serveur: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_avatar(request):
+    """
+    GET /api/gamification/avatar/
+    Récupérer l'avatar de l'utilisateur
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        avatar, created = Avatar.objects.get_or_create(
+            student=student,
+            defaults={'level': 1}
+        )
+        
+        return Response({
+            'success': True,
+            'avatar_url': avatar.image.url if avatar.image else None,
+            'level': avatar.level,
+            'has_avatar': bool(avatar.image)
+        })
+        
+    except Student.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Profil étudiant non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_avatar(request):
+    """
+    POST /api/gamification/upload-avatar/
+    Uploader une image d'avatar
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        if 'avatar' not in request.FILES:
+            return Response({
+                'success': False,
+                'message': 'Aucune image fournie'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        avatar_file = request.FILES['avatar']
+        
+        # Vérifier le type de fichier
+        if not avatar_file.content_type.startswith('image/'):
+            return Response({
+                'success': False,
+                'message': 'Le fichier doit être une image'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Créer ou mettre à jour l'avatar
+        avatar, created = Avatar.objects.get_or_create(
+            student=student,
+            defaults={'level': 1}
+        )
+        
+        # Sauvegarder l'image
+        avatar.image.save(avatar_file.name, avatar_file, save=True)
+        
+        return Response({
+            'success': True,
+            'message': 'Avatar uploadé avec succès !',
+            'avatar_url': avatar.image.url
+        })
+        
+    except Student.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Profil étudiant non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_store_accessories(request):
+    """
+    GET /api/gamification/store/accessories/
+    Liste tous les accessoires disponibles dans le store
+    """
+    try:
+        student = Student.objects.get(user=request.user)
+        
+        # Récupérer tous les accessoires actifs
+        accessories = Accessory.objects.filter(is_active=True).order_by('cost', 'name')
+        
+        # Récupérer les accessoires déjà possédés
+        owned_ids = UserAccessory.objects.filter(student=student).values_list('accessory_id', flat=True)
+        
+        accessories_data = []
+        for acc in accessories:
+            accessories_data.append({
+                'id': acc.id,
+                'name': acc.name,
+                'description': acc.description,
+                'type': acc.accessory_type,
+                'cost': acc.cost,
+                'image_url': acc.image.url if acc.image else None,
+                'is_owned': acc.id in owned_ids
+            })
+        
+        return Response({
+            'success': True,
+            'accessories': accessories_data,
+            'total': len(accessories_data),
+            'student_points': student.total_points
+        })
+        
+    except Student.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Profil étudiant non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

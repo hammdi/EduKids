@@ -1,0 +1,9 @@
+# Clé API Gemini pour EduKids
+
+GEMINI_API_KEY=AIzaSyAZwLRDyoK2N5kG1K54zx2inH0UPtrDmKs
+
+# Instructions :
+# 1. Créer un fichier .env à la racine du projet
+# 2. Copier la ligne ci-dessus dans le fichier .env
+# 3. Ou ajouter directement dans settings.py :
+#    GEMINI_API_KEY = 'AIzaSyAZwLRDyoK2N5kG1K54zx2inH0UPtrDmKs'

@@ -189,4 +189,4 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 AUTH_USER_MODEL = 'students.User'
 
 # Google Gemini API Configuration
-GEMINI_API_KEY = 'AIzaSyD19fEQdWAy8LMILMWvtKtWylTz7diTE6E'
+GEMINI_API_KEY = 'AIzaSyAZwLRDyoK2N5kG1K54zx2inH0UPtrDmKs'

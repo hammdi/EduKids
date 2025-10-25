@@ -17,7 +17,8 @@ def student_dashboard(request):
     """
     Dashboard principal de l'espace Student avec stats gamification
     """
-    student = request.user.student_profile
+    from students.models import Student
+    student = Student.objects.get(user=request.user)
     
     # Récupérer ou créer l'avatar
     avatar, created = Avatar.objects.get_or_create(
@@ -31,8 +32,8 @@ def student_dashboard(request):
     # Badges obtenus
     user_badges = UserBadge.objects.filter(
         user=request.user,
-        date_obtained__isnull=False
-    ).select_related('badge').order_by('-date_obtained')[:5]
+        date_obtention__isnull=False
+    ).select_related('badge').order_by('-date_obtention')[:5]
     
     total_badges = user_badges.count()
     
@@ -78,43 +79,10 @@ def student_dashboard(request):
 @student_required
 def student_customize(request):
     """
-    Page de personnalisation de l'avatar
-    Upload d'image + équipement des accessoires
+    Page de personnalisation de l'avatar - Redirige vers inventory (page fusionnée)
     """
-    student = request.user.student_profile
-    
-    # Récupérer ou créer l'avatar
-    avatar, created = Avatar.objects.get_or_create(
-        student=student,
-        defaults={'level': 1}
-    )
-    
-    # Accessoires possédés par l'étudiant
-    owned_accessories = UserAccessory.objects.filter(
-        student=student,
-        status__in=['owned', 'equipped']
-    ).select_related('accessory')
-    
-    # Grouper par type
-    accessories_by_type = {}
-    for ua in owned_accessories:
-        acc_type = ua.accessory.accessory_type
-        if acc_type not in accessories_by_type:
-            accessories_by_type[acc_type] = []
-        accessories_by_type[acc_type].append({
-            'user_accessory': ua,
-            'accessory': ua.accessory,
-            'is_equipped': ua.status == 'equipped'
-        })
-    
-    context = {
-        'student': student,
-        'avatar': avatar,
-        'accessories_by_type': accessories_by_type,
-        'total_points': student.total_points,
-    }
-    
-    return render(request, 'students/gamification/customize.html', context)
+    from django.shortcuts import redirect
+    return redirect('student_inventory')
 
 
 @student_required
@@ -123,7 +91,8 @@ def student_store(request):
     Boutique d'accessoires
     Affichage des accessoires disponibles + achat
     """
-    student = request.user.student_profile
+    from students.models import Student
+    student = Student.objects.get(user=request.user)
     
     # Tous les accessoires actifs
     all_accessories = Accessory.objects.filter(is_active=True).order_by('points_required')
@@ -162,7 +131,8 @@ def student_profile_gamification(request):
     Profil gamification de l'étudiant
     Vue d'ensemble des achievements
     """
-    student = request.user.student_profile
+    from students.models import Student
+    student = Student.objects.get(user=request.user)
     
     # Avatar
     avatar = Avatar.objects.filter(student=student).first()
@@ -170,7 +140,7 @@ def student_profile_gamification(request):
     # Tous les badges
     all_badges = UserBadge.objects.filter(
         user=request.user
-    ).select_related('badge').order_by('-date_obtained')
+    ).select_related('badge').order_by('-date_obtention')
     
     # Toutes les missions
     all_missions = UserMission.objects.filter(
@@ -199,7 +169,8 @@ def student_badges(request):
     """
     Page des badges avec animations
     """
-    student = request.user.student_profile
+    from students.models import Student
+    student = Student.objects.get(user=request.user)
     
     context = {
         'student': student,
@@ -213,7 +184,8 @@ def student_store_improved(request):
     """
     Boutique améliorée avec séparation débloqués/à acheter
     """
-    student = request.user.student_profile
+    from students.models import Student
+    student = Student.objects.get(user=request.user)
     
     context = {
         'student': student,
@@ -225,12 +197,52 @@ def student_store_improved(request):
 @student_required
 def student_inventory(request):
     """
-    Page Mes Trésors - Inventaire motivant
+    Page Personnalisation Avatar - Inventaire et customisation fusionnés
     """
-    student = request.user.student_profile
+    from gamification.models import UserAccessory, Avatar
+    from students.models import Student
+    
+    student = Student.objects.get(user=request.user)
+    
+    # Récupérer ou créer l'avatar
+    avatar, created = Avatar.objects.get_or_create(
+        student=student,
+        defaults={'level': 1}
+    )
+    
+    # Récupérer tous les accessoires possédés
+    student_accessories = UserAccessory.objects.filter(
+        student=student
+    ).select_related('accessory').order_by('-date_obtained')
+    
+    # Préparer les données pour le template
+    inventory = []
+    equipped_count = 0
+    
+    for sa in student_accessories:
+        is_equipped = sa.status == 'equipped'
+        if is_equipped:
+            equipped_count += 1
+        
+        inventory.append({
+            'id': sa.id,
+            'accessory': sa.accessory,
+            'is_equipped': is_equipped,
+            'date_obtained': sa.date_obtained,
+        })
+    
+    total_items = len(inventory)
+    collection_percent = 0
+    if total_items > 0:
+        collection_percent = round((equipped_count / total_items) * 100)
     
     context = {
         'student': student,
+        'avatar': avatar,
+        'inventory': inventory,
+        'total_items': total_items,
+        'equipped_count': equipped_count,
+        'collection_percent': collection_percent,
     }
     
-    return render(request, 'students/gamification/inventory.html', context)
+    return render(request, 'students/gamification/customize_avatar.html', context)
