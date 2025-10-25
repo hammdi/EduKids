@@ -80,7 +80,9 @@
                             </div>
                             <div class="answer-content">
                                 <strong>Your Answer:</strong>
-                                <p>{{ progress.answers|get_item:forloop.counter0 }}</p>
+                                {% with answer_key=forloop.counter0|make_answer_key %}
+                                <p>{{ progress.answers|get_item:answer_key }}</p>
+                                {% endwith %}
                             </div>
                             <div class="correct-answer">
                                 <strong>Expected Answer:</strong>
