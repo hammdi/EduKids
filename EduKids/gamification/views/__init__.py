@@ -8,9 +8,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from ..models import (
     Mission, UserMission, Badge, UserBadge,
@@ -156,22 +157,40 @@ class AvatarViewSet(viewsets.ModelViewSet):
         """
         Retourne l'avatar de l'utilisateur actuel
         """
+        try:
+            student = request.user.student_profile
+        except Exception:
+            return Response(
+                {'error': 'Profil étudiant non trouvé'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
         avatar, created = Avatar.objects.get_or_create(
-            student=request.user,
+            student=student,
             defaults={
-                'name': f"Avatar de {request.user.first_name}",
-                'is_active': True
+                'level': 1
             }
         )
         serializer = self.get_serializer(avatar)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def upload_image(self, request, pk=None):
+    @action(detail=False, methods=['post'], url_path='my-avatar/upload_image')
+    def upload_my_avatar_image(self, request):
         """
-        Upload une nouvelle image pour l'avatar
+        Upload une nouvelle image pour l'avatar de l'utilisateur connecté
         """
-        avatar = self.get_object()
+        try:
+            student = request.user.student_profile
+        except Exception:
+            return Response(
+                {'error': 'Profil étudiant non trouvé'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        avatar, created = Avatar.objects.get_or_create(
+            student=student,
+            defaults={'level': 1}
+        )
         
         if 'image' not in request.FILES:
             return Response(
@@ -179,7 +198,24 @@ class AvatarViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        avatar.image = request.FILES['image']
+        # Validation de la taille (2MB max)
+        image_file = request.FILES['image']
+        if image_file.size > 2 * 1024 * 1024:
+            return Response(
+                {'error': 'Fichier trop volumineux. Maximum 2MB.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validation du format
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png']
+        if image_file.content_type not in allowed_types:
+            return Response(
+                {'error': 'Format non autorisé. Utilise JPG ou PNG.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        avatar.image = image_file
+        avatar.updated_at = timezone.now()
         avatar.save()
         
         serializer = self.get_serializer(avatar)
@@ -198,10 +234,19 @@ class AvatarViewSet(viewsets.ModelViewSet):
                 {'error': 'accessory_id requis'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # Récupérer le profil étudiant
+        try:
+            student = request.user.student_profile
+        except Exception:
+            return Response(
+                {'error': 'Profil étudiant non trouvé'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             user_accessory = UserAccessory.objects.get(
-                student=request.user,
+                student=student,
                 accessory_id=accessory_id,
                 status='owned'
             )
@@ -212,11 +257,16 @@ class AvatarViewSet(viewsets.ModelViewSet):
             )
 
         # Équiper l'accessoire
-        user_accessory.equip()
-        avatar.refresh_from_db()
-
-        serializer = self.get_serializer(avatar)
-        return Response(serializer.data)
+        success = user_accessory.equip(avatar)
+        if success:
+            avatar.refresh_from_db()
+            serializer = self.get_serializer(avatar)
+            return Response(serializer.data)
+        else:
+            return Response(
+                {'error': 'Échec de l\'équipement'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(detail=True, methods=['post'])
     def unequip_accessory(self, request, pk=None):
@@ -231,10 +281,19 @@ class AvatarViewSet(viewsets.ModelViewSet):
                 {'error': 'accessory_id requis'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # Récupérer le profil étudiant
+        try:
+            student = request.user.student_profile
+        except Exception:
+            return Response(
+                {'error': 'Profil étudiant non trouvé'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             user_accessory = UserAccessory.objects.get(
-                student=request.user,
+                student=student,
                 accessory_id=accessory_id,
                 status='equipped'
             )
@@ -288,47 +347,75 @@ class UserAccessoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(student=self.request.user)
 
-    @action(detail=True, methods=['post'])
-    def purchase(self, request, pk=None):
+    @action(detail=False, methods=['post'])
+    def purchase(self, request):
         """
         Achète un accessoire
         """
-        user_accessory = self.get_object()
-
+        accessory_id = request.data.get('accessory')
+        
+        if not accessory_id:
+            return Response(
+                {'error': 'ID d\'accessoire requis'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            accessory = Accessory.objects.get(id=accessory_id, is_active=True)
+        except Accessory.DoesNotExist:
+            return Response(
+                {'error': 'Accessoire non trouvé ou indisponible'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Récupérer le profil étudiant
+        try:
+            student = request.user.student_profile
+        except Exception:
+            return Response(
+                {'error': 'Profil étudiant non trouvé'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
         # Vérifier si déjà possédé
-        if user_accessory.status in ['owned', 'equipped']:
+        existing = UserAccessory.objects.filter(
+            student=student,
+            accessory=accessory
+        ).first()
+        
+        if existing and existing.status in ['owned', 'equipped']:
             return Response(
-                {'error': 'Accessoire déjà possédé'},
+                {'error': 'Tu possèdes déjà cet accessoire !'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        accessory = user_accessory.accessory
-
-        # Vérifier les points de l'utilisateur
-        student = request.user
-        if student.points < accessory.points_required:
+        
+        # Vérifier les points
+        if student.total_points < accessory.points_required:
+            points_needed = accessory.points_required - student.total_points
             return Response(
-                {'error': 'Points insuffisants'},
+                {'error': f'Points insuffisants. Il te faut encore {points_needed} points.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        # Vérifier le niveau requis
-        if hasattr(student, 'level') and student.level < accessory.level_required:
-            return Response(
-                {'error': 'Niveau insuffisant'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+        
         # Effectuer l'achat
-        student.points -= accessory.points_required
+        student.total_points -= accessory.points_required
         student.save()
-
-        user_accessory.status = 'owned'
-        user_accessory.unlocked_at = timezone.now()
-        user_accessory.save()
-
+        
+        # Créer ou mettre à jour UserAccessory
+        if existing:
+            existing.status = 'owned'
+            existing.date_obtained = timezone.now()
+            existing.save()
+            user_accessory = existing
+        else:
+            user_accessory = UserAccessory.objects.create(
+                student=student,
+                accessory=accessory,
+                status='owned'
+            )
+        
         serializer = self.get_serializer(user_accessory)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # Vue Django pour la page avatar
@@ -337,29 +424,42 @@ def avatar_view(request):
     """
     Vue pour la page de personnalisation d'avatar
     """
-    # Récupérer ou créer l'avatar de l'utilisateur
+    try:
+        student = request.user.student_profile
+    except Exception:
+        messages.error(request, "Aucun profil étudiant associé à ce compte. Veuillez vous inscrire comme élève.")
+        return redirect('home')
+
     avatar, created = Avatar.objects.get_or_create(
-        student=request.user,
+        student=student,
         defaults={
             'name': f"Avatar de {request.user.first_name}",
             'is_active': True
         }
     )
 
-    # Récupérer tous les accessoires disponibles
-    accessories = Accessory.objects.filter(is_active=True).prefetch_related(
-        'user_accessories'
-    )
-
-    # Annoter les accessoires avec les informations de possession
+    accessories = Accessory.objects.filter(is_active=True).prefetch_related('user_ownerships')
+    
+    owned_accessories = []
+    available_accessories = []
+    
     for accessory in accessories:
-        user_accessory = accessory.user_accessories.filter(student=request.user).first()
+        user_accessory = accessory.user_ownerships.filter(student=student).first()
         accessory.is_owned_by_user = user_accessory is not None
         accessory.is_equipped = user_accessory and user_accessory.status == 'equipped' if user_accessory else False
+        
+        if accessory.is_owned_by_user:
+            owned_accessories.append(accessory)
+        else:
+            available_accessories.append(accessory)
 
     context = {
         'avatar': avatar,
         'accessories': accessories,
+        'owned_accessories': owned_accessories,
+        'available_accessories': available_accessories,
+        'owned_count': len(owned_accessories),
+        'available_count': len(available_accessories),
+        'user': request.user,
     }
-
     return render(request, 'gamification/avatar.html', context)

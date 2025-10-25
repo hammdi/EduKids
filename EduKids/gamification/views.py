@@ -114,10 +114,10 @@ class AvatarViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Avatar.objects.filter(student=self.request.user, is_active=True)
+        return Avatar.objects.filter(student=self.request.user.student_profile, is_active=True)
 
     def perform_create(self, serializer):
-        serializer.save(student=self.request.user)
+        serializer.save(student=self.request.user.student_profile)
 
     @action(detail=False, methods=['get'])
     def my_avatar(self, request):
@@ -125,7 +125,7 @@ class AvatarViewSet(viewsets.ModelViewSet):
         Retourne l'avatar de l'utilisateur actuel
         """
         avatar, created = Avatar.objects.get_or_create(
-            student=request.user,
+            student=request.user.student_profile,
             defaults={
                 'name': f"Avatar de {request.user.first_name}",
                 'is_active': True
@@ -169,7 +169,7 @@ class AvatarViewSet(viewsets.ModelViewSet):
 
         try:
             user_accessory = UserAccessory.objects.get(
-                student=request.user,
+                student=request.user.student_profile,
                 accessory_id=accessory_id,
                 status='owned'
             )
@@ -202,7 +202,7 @@ class AvatarViewSet(viewsets.ModelViewSet):
 
         try:
             user_accessory = UserAccessory.objects.get(
-                student=request.user,
+                student=request.user.student_profile,
                 accessory_id=accessory_id,
                 status='equipped'
             )
@@ -234,7 +234,7 @@ class AccessoryViewSet(viewsets.ReadOnlyModelViewSet):
         Retourne les accessoires possédés par l'utilisateur
         """
         user_accessories = UserAccessory.objects.filter(
-            student=request.user,
+            student=request.user.student_profile,
             status__in=['owned', 'equipped']
         ).select_related('accessory')
         accessories = [ua.accessory for ua in user_accessories]
@@ -250,10 +250,10 @@ class UserAccessoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return UserAccessory.objects.filter(student=self.request.user)
+        return UserAccessory.objects.filter(student=self.request.user.student_profile)
 
     def perform_create(self, serializer):
-        serializer.save(student=self.request.user)
+        serializer.save(student=self.request.user.student_profile)
 
     @action(detail=True, methods=['post'])
     def purchase(self, request, pk=None):
@@ -272,7 +272,7 @@ class UserAccessoryViewSet(viewsets.ModelViewSet):
         accessory = user_accessory.accessory
 
         # Vérifier les points de l'utilisateur
-        student = request.user
+        student = request.user.student_profile
         if student.points < accessory.points_required:
             return Response(
                 {'error': 'Points insuffisants'},

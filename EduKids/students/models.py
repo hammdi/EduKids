@@ -76,7 +76,11 @@ class Student(models.Model):
         choices=GRADE_LEVEL_CHOICES,
         verbose_name="Niveau scolaire"
     )
-    birth_date = models.DateField(verbose_name="Date de naissance")
+    birth_date = models.DateField(
+        verbose_name="Date de naissance",
+        null=True,
+        blank=True
+    )
     learning_style = models.CharField(
         max_length=15,
         choices=LEARNING_STYLE_CHOICES,
@@ -99,6 +103,11 @@ class Student(models.Model):
     current_level = models.IntegerField(
         default=1,
         verbose_name="Niveau actuel"
+    )
+    last_daily_reward = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Dernière récompense quotidienne"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'inscription")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière activité")

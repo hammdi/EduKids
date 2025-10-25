@@ -7,6 +7,9 @@
     <title>
       {% block title %}EduKids - AI-Powered Educational Hub{% endblock %}
     </title>
+    
+    <!-- Favicon -->
+    <!-- Vous pouvez ajouter un favicon personnalisé ici -->
 
     <!-- Bootstrap 5 CSS -->
     <link
@@ -16,19 +19,38 @@
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    
+    <!-- Emoji Font Support -->
+    <style>
+      /* Ensure emojis display properly across all browsers */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+      
+      /* Force emoji rendering */
+      .badge-icon, .emoji, [class*="icon"] {
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+        font-style: normal;
+        font-weight: normal;
+      }
+    </style>
 
     {% block extra_css %}{% endblock %}
   </head>
   <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light magical-navbar" style="position: relative; z-index: 1000;">
       <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">
-          <i class="fas fa-graduation-cap me-2"></i>EduKids
+        <a class="navbar-brand magical-brand" href="{% url 'home' %}">
+          <span style="font-size: 2rem; margin-right: 0.5rem;">🎓</span>
+          <span class="brand-text">EduKids</span>
         </a>
 
         <button
@@ -54,6 +76,17 @@
                 <i class="fas fa-book me-1"></i>Mes Matières
               </a>
             </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="storiesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-book-open me-1"></i>Stories
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="storiesDropdown">
+                <li><a class="dropdown-item" href="{% url 'assessments:story_list' %}">📚 Read Stories</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:story_correction' %}">✍️ AI Story Correction</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:student_badges' %}">🏆 My Badges</a></li>
+              </ul>
+            </li>
             {% elif user.user_type == 'teacher' %}
             <!-- Teacher Navigation -->
             <li class="nav-item">
@@ -66,10 +99,20 @@
                 <i class="fas fa-book me-1"></i>Subjects
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'assessments:story_list' %}">
+                Stories
+              </a>
+            </li>
             {% else %}
-            <!-- Fallback for other user types -->
+            <!-- Fallback for other user types (Admin, etc.) -->
             <li class="nav-item">
               <a class="nav-link" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'assessments:story_list' %}">
+                Stories
+              </a>
             </li>
             {% endif %} {% else %}
             <!-- Non-authenticated users -->
@@ -160,20 +203,28 @@
     </div>
     {% endif %}
 
+    <!-- Points HUD (Student only) -->
+    {% include 'components/points_hud.html' %}
+
     <!-- Main Content -->
-    <main>{% block content %}{% endblock %}</main>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="magical-footer py-4 mt-0">
       <div class="container">
         <div class="row">
           <div class="col-md-6">
-            <h5><i class="fas fa-graduation-cap me-2"></i>EduKids</h5>
-            <p>AI-Powered Educational Hub for Primary Students</p>
+            <div class="footer-brand mb-3">
+              <span style="font-size: 2rem; margin-right: 0.5rem;">🎓</span>
+              <span class="footer-title">EduKids</span>
+            </div>
+            <p class="footer-description">✨ Magical Learning Adventures for Young Explorers</p>
           </div>
           <div class="col-md-6 text-md-end">
-            <p>&copy; 2024 EduKids. All rights reserved.</p>
-            <p>Built with Django & AI Technology</p>
+            <p class="footer-text">&copy; 2024 EduKids. Made with 💖 for kids</p>
+            <p class="footer-text">Built with Django Magic & AI Wonder</p>
           </div>
         </div>
       </div>
@@ -185,5 +236,139 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
+    
+    <style>
+      /* Magical Navbar Styling */
+      .magical-navbar {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 20px rgba(139, 92, 246, 0.1);
+        border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+      }
+      
+      .magical-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+      
+      .magical-brand:hover {
+        transform: scale(1.05);
+        text-decoration: none;
+      }
+      
+      .navbar-logo {
+        height: 40px;
+        width: auto;
+        animation: gentleFloat 3s ease-in-out infinite;
+        filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.2));
+      }
+      
+      .brand-text {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .navbar-nav .nav-link {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 600;
+        color: #7C3AED;
+        transition: all 0.3s ease;
+        border-radius: 15px;
+        padding: 0.5rem 1rem;
+        margin: 0 0.2rem;
+      }
+      
+      .navbar-nav .nav-link:hover {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+        color: #1F2937 !important;
+        transform: translateY(-2px);
+      }
+      
+      .dropdown-menu {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+      }
+      
+      .dropdown-item {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 500;
+        color: #6B7280;
+        border-radius: 10px;
+        margin: 0.2rem;
+        transition: all 0.3s ease;
+      }
+      
+      .dropdown-item:hover {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+        color: #1F2937 !important;
+      }
+      
+      /* Magical Footer Styling */
+      .magical-footer {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: #E5E7EB;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .magical-footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+      }
+      
+      .footer-brand {
+        display: flex;
+        align-items: center;
+      }
+      
+      .footer-logo {
+        height: 35px;
+        width: auto;
+        filter: brightness(1.2) drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3));
+      }
+      
+      .footer-title {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 800;
+        font-size: 1.3rem;
+        background: linear-gradient(135deg, #A78BFA, #F472B6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .footer-description {
+        color: #D1D5DB;
+        font-weight: 500;
+        font-size: 0.95rem;
+      }
+      
+      .footer-text {
+        color: #9CA3AF;
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      @keyframes gentleFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-3px); }
+      }
+    </style>
   </body>
 </html>

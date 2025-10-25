@@ -6,6 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import Student, Teacher, Parent, User
+from gamification.models import Accessory
 from .forms import StudentRegistrationForm, TeacherRegistrationForm
 
 def home(request):
@@ -47,7 +48,7 @@ def register(request):
 def student_dashboard(request):
     """Student dashboard view"""
     try:
-        student = request.user.student
+        student = request.user.student_profile
     except Student.DoesNotExist:
         messages.error(request, 'Student profile not found.')
         return redirect('home')
@@ -61,7 +62,7 @@ def student_dashboard(request):
 def teacher_dashboard(request):
     """Teacher dashboard view"""
     try:
-        teacher = request.user.teacher
+        teacher = request.user.teacher_profile
     except Teacher.DoesNotExist:
         messages.error(request, 'Teacher profile not found.')
         return redirect('home')
@@ -173,3 +174,24 @@ def user_delete(request, user_id):
         'user_obj': user,
     }
     return render(request, 'admin/user_delete.html', context)
+
+@login_required
+def dashboard(request):
+    try:
+        student = request.user.student_profile
+    except Student.DoesNotExist:
+        messages.error(request, "Aucun profil étudiant associé à cet utilisateur.")
+        return redirect('home')
+    # Récupère accessoires, points, etc.
+    accessories = Accessory.objects.filter(is_active=True)
+    unlocked_accessory_ids = set(student.user_accessories.values_list('accessory_id', flat=True))
+    equipped_accessory_ids = set(student.avatar.accessories.values_list('id', flat=True)) if hasattr(student, 'avatar') else set()
+    equipped_accessories = student.avatar.accessories.all() if hasattr(student, 'avatar') else []
+    context = {
+        'student': student,
+        'accessories': accessories,
+        'unlocked_accessory_ids': unlocked_accessory_ids,
+        'equipped_accessory_ids': equipped_accessory_ids,
+        'equipped_accessories': equipped_accessories,
+    }
+    return render(request, 'students/dashboard.html', context)

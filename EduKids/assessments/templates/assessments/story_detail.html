@@ -1,0 +1,300 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - EduKids{% endblock %}
+
+{% block content %}
+<div class="story-detail-section">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Story Header -->
+                <div class="story-header mb-5">
+                    <a href="{% url 'assessments:story_list' %}" class="btn btn-sm btn-outline-secondary mb-3">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Stories
+                    </a>
+                    
+                    <h1 class="story-main-title">{{ story.title }}</h1>
+                    
+                    <div class="story-info-bar">
+                        <span class="info-badge">
+                            <i class="fas fa-heart"></i> {{ story.get_theme_display }}
+                        </span>
+                        <span class="info-badge">
+                            <i class="fas fa-users"></i> 
+                            {% for char in story.characters %}{{ char }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                        </span>
+                        <span class="info-badge">
+                            <i class="fas fa-clock"></i> {{ story.reading_time_minutes }} min
+                        </span>
+                        <span class="info-badge">
+                            <i class="fas fa-signal"></i> Level {{ story.difficulty_level }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Story Content -->
+                <div class="story-content-card mb-5">
+                    <div class="story-illustration mb-4">
+                        <i class="fas fa-book-open fa-3x"></i>
+                    </div>
+                    
+                    {% for paragraph in story.story_content %}
+                    <p class="story-paragraph">{{ paragraph }}</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Comprehension Questions -->
+                <div class="questions-section">
+                    <h2 class="questions-title mb-4">
+                        <i class="fas fa-question-circle me-2"></i>Comprehension Questions
+                    </h2>
+                    
+                    <form method="post" action="{% url 'assessments:submit_answers' story.id %}" id="questionsForm">
+                        {% csrf_token %}
+                        
+                        {% for question_data in story.questions %}
+                        <div class="question-card mb-4">
+                            <div class="question-number">Question {{ forloop.counter }}</div>
+                            <h5 class="question-text">{{ question_data.question }}</h5>
+                            <textarea name="answer_{{ forloop.counter0 }}" 
+                                      class="form-control answer-input" 
+                                      rows="3" 
+                                      placeholder="Type your answer here..."
+                                      required></textarea>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Emotion Detection Placeholder -->
+                        <div class="emotion-section mb-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-smile me-2"></i>How are you feeling?
+                            </h5>
+                            <div class="emotion-options">
+                                <label class="emotion-option">
+                                    <input type="radio" name="emotion" value="happy">
+                                    <span class="emotion-emoji">😊</span>
+                                    <span class="emotion-label">Happy</span>
+                                </label>
+                                <label class="emotion-option">
+                                    <input type="radio" name="emotion" value="focused">
+                                    <span class="emotion-emoji">🤓</span>
+                                    <span class="emotion-label">Focused</span>
+                                </label>
+                                <label class="emotion-option">
+                                    <input type="radio" name="emotion" value="excited">
+                                    <span class="emotion-emoji">🤩</span>
+                                    <span class="emotion-label">Excited</span>
+                                </label>
+                                <label class="emotion-option">
+                                    <input type="radio" name="emotion" value="confused">
+                                    <span class="emotion-emoji">🤔</span>
+                                    <span class="emotion-label">Confused</span>
+                                </label>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Future: We'll use your camera to detect emotions automatically!
+                            </small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-magical-submit btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Submit My Answers
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .story-detail-section {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 100%);
+        min-height: 100vh;
+    }
+    
+    /* Override font for navbar brand */
+    .navbar-brand .brand-text {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    .story-main-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+    }
+    
+    .story-info-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .info-badge {
+        background: rgba(139, 92, 246, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        color: #7C3AED;
+        font-size: 0.9rem;
+    }
+    
+    .info-badge i {
+        margin-right: 0.3rem;
+    }
+    
+    /* Story Content */
+    .story-content-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 25px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .story-illustration {
+        text-align: center;
+        color: #8B5CF6;
+        margin-bottom: 2rem;
+    }
+    
+    .story-paragraph {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: #374151;
+        margin-bottom: 1.5rem;
+        text-align: justify;
+    }
+    
+    /* Questions */
+    .questions-section {
+        background: white;
+        padding: 3rem;
+        border-radius: 25px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .questions-title {
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    .question-card {
+        background: linear-gradient(135deg, #F3E8FF, #FCE7F3);
+        padding: 2rem;
+        border-radius: 20px;
+        border-left: 5px solid #8B5CF6;
+    }
+    
+    .question-number {
+        display: inline-block;
+        background: #8B5CF6;
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .question-text {
+        color: #1F2937;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .answer-input {
+        border: 2px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .answer-input:focus {
+        border-color: #8B5CF6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    /* Emotion Section */
+    .emotion-section {
+        background: #FEF3C7;
+        padding: 2rem;
+        border-radius: 20px;
+    }
+    
+    .emotion-options {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+    
+    .emotion-option {
+        flex: 1;
+        min-width: 120px;
+        cursor: pointer;
+    }
+    
+    .emotion-option input[type="radio"] {
+        display: none;
+    }
+    
+    .emotion-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        border: 2px solid #FDE68A;
+        border-radius: 15px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+    
+    .emotion-option input[type="radio"]:checked + .emotion-emoji {
+        transform: scale(1.3);
+    }
+    
+    .emotion-option:has(input[type="radio"]:checked) {
+        border-color: #F59E0B;
+        background: #FEF3C7;
+    }
+    
+    .emotion-emoji {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .emotion-label {
+        font-weight: 600;
+        color: #92400E;
+        font-size: 0.9rem;
+    }
+    
+    /* Submit Button */
+    .btn-magical-submit {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        font-weight: 600;
+        padding: 1rem 3rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-magical-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+</style>
+{% endblock %}

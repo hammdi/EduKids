@@ -5,6 +5,24 @@
 
 {% block content %}
 <div class="container-fluid py-4">
+        <!-- Section Gamification -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm h-100 text-center">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3">
+                            <i class="fas fa-gamepad text-warning me-2"></i> Gamification & Avatar
+                        </h4>
+                        <p class="text-muted mb-3">
+                            Personnalise ton avatar, achète des accessoires et découvre la boutique gamifiée !
+                        </p>
+                        <a href="/gamification/avatar/" class="btn btn-lg btn-warning">
+                            <i class="fas fa-user-astronaut me-2"></i> Accéder à la personnalisation d’avatar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     <!-- Welcome Section -->
     <div class="row mb-4">
         <div class="col-12">
@@ -88,14 +106,14 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{% url 'student_exercises' %}" class="btn btn-primary btn-lg">
+                        <a href="{% url 'assessments:student_exercises' %}" class="btn btn-primary btn-lg">
                             <i class="fas fa-play me-2"></i>Start New Exercise
                         </a>
-                        <a href="{% url 'voice_assessment' %}" class="btn btn-success btn-lg">
+                        <a href="{% url 'assessments:voice_assessment' %}" class="btn btn-success btn-lg">
                             <i class="fas fa-microphone me-2"></i>Voice Assessment
                         </a>
-                        <a href="#" class="btn btn-outline-primary">
-                            <i class="fas fa-chart-bar me-2"></i>View Progress
+                        <a href="{% url 'assessments:story_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-book-reader me-2"></i>Read Stories
                         </a>
                     </div>
                 </div>
@@ -184,6 +202,109 @@
             </div>
         </div>
     </div>
+
+    <!-- Avatar & Boutique Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <!-- Avatar Section -->
+            <div class="card border-0 shadow-sm h-100 text-center">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-user-circle text-primary me-2"></i>Mon Avatar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="avatar-img-container position-relative mx-auto mb-2" style="width:120px;height:120px;">
+                        {% if student.avatar.image %}
+                            <img id="student-avatar"
+                                 src="{{ student.avatar.image.url }}"
+                                 alt="Avatar"
+                                 style="object-fit:cover;width:120px;height:120px;border-radius:50%;box-shadow:0 0 8px #eee;">
+                        {% else %}
+                            <div style="width:120px;height:120px;border-radius:50%;background:#f8f9fa;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 0 8px #eee;">
+                                🎓
+                            </div>
+                        {% endif %}
+                        {% for acc in equipped_accessories %}
+                            <img class="avatar-accessory position-absolute"
+                                 src="{{ acc.image.url }}"
+                                 alt="{{ acc.name }}"
+                                 style="top:0;left:0;width:120px;height:120px;pointer-events:none;">
+                        {% endfor %}
+                    </div>
+                    <button id="change-avatar-btn" class="btn btn-outline-primary btn-sm mt-2">Changer l'avatar</button>
+                    <div class="mt-2">
+                        <span class="fw-bold">Points :</span>
+                        <span id="student-points">{{ student.points }}</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Avatar Upload Modal -->
+            <div id="avatar-upload-modal" class="modal" tabindex="-1" style="display:none;">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form id="avatar-upload-form" enctype="multipart/form-data">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Changer l'avatar</h5>
+                                <button type="button" class="btn-close" id="close-avatar-modal"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <input type="file" name="avatar" id="avatar-input" accept=".png,.jpg,.jpeg" class="form-control mb-2">
+                                <div id="avatar-preview-container">
+                                    <img id="avatar-preview" src="" style="display:none;object-fit:cover;width:120px;height:120px;border-radius:50%;margin:auto;">
+                                </div>
+                                <div id="avatar-upload-msg" class="mt-2 text-danger"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Valider</button>
+                                <button type="button" id="close-avatar-modal-footer" class="btn btn-secondary">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutique Accessoires -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-shopping-bag text-info me-2"></i>Boutique d'accessoires
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for accessory in accessories %}
+                        <div class="col-md-4">
+                            <div class="accessory-card border rounded p-2 text-center position-relative">
+                                <img src="{{ accessory.image.url }}" alt="{{ accessory.name }}" class="accessory-img mb-2" style="width:60px;height:60px;object-fit:cover;">
+                                <div class="fw-bold">{{ accessory.name }}</div>
+                                <div class="small text-muted">{{ accessory.get_accessory_type_display }}</div>
+                                <div class="fw-bold text-info">{{ accessory.points_required }} pts</div>
+                                {% if accessory.id in unlocked_accessory_ids %}
+                                    <span class="badge bg-success mt-2">Débloqué</span>
+                                    {% if accessory.id in equipped_accessory_ids %}
+                                        <span class="badge bg-primary mt-1">Équipé</span>
+                                    {% else %}
+                                        <button class="equip-accessory-btn btn btn-outline-primary btn-sm mt-2" data-accessory-id="{{ accessory.id }}">Équiper</button>
+                                    {% endif %}
+                                {% else %}
+                                    {% if student.points >= accessory.points_required %}
+                                        <button class="buy-accessory-btn btn btn-primary btn-sm mt-2" data-accessory-id="{{ accessory.id }}">Acheter</button>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark mt-2">Pas assez de points, continue !</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div id="shop-msg" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -221,5 +342,128 @@
         width: 2px;
         background: #e9ecef;
     }
+
+    .avatar-img-container { position:relative; width:120px; height:120px; margin:auto; }
+    .avatar-accessory { position:absolute; top:0; left:0; width:120px; height:120px; pointer-events:none; }
+    .accessory-card { background:#fafafa; min-height:210px; }
+    .accessory-img { border-radius:8px; }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// Avatar upload modal logic
+document.getElementById('change-avatar-btn').onclick = function() {
+    document.getElementById('avatar-upload-modal').style.display = 'block';
+};
+document.getElementById('close-avatar-modal').onclick = function() {
+    document.getElementById('avatar-upload-modal').style.display = 'none';
+    document.getElementById('avatar-upload-msg').innerText = '';
+    document.getElementById('avatar-preview').style.display = 'none';
+};
+document.getElementById('close-avatar-modal-footer').onclick = function() {
+    document.getElementById('avatar-upload-modal').style.display = 'none';
+    document.getElementById('avatar-upload-msg').innerText = '';
+    document.getElementById('avatar-preview').style.display = 'none';
+};
+// Preview avatar before upload
+document.getElementById('avatar-input').onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!['image/png','image/jpeg'].includes(file.type)) {
+        document.getElementById('avatar-upload-msg').innerText = "Format non autorisé.";
+        return;
+    }
+    if (file.size > 2*1024*1024) {
+        document.getElementById('avatar-upload-msg').innerText = "Image trop lourde (>2MB).";
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        document.getElementById('avatar-preview').src = ev.target.result;
+        document.getElementById('avatar-preview').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('avatar-upload-msg').innerText = '';
+};
+// Upload avatar via AJAX
+document.getElementById('avatar-upload-form').onsubmit = function(e) {
+    e.preventDefault();
+    const input = document.getElementById('avatar-input');
+    const file = input.files[0];
+    if (!file) return;
+    let formData = new FormData();
+    formData.append('avatar', file);
+    fetch('/api/student/avatar/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('student-avatar').src = data.avatar_url;
+            Swal.fire('Succès', 'Avatar mis à jour !', 'success');
+            document.getElementById('avatar-upload-modal').style.display = 'none';
+        } else {
+            document.getElementById('avatar-upload-msg').innerText = data.error || 'Erreur upload.';
+        }
+    });
+};
+
+// Achat accessoire
+document.querySelectorAll('.buy-accessory-btn').forEach(btn => {
+    btn.onclick = function() {
+        const accId = btn.dataset.accessoryId;
+        fetch('/api/student/accessory/buy/', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ accessory_id: accId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.parentNode.querySelector('.badge')?.remove();
+                btn.remove();
+                let status = document.createElement('span');
+                status.className = 'badge bg-success mt-2';
+                status.innerText = 'Débloqué';
+                btn.parentNode.appendChild(status);
+                document.getElementById('student-points').innerText = data.points;
+                Swal.fire('Bravo !', 'Accessoire débloqué 🎉', 'success');
+            } else {
+                document.getElementById('shop-msg').innerText = data.message || 'Impossible d\'acheter.';
+            }
+        });
+    };
+});
+
+// Équiper accessoire
+document.querySelectorAll('.equip-accessory-btn').forEach(btn => {
+    btn.onclick = function() {
+        const accId = btn.dataset.accessoryId;
+        fetch('/api/student/accessory/equip/', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ accessory_id: accId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelectorAll('.badge.bg-primary').forEach(e => e.remove());
+                document.querySelectorAll('.equip-accessory-btn').forEach(e => e.style.display='inline-block');
+                btn.style.display='none';
+                let status = document.createElement('span');
+                status.className = 'badge bg-primary mt-1';
+                status.innerText = 'Équipé';
+                btn.parentNode.appendChild(status);
+                location.reload(); // ou mieux: AJAX pour overlay
+            } else {
+                document.getElementById('shop-msg').innerText = data.message || 'Erreur équipement.';
+            }
+        });
+    };
+});
+</script>
 {% endblock %}

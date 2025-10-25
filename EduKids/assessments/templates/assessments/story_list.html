@@ -1,0 +1,353 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load story_filters %}
+
+{% block title %}Magical Stories - EduKids{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block content %}
+<div class="story-section">
+    <!-- Hero Header -->
+    <section class="story-hero py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold story-title mb-3">
+                        Magical Stories
+                    </h1>
+                    <p class="lead story-subtitle mb-4">
+                         Discover amazing stories, answer fun questions, and earn magical badges!
+                    </p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    {% if user.user_type == 'teacher' or user.is_staff %}
+                    <a href="{% url 'assessments:generate_story' %}" class="btn btn-magical-generate btn-lg">
+                        <i class="fas fa-magic me-2"></i>Generate New Story
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Badges Display -->
+            {% if earned_badges %}
+            <div class="earned-badges-preview mt-4">
+                <h5 class="mb-3"><i class="fas fa-trophy me-2"></i>Your Badges</h5>
+                <div class="badge-row">
+                    {% for student_badge in earned_badges %}
+                    <div class="mini-badge" style="background: {{student_badge.badge.color}};">
+                        <span class="badge-icon">{{student_badge.badge.icon}}</span>
+                        <span class="badge-name">{{student_badge.badge.name}}</span>
+                    </div>
+                    {% endfor %}
+                    <a href="{% url 'assessments:student_badges' %}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Stories Grid -->
+    <section class="stories-grid py-5">
+        <div class="container">
+            {% if stories %}
+            <div class="row g-4">
+                {% for story in stories %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="story-card">
+                        <div class="story-card-header" style="background: linear-gradient(135deg, #FFE4E6, #E0E7FF);">
+                            <div class="story-theme-badge">
+                                {{ story.get_theme_display }}
+                            </div>
+                            {% if story.id in progress_data %}
+                                {% if progress_data|get_item:story.id.is_completed %}
+                                <div class="story-status completed">
+                                    <i class="fas fa-check-circle"></i> Completed
+                                </div>
+                                {% else %}
+                                <div class="story-status in-progress">
+                                    <i class="fas fa-clock"></i> In Progress
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="story-card-body">
+                            <h4 class="story-card-title">{{ story.title }}</h4>
+                            
+                            <div class="story-meta">
+                                <span class="meta-item">
+                                    <i class="fas fa-users"></i>
+                                    {% for char in story.characters %}{{ char }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-clock"></i> {{ story.reading_time_minutes }} min
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-signal"></i> Level {{ story.difficulty_level }}
+                                </span>
+                            </div>
+                            
+                            {% if story.id in progress_data and progress_data|get_item:story.id.score %}
+                            <div class="story-score mt-3">
+                                <div class="score-stars">
+                                    {% with score=progress_data|get_item:story.id.score %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= score %}
+                                        <i class="fas fa-star"></i>
+                                        {% else %}
+                                        <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <a href="{% url 'assessments:story_detail' story.id %}" class="btn btn-story-read mt-3 w-100">
+                                {% if story.id in progress_data and progress_data|get_item:story.id.is_completed %}
+                                <i class="fas fa-redo me-2"></i>Read Again
+                                {% else %}
+                                <i class="fas fa-book-open me-2"></i>Start Reading
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-book fa-4x mb-3" style="color: #DDD;"></i>
+                    <h3>No Stories Yet</h3>
+                    <p class="text-muted">Ask your teacher to generate some magical stories!</p>
+                    {% if user.user_type == 'teacher' or user.is_staff %}
+                    <a href="{% url 'assessments:generate_story' %}" class="btn btn-magical-generate mt-3">
+                        <i class="fas fa-magic me-2"></i>Generate Your First Story
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<style>
+    /* Global Font Override - Exclude emojis */
+    body, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, select, .btn, .card {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    /* Emoji Support - MUST use emoji fonts */
+    .badge-icon, .emoji, span.badge-icon {
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        font-variant: normal !important;
+    }
+    
+    /* Story Section Styling */
+    .story-section {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 100%);
+        min-height: 100vh;
+    }
+    
+    .story-hero {
+        background: linear-gradient(135deg, #FFE4E6 0%, #E0E7FF 50%, #DBEAFE 100%);
+        border-radius: 0 0 30px 30px;
+    }
+    
+    .story-title {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+    }
+    
+    .story-subtitle {
+        color: #7C3AED;
+        font-weight: 600;
+    }
+    
+    /* Badges Preview */
+    .earned-badges-preview {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 1.5rem;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .badge-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .badge-icon {
+        font-size: 1.2rem;
+    }
+    
+    /* Story Cards */
+    .story-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .story-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .story-card-header {
+        padding: 1.5rem;
+        position: relative;
+    }
+    
+    .story-theme-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        color: #7C3AED;
+        font-size: 0.9rem;
+    }
+    
+    .story-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .story-status.completed {
+        background: #D4EDDA;
+        color: #155724;
+    }
+    
+    .story-status.in-progress {
+        background: #FFF3CD;
+        color: #856404;
+    }
+    
+    .story-card-body {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .story-card-title {
+        color: #1F2937;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+    
+    .story-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .meta-item {
+        color: #6B7280;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .meta-item i {
+        color: #8B5CF6;
+        width: 20px;
+    }
+    
+    .story-score {
+        margin-top: auto;
+    }
+    
+    .score-stars {
+        display: flex;
+        gap: 0.3rem;
+        font-size: 1.2rem;
+    }
+    
+    .score-stars .fas.fa-star {
+        color: #FBBF24;
+    }
+    
+    .score-stars .far.fa-star {
+        color: #D1D5DB;
+    }
+    
+    /* Buttons */
+    .btn-magical-generate {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+    
+    .btn-magical-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+    
+    .btn-story-read {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        border: none;
+        color: white;
+        border-radius: 15px;
+        font-weight: 600;
+        padding: 0.7rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-story-read:hover {
+        background: linear-gradient(135deg, #059669, #10B981);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 3rem;
+    }
+</style>
+{% endblock %}

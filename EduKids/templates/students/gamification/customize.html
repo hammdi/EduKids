@@ -1,0 +1,572 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Personnaliser mon Avatar - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.customize-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.customize-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.avatar-preview-section {
+  background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  position: sticky;
+  top: 20px;
+}
+
+.avatar-display {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+  background: #f8f9fa;
+  margin: 0 auto 1rem;
+}
+
+.avatar-placeholder {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 5px solid white;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  margin: 0 auto 1rem;
+}
+
+.upload-zone {
+  border: 3px dashed #667eea;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  background: #f8f9fa;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.upload-zone:hover {
+  background: #e9ecef;
+  border-color: #764ba2;
+}
+
+.upload-zone.dragover {
+  background: #e7f3ff;
+  border-color: #007bff;
+}
+
+.preview-container {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.preview-image {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 10px;
+  border: 3px solid #667eea;
+  object-fit: cover;
+}
+
+.accessory-category {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.accessory-item {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.accessory-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.accessory-item.equipped {
+  border-color: #28a745;
+  background: #d4edda;
+}
+
+.accessory-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e9ecef;
+}
+
+.btn-equip {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-equip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-unequip {
+  background: #6c757d;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  color: white;
+  font-weight: bold;
+}
+
+.equipped-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.points-display {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: bold;
+  display: inline-block;
+  font-size: 1.1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customize-page">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        <i class="fas fa-user-edit me-3"></i>Personnalise ton Avatar
+      </h1>
+      <p class="lead text-white">Rends ton avatar unique et stylé !</p>
+      <div class="points-display">
+        <i class="fas fa-coins me-2"></i><span id="points-value">{{ total_points }}</span> points
+      </div>
+    </div>
+
+    <div class="row">
+      
+      <!-- Colonne gauche : Aperçu Avatar -->
+      <div class="col-lg-4">
+        <div class="avatar-preview-section">
+          <h4 class="mb-3">Aperçu</h4>
+          {% if avatar.image %}
+            <img src="{{ avatar.image.url }}" alt="Mon avatar" class="avatar-display" id="avatar-main-preview">
+          {% else %}
+            <div class="avatar-placeholder" id="avatar-main-preview-placeholder">
+              🎓
+            </div>
+          {% endif %}
+          <h5 class="mt-3">{{ student.user.get_full_name }}</h5>
+          <p class="mb-0">Niveau {{ avatar.level }}</p>
+        </div>
+      </div>
+
+      <!-- Colonne droite : Personnalisation -->
+      <div class="col-lg-8">
+        
+        <!-- Upload Avatar -->
+        <div class="customize-card">
+          <h4 class="mb-3"><i class="fas fa-camera me-2 text-primary"></i>Changer mon image</h4>
+          
+          <form id="avatar-upload-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Zone de drop -->
+            <div class="upload-zone" id="upload-zone">
+              <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+              <h5>Clique ou glisse ton image ici</h5>
+              <p class="text-muted mb-0">JPG ou PNG, max 2MB</p>
+              <input type="file" class="d-none" id="avatar-image" name="image" accept="image/png,image/jpeg,image/jpg">
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-container" id="preview-container" style="display: none;">
+              <p class="text-muted mb-2">Aperçu :</p>
+              <img id="image-preview" src="" alt="Preview" class="preview-image">
+            </div>
+
+            <!-- Erreur -->
+            <div id="file-error" class="alert alert-danger mt-3" style="display: none;"></div>
+
+            <!-- Bouton upload -->
+            <div class="text-center mt-3">
+              <button type="submit" class="btn btn-equip btn-lg" id="upload-btn">
+                <i class="fas fa-upload me-2"></i>Uploader mon image
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Accessoires -->
+        <div class="customize-card">
+          <h4 class="mb-3"><i class="fas fa-tshirt me-2 text-success"></i>Mes Accessoires</h4>
+          
+          {% if accessories_by_type %}
+            {% for type, accessories in accessories_by_type.items %}
+              <div class="accessory-category">
+                <h5 class="mb-3">
+                  <i class="fas fa-tag me-2"></i>
+                  {{ accessories.0.accessory.get_accessory_type_display }}
+                </h5>
+                
+                {% for item in accessories %}
+                  <div class="accessory-item {% if item.is_equipped %}equipped{% endif %}" 
+                       data-accessory-id="{{ item.accessory.id }}"
+                       data-is-equipped="{{ item.is_equipped|yesno:'true,false' }}">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        {% if item.accessory.image %}
+                          <img src="{{ item.accessory.image.url }}" alt="{{ item.accessory.name }}" class="accessory-image">
+                        {% else %}
+                          <div class="accessory-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-{{ item.accessory.accessory_type }} fa-2x text-muted"></i>
+                          </div>
+                        {% endif %}
+                      </div>
+                      <div class="col">
+                        <h6 class="mb-0">{{ item.accessory.name }}</h6>
+                        <small class="text-muted">{{ item.accessory.description|truncatechars:50 }}</small>
+                      </div>
+                      <div class="col-auto">
+                        {% if item.is_equipped %}
+                          <span class="equipped-badge">✓ Équipé</span>
+                          <button class="btn btn-unequip btn-sm ms-2 unequip-btn" 
+                                  data-accessory-id="{{ item.accessory.id }}">
+                            Retirer
+                          </button>
+                        {% else %}
+                          <button class="btn btn-equip btn-sm equip-btn" 
+                                  data-accessory-id="{{ item.accessory.id }}">
+                            <i class="fas fa-plus me-1"></i>Équiper
+                          </button>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-5">
+              <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+              <p class="text-muted">Tu n'as pas encore d'accessoires.</p>
+              <a href="{% url 'student_store' %}" class="btn btn-equip">
+                <i class="fas fa-store me-2"></i>Aller à la boutique
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Boutons de navigation -->
+    <div class="text-center mt-4">
+      <a href="{% url 'student_inventory' %}" class="btn btn-warning btn-lg me-2">
+        <i class="fas fa-treasure-chest me-2"></i>Voir Mes Trésors
+      </a>
+      <a href="{% url 'student_store' %}" class="btn btn-success btn-lg me-2">
+        <i class="fas fa-shopping-bag me-2"></i>Aller à la Boutique
+      </a>
+      <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Upload zone drag & drop
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('avatar-image');
+const previewContainer = document.getElementById('preview-container');
+const imagePreview = document.getElementById('image-preview');
+const fileError = document.getElementById('file-error');
+const uploadBtn = document.getElementById('upload-btn');
+
+// Click sur la zone
+uploadZone.addEventListener('click', () => fileInput.click());
+
+// Drag & drop
+uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect(files[0]);
+    }
+});
+
+// Changement de fichier
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+    }
+});
+
+// Gestion de la sélection de fichier
+function handleFileSelect(file) {
+    fileError.style.display = 'none';
+    uploadBtn.disabled = false;
+    
+    // Validation type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        fileError.textContent = '❌ Format non autorisé. Utilise JPG ou PNG.';
+        fileError.style.display = 'block';
+        uploadBtn.disabled = true;
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    // Validation taille (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        fileError.textContent = '❌ Fichier trop volumineux. Maximum 2MB.';
+        fileError.style.display = 'block';
+        uploadBtn.disabled = true;
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    // Preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        previewContainer.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+// Upload form
+document.getElementById('avatar-upload-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = uploadBtn;
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Envoi en cours...';
+    submitBtn.disabled = true;
+    
+    fetch('/gamification/api/avatars/my-avatar/upload_image/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.image_url) {
+            // Mise à jour de l'aperçu principal
+            const mainPreview = document.getElementById('avatar-main-preview');
+            const placeholder = document.getElementById('avatar-main-preview-placeholder');
+            
+            if (mainPreview) {
+                mainPreview.src = data.image_url;
+            } else if (placeholder) {
+                placeholder.outerHTML = `<img src="${data.image_url}" alt="Mon avatar" class="avatar-display" id="avatar-main-preview">`;
+            }
+            
+            showToast('🎉 Super ! Ton avatar a été mis à jour avec succès !', 'success');
+            confetti();
+            
+            // Reset
+            previewContainer.style.display = 'none';
+            fileInput.value = '';
+        } else {
+            showToast('❌ Oups ! Une erreur s\'est produite.', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur de connexion.', 'danger');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Équiper accessoire
+document.querySelectorAll('.equip-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accessoryId = this.dataset.accessoryId;
+        equipAccessory(accessoryId, this);
+    });
+});
+
+// Déséquiper accessoire
+document.querySelectorAll('.unequip-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accessoryId = this.dataset.accessoryId;
+        unequipAccessory(accessoryId, this);
+    });
+});
+
+function equipAccessory(accessoryId, btnElement) {
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btnElement.disabled = true;
+    
+    fetch(`/gamification/api/avatars/my-avatar/equip_accessory/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ accessory_id: accessoryId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id || data.equipped_accessories) {
+            showToast('✨ Accessoire équipé avec succès !', 'success');
+            confetti();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('❌ Erreur lors de l\'équipement.', 'danger');
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur de connexion.', 'danger');
+        btnElement.innerHTML = originalText;
+        btnElement.disabled = false;
+    });
+}
+
+function unequipAccessory(accessoryId, btnElement) {
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btnElement.disabled = true;
+    
+    fetch(`/gamification/api/avatars/my-avatar/unequip_accessory/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({ accessory_id: accessoryId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast('Accessoire retiré.', 'info');
+        setTimeout(() => location.reload(), 1000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur de connexion.', 'danger');
+        btnElement.innerHTML = originalText;
+        btnElement.disabled = false;
+    });
+}
+
+// Toast notifications
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-lg`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; animation: slideIn 0.3s;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+// Confetti animation
+function confetti() {
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+    
+    (function frame() {
+        const timeLeft = end - Date.now();
+        if (timeLeft <= 0) return;
+        
+        const particleCount = 2;
+        confetti({
+            particleCount,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 }
+        });
+        confetti({
+            particleCount,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 }
+        });
+        
+        requestAnimationFrame(frame);
+    }());
+}
+
+// Animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% endblock %}

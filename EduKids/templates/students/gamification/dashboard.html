@@ -1,0 +1,358 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mon Espace - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.student-dashboard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.dashboard-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+}
+
+.avatar-section {
+  background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.avatar-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+  background: #f8f9fa;
+  margin: 0 auto;
+}
+
+.avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 5px solid white;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  margin: 0 auto;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.progress-bar-custom {
+  height: 30px;
+  border-radius: 15px;
+  background: #e9ecef;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+.badge-item {
+  display: inline-block;
+  text-align: center;
+  margin: 0.5rem;
+  transition: transform 0.3s;
+}
+
+.badge-item:hover {
+  transform: scale(1.1);
+}
+
+.badge-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 0.5rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.mission-item {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #667eea;
+}
+
+.btn-student {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-student:hover {
+  background: linear-gradient(45deg, #ff5252, #ff8c00);
+  transform: scale(1.05);
+  color: white;
+}
+
+.accessory-preview {
+  display: inline-block;
+  margin: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: #e9ecef;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="student-dashboard">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        👋 Salut {{ student.user.first_name }} !
+      </h1>
+      <p class="lead text-white">Bienvenue dans ton espace magique d'apprentissage</p>
+    </div>
+
+    <div class="row">
+      
+      <!-- Colonne gauche : Avatar + Stats -->
+      <div class="col-lg-4">
+        
+        <!-- Avatar Section -->
+        <div class="dashboard-card avatar-section">
+          <h4 class="mb-3">Mon Avatar</h4>
+          {% if avatar.image %}
+            <img src="{{ avatar.image.url }}" alt="Mon avatar" class="avatar-image mb-3">
+          {% else %}
+            <div class="avatar-placeholder mb-3">
+              🎓
+            </div>
+          {% endif %}
+          <h5>{{ student.user.get_full_name }}</h5>
+          <p class="mb-3">Niveau {{ current_level }}</p>
+          <a href="{% url 'student_customize' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-edit me-2"></i>Personnaliser
+          </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="dashboard-card">
+          <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Mes Stats</h5>
+          
+          <div class="stat-card">
+            <i class="fas fa-coins fa-2x mb-2"></i>
+            <div class="stat-value">{{ total_points }}</div>
+            <div class="stat-label">Points</div>
+          </div>
+
+          <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <i class="fas fa-medal fa-2x mb-2"></i>
+            <div class="stat-value">{{ total_badges }}</div>
+            <div class="stat-label">Badges</div>
+          </div>
+
+          <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <i class="fas fa-tasks fa-2x mb-2"></i>
+            <div class="stat-value">{{ completed_missions }}</div>
+            <div class="stat-label">Missions réussies</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite : Contenu principal -->
+      <div class="col-lg-8">
+        
+        <!-- Progression niveau -->
+        <div class="dashboard-card">
+          <h5 class="mb-3"><i class="fas fa-star me-2 text-warning"></i>Progression Niveau {{ current_level }}</h5>
+          <div class="progress-bar-custom">
+            <div class="progress-fill" style="width: {{ progress_percentage }}%;">
+              {{ progress_percentage|floatformat:0 }}%
+            </div>
+          </div>
+          <p class="text-muted mt-2 mb-0">
+            <small>Encore {{ next_level_points|add:"-"|add:total_points }} points pour le niveau {{ current_level|add:1 }} !</small>
+          </p>
+        </div>
+
+        <!-- Accessoires équipés -->
+        {% if equipped_accessories %}
+        <div class="dashboard-card">
+          <h5 class="mb-3"><i class="fas fa-tshirt me-2 text-primary"></i>Accessoires équipés</h5>
+          <div>
+            {% for ua in equipped_accessories %}
+              <span class="accessory-preview">
+                {{ ua.accessory.name }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Badges récents -->
+        {% if user_badges %}
+        <div class="dashboard-card">
+          <h5 class="mb-3"><i class="fas fa-trophy me-2 text-warning"></i>Badges récents</h5>
+          <div class="text-center">
+            {% for ub in user_badges %}
+              <div class="badge-item">
+                <div class="badge-icon">
+                  {{ ub.badge.icon|default:"🏆" }}
+                </div>
+                <small class="d-block">{{ ub.badge.name }}</small>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Missions actives -->
+        {% if active_missions %}
+        <div class="dashboard-card">
+          <h5 class="mb-3"><i class="fas fa-flag me-2 text-success"></i>Missions en cours</h5>
+          {% for um in active_missions %}
+            <div class="mission-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">{{ um.mission.titre }}</h6>
+                  <small class="text-muted">{{ um.mission.description|truncatechars:60 }}</small>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-primary">{{ um.progression }}/{{ um.mission.objectif }}</span>
+                  <br>
+                  <small class="text-warning">+{{ um.mission.points_recompense }} pts</small>
+                </div>
+              </div>
+              <div class="progress mt-2" style="height: 5px;">
+                <div class="progress-bar bg-success" style="width: {{ um.progression|div:um.mission.objectif|mul:100 }}%"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Actions rapides -->
+        <div class="dashboard-card">
+          <h5 class="mb-3"><i class="fas fa-bolt me-2 text-danger"></i>Actions rapides</h5>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'student_store' %}" class="btn btn-student w-100">
+                <i class="fas fa-shopping-bag me-2"></i>Boutique
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'student_inventory' %}" class="btn btn-student w-100">
+                <i class="fas fa-treasure-chest me-2"></i>Mes Trésors
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'student_customize' %}" class="btn btn-student w-100">
+                <i class="fas fa-user-edit me-2"></i>Personnaliser
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'student_badges' %}" class="btn btn-student w-100">
+                <i class="fas fa-trophy me-2"></i>Mes Badges
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'exercises_subjects' %}" class="btn btn-student w-100">
+                <i class="fas fa-book me-2"></i>Exercices
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'student_profile_gamification' %}" class="btn btn-student w-100">
+                <i class="fas fa-user me-2"></i>Mon Profil
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎮 Student Dashboard loaded!');
+    
+    // Animation des cartes
+    const cards = document.querySelectorAll('.dashboard-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 50);
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

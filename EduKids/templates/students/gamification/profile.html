@@ -1,0 +1,144 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mon Profil Gamification - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.profile-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.achievement-item {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s;
+}
+
+.achievement-item:hover {
+  transform: translateY(-5px);
+}
+
+.achievement-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.mission-list-item {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #667eea;
+}
+
+.mission-list-item.completed {
+  border-left-color: #28a745;
+  background: #d4edda;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div class="container">
+    
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        <i class="fas fa-user-circle me-3"></i>Mon Profil Gamification
+      </h1>
+      <p class="lead text-white">Tous tes achievements et progrès</p>
+    </div>
+
+    <!-- Badges -->
+    <div class="profile-card">
+      <h4 class="mb-4"><i class="fas fa-trophy me-2 text-warning"></i>Mes Badges ({{ all_badges.count }})</h4>
+      {% if all_badges %}
+        <div class="achievement-grid">
+          {% for ub in all_badges %}
+            <div class="achievement-item">
+              <div class="achievement-icon">{{ ub.badge.icon|default:"🏆" }}</div>
+              <h6>{{ ub.badge.name }}</h6>
+              <small class="text-muted">{{ ub.date_obtained|date:"d/m/Y" }}</small>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted text-center">Aucun badge pour le moment. Continue à apprendre !</p>
+      {% endif %}
+    </div>
+
+    <!-- Missions -->
+    <div class="profile-card">
+      <h4 class="mb-4"><i class="fas fa-flag me-2 text-success"></i>Mes Missions</h4>
+      {% if all_missions %}
+        {% for um in all_missions %}
+          <div class="mission-list-item {% if um.statut == 'termine' %}completed{% endif %}">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">{{ um.mission.titre }}</h6>
+                <small class="text-muted">{{ um.mission.description }}</small>
+              </div>
+              <div class="text-end">
+                {% if um.statut == 'termine' %}
+                  <span class="badge bg-success">✓ Terminée</span>
+                {% else %}
+                  <span class="badge bg-primary">{{ um.progression }}/{{ um.mission.objectif }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted text-center">Aucune mission pour le moment.</p>
+      {% endif %}
+    </div>
+
+    <!-- Accessoires -->
+    <div class="profile-card">
+      <h4 class="mb-4"><i class="fas fa-tshirt me-2 text-primary"></i>Mes Accessoires ({{ total_accessories }})</h4>
+      <div class="text-center">
+        <a href="{% url 'student_inventory' %}" class="btn btn-warning btn-lg me-2">
+          <i class="fas fa-treasure-chest me-2"></i>Voir Mes Trésors
+        </a>
+        <a href="{% url 'student_customize' %}" class="btn btn-primary btn-lg">
+          <i class="fas fa-edit me-2"></i>Gérer mes accessoires
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="text-center">
+      <a href="{% url 'student_store' %}" class="btn btn-success btn-lg me-2">
+        <i class="fas fa-shopping-bag me-2"></i>Aller à la Boutique
+      </a>
+      <a href="{% url 'student_badges' %}" class="btn btn-info btn-lg me-2">
+        <i class="fas fa-trophy me-2"></i>Mes Badges
+      </a>
+      <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

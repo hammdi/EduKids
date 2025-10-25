@@ -1,0 +1,700 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Boutique Magique - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.store-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.store-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.points-header {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 1.5rem;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.points-value {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Section Headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  color: white;
+}
+
+.section-header.owned-section {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.section-icon {
+  font-size: 2rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Accessory Cards */
+.accessory-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.accessory-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: rotate(45deg);
+  transition: all 0.5s;
+}
+
+.accessory-card:hover::before {
+  left: 100%;
+}
+
+.accessory-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: #667eea;
+}
+
+.accessory-card.owned {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-color: #28a745;
+}
+
+.accessory-card.owned::after {
+  content: '✓';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 2px 10px rgba(40, 167, 69, 0.4);
+}
+
+.accessory-image-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e9ecef;
+  margin: 0 auto;
+  transition: all 0.3s;
+}
+
+.accessory-card:hover .accessory-image-large {
+  transform: rotate(360deg) scale(1.1);
+  border-color: #667eea;
+}
+
+.accessory-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  margin: 0 auto;
+  border: 4px solid #e9ecef;
+  transition: all 0.3s;
+}
+
+.accessory-card:hover .accessory-placeholder {
+  transform: scale(1.1);
+  border-color: #667eea;
+}
+
+.accessory-name {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #333;
+  margin: 1rem 0 0.5rem;
+}
+
+.accessory-type {
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.price-tag {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  font-weight: bold;
+  display: inline-block;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+  animation: shine 2s infinite;
+}
+
+@keyframes shine {
+  0%, 100% { box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6); }
+}
+
+/* Buttons */
+.btn-buy {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+  width: 100%;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-buy::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-buy:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-buy:hover:not(:disabled) {
+  background: linear-gradient(45deg, #ff5252, #ff8c00);
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+}
+
+.btn-buy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #95a5a6;
+}
+
+.btn-equip {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+  width: 100%;
+  font-size: 1.1rem;
+}
+
+.btn-equip:hover {
+  background: linear-gradient(45deg, #5568d3, #6a3f8f);
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.owned-badge {
+  background: linear-gradient(45deg, #28a745, #20c997);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: bold;
+  display: inline-block;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  animation: glow 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); }
+  50% { box-shadow: 0 6px 25px rgba(40, 167, 69, 0.6); }
+}
+
+.insufficient-points {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border: 2px solid #ffc107;
+  border-radius: 15px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  color: #856404;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.motivation-message {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #2196f3;
+  border-radius: 15px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  color: #0d47a1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.empty-section {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 15px;
+}
+
+.empty-section i {
+  font-size: 4rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+/* Loading */
+.loading-spinner {
+  text-align: center;
+  padding: 3rem;
+  font-size: 2rem;
+  color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .points-value {
+    font-size: 2rem;
+  }
+  
+  .accessory-name {
+    font-size: 1.1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="store-page">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        <i class="fas fa-store me-3"></i>Boutique Magique
+      </h1>
+      <p class="lead text-white">✨ Débloque des accessoires incroyables pour ton avatar ! ✨</p>
+    </div>
+
+    <!-- Points disponibles -->
+    <div class="points-header">
+      <i class="fas fa-coins fa-2x mb-2"></i>
+      <div class="points-value" id="points-display">
+        <span class="loading-dots">...</span>
+      </div>
+      <div style="font-size: 1.2rem; font-weight: 600;">Points disponibles</div>
+    </div>
+
+    <!-- Mes Trésors (Accessoires débloqués) -->
+    <div class="store-card">
+      <div class="section-header owned-section">
+        <div class="section-icon">🎁</div>
+        <div>
+          <h3 class="mb-0">Mes Trésors Débloqués</h3>
+          <small>Accessoires que tu possèdes déjà</small>
+        </div>
+        <div class="ms-auto">
+          <span class="badge bg-light text-dark" style="font-size: 1.2rem;" id="owned-count">0</span>
+        </div>
+      </div>
+      
+      <div id="owned-accessories" class="row">
+        <div class="col-12">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Chargement de tes trésors...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accessoires à acheter -->
+    <div class="store-card">
+      <div class="section-header">
+        <div class="section-icon">🛍️</div>
+        <div>
+          <h3 class="mb-0">Nouveaux Accessoires</h3>
+          <small>Achète-les avec tes points !</small>
+        </div>
+        <div class="ms-auto">
+          <span class="badge bg-light text-dark" style="font-size: 1.2rem;" id="available-count">0</span>
+        </div>
+      </div>
+      
+      <div id="available-accessories" class="row">
+        <div class="col-12">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Chargement de la boutique...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton retour -->
+    <div class="text-center">
+      <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Charger la boutique au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    loadShop();
+});
+
+function loadShop() {
+    fetch('/api/student/shop/items')
+        .then(response => response.json())
+        .then(data => {
+            displayShop(data);
+        })
+        .catch(error => {
+            console.error('Erreur chargement boutique:', error);
+            showError();
+        });
+}
+
+function displayShop(data) {
+    // Mettre à jour les points
+    document.getElementById('points-display').textContent = data.student_points.toLocaleString();
+    
+    // Séparer les accessoires
+    const owned = data.items.filter(item => item.is_owned);
+    const available = data.items.filter(item => !item.is_owned);
+    
+    // Mettre à jour les compteurs
+    document.getElementById('owned-count').textContent = owned.length;
+    document.getElementById('available-count').textContent = available.length;
+    
+    // Afficher les accessoires possédés
+    const ownedContainer = document.getElementById('owned-accessories');
+    if (owned.length > 0) {
+        ownedContainer.innerHTML = owned.map(item => createOwnedCard(item)).join('');
+    } else {
+        ownedContainer.innerHTML = `
+            <div class="col-12">
+                <div class="empty-section">
+                    <i class="fas fa-gift"></i>
+                    <h5>Aucun trésor pour le moment</h5>
+                    <p class="text-muted">Achète des accessoires ci-dessous pour commencer ta collection !</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Afficher les accessoires disponibles
+    const availableContainer = document.getElementById('available-accessories');
+    if (available.length > 0) {
+        availableContainer.innerHTML = available.map(item => createAvailableCard(item, data.student_points)).join('');
+        attachBuyListeners();
+    } else {
+        availableContainer.innerHTML = `
+            <div class="col-12">
+                <div class="empty-section">
+                    <i class="fas fa-check-circle text-success"></i>
+                    <h5>Bravo ! Tu as tout débloqué !</h5>
+                    <p class="text-muted">Reviens plus tard pour découvrir de nouveaux accessoires !</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function createOwnedCard(item) {
+    const imageHTML = item.imageURL 
+        ? `<img src="${item.imageURL}" alt="${item.name}" class="accessory-image-large">`
+        : `<div class="accessory-placeholder">${getTypeEmoji(item.categorie)}</div>`;
+    
+    return `
+        <div class="col-md-6 col-lg-4">
+            <div class="accessory-card owned">
+                <div class="text-center mb-3">${imageHTML}</div>
+                <h5 class="accessory-name text-center">${item.name}</h5>
+                <p class="accessory-type text-center">${getTypeLabel(item.categorie)}</p>
+                <p class="text-center text-muted small mb-3">${item.description || ''}</p>
+                <div class="text-center">
+                    <a href="/student/customize/" class="btn btn-equip">
+                        <i class="fas fa-tshirt me-2"></i>Équiper
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createAvailableCard(item, studentPoints) {
+    const imageHTML = item.imageURL 
+        ? `<img src="${item.imageURL}" alt="${item.name}" class="accessory-image-large">`
+        : `<div class="accessory-placeholder">${getTypeEmoji(item.categorie)}</div>`;
+    
+    const canAfford = item.can_afford;
+    const pointsNeeded = item.prixPoints - studentPoints;
+    
+    let actionHTML = '';
+    if (canAfford) {
+        actionHTML = `
+            <button class="btn btn-buy purchase-btn" 
+                    data-accessory-id="${item.id}"
+                    data-accessory-name="${item.name}"
+                    data-points-required="${item.prixPoints}">
+                <i class="fas fa-shopping-cart me-2"></i>Acheter
+            </button>
+        `;
+    } else {
+        actionHTML = `
+            <button class="btn btn-buy" disabled>
+                <i class="fas fa-lock me-2"></i>Points insuffisants
+            </button>
+            <div class="insufficient-points">
+                <i class="fas fa-info-circle me-1"></i>
+                Il te faut encore <strong>${pointsNeeded}</strong> points
+            </div>
+            <div class="motivation-message">
+                💪 Continue à apprendre pour débloquer cet accessoire !
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="col-md-6 col-lg-4">
+            <div class="accessory-card">
+                <div class="text-center mb-3">${imageHTML}</div>
+                <h5 class="accessory-name text-center">${item.name}</h5>
+                <p class="accessory-type text-center">${getTypeLabel(item.categorie)}</p>
+                <p class="text-center text-muted small mb-3">${item.description || ''}</p>
+                <div class="text-center mb-3">
+                    <span class="price-tag">
+                        <i class="fas fa-coins me-1"></i>${item.prixPoints}
+                    </span>
+                </div>
+                <div class="text-center">${actionHTML}</div>
+            </div>
+        </div>
+    `;
+}
+
+function attachBuyListeners() {
+    document.querySelectorAll('.purchase-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const accessoryId = this.dataset.accessoryId;
+            const accessoryName = this.dataset.accessoryName;
+            const pointsRequired = parseInt(this.dataset.pointsRequired);
+            
+            purchaseAccessory(accessoryId, accessoryName, pointsRequired, this);
+        });
+    });
+}
+
+function purchaseAccessory(accessoryId, accessoryName, pointsRequired, btnElement) {
+    // Confirmation
+    if (!confirm(`🎁 Veux-tu vraiment acheter "${accessoryName}" pour ${pointsRequired} points ?`)) {
+        return;
+    }
+    
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Achat en cours...';
+    btnElement.disabled = true;
+    
+    fetch(`/api/student/shop/buy/${accessoryId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Animation confetti
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.6 }
+            });
+            
+            // Toast de succès
+            showToast(`🎉 ${data.message}`, 'success');
+            
+            // Mettre à jour les points dans le HUD
+            document.getElementById('points-display').textContent = data.new_points.toLocaleString();
+            if (window.updatePointsDisplay) {
+                window.updatePointsDisplay(data.new_points);
+            }
+            
+            // Recharger la boutique après 1 seconde
+            setTimeout(() => {
+                loadShop();
+            }, 1000);
+            
+        } else {
+            showToast(`❌ ${data.error}`, 'danger');
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur lors de l\'achat', 'danger');
+        btnElement.innerHTML = originalText;
+        btnElement.disabled = false;
+    });
+}
+
+function showError() {
+    document.getElementById('owned-accessories').innerHTML = `
+        <div class="col-12">
+            <div class="empty-section">
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                <h5>Erreur de chargement</h5>
+                <p class="text-muted">Impossible de charger la boutique</p>
+                <button class="btn btn-primary" onclick="loadShop()">Réessayer</button>
+            </div>
+        </div>
+    `;
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-lg`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; max-width: 400px; animation: slideIn 0.3s;';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function getTypeEmoji(type) {
+    const emojis = {
+        'hat': '🎩',
+        'glasses': '👓',
+        'outfit': '👕',
+        'background': '🖼️',
+        'pet': '🐾',
+        'accessory': '✨'
+    };
+    return emojis[type] || '🎁';
+}
+
+function getTypeLabel(type) {
+    const labels = {
+        'hat': 'Chapeau',
+        'glasses': 'Lunettes',
+        'outfit': 'Tenue',
+        'background': 'Fond',
+        'pet': 'Animal',
+        'accessory': 'Accessoire'
+    };
+    return labels[type] || 'Accessoire';
+}
+
+// Animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+
+console.log('🛍️ Boutique améliorée chargée');
+</script>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- CSRF Token -->
+{% csrf_token %}
+{% endblock %}
