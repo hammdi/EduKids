@@ -187,3 +187,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Custom User Model for EduKids
 AUTH_USER_MODEL = 'students.User'
+
+# Google Gemini API Configuration
+GEMINI_API_KEY = 'AIzaSyD19fEQdWAy8LMILMWvtKtWylTz7diTE6E'

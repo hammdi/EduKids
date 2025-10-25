@@ -76,7 +76,11 @@ class Student(models.Model):
         choices=GRADE_LEVEL_CHOICES,
         verbose_name="Niveau scolaire"
     )
-    birth_date = models.DateField(verbose_name="Date de naissance")
+    birth_date = models.DateField(
+        verbose_name="Date de naissance",
+        null=True,
+        blank=True
+    )
     learning_style = models.CharField(
         max_length=15,
         choices=LEARNING_STYLE_CHOICES,
