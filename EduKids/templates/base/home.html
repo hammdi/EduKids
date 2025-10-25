@@ -184,7 +184,7 @@
             <div class="col-lg-6">
                 <div class="text-center about-illustration">
                     <div class="floating-graduation">
-                        <i class="fas fa-graduation-cap magical-grad-icon"></i>
+                        <img src="{% static 'images/LearningMadeMagical.png' %}" alt="Learning Made Magical" class="magical-grad-image">
                         <div class="graduation-sparkles">
                             <span class="grad-sparkle"><i class="fas fa-star"></i></span>
                             <span class="grad-sparkle"><i class="fas fa-gem"></i></span>
@@ -805,6 +805,21 @@
         animation: gentleFloat 4s ease-in-out infinite;
     }
     
+    /* New Image Styling with Blur Effect */
+    .magical-grad-image {
+        max-width: 400px;
+        width: 100%;
+        height: auto;
+        filter: blur(1px) brightness(1.05);
+        animation: gentleFloat 4s ease-in-out infinite;
+        transition: all 0.3s ease;
+    }
+    
+    .magical-grad-image:hover {
+        filter: blur(0px) brightness(1.1);
+        transform: scale(1.05);
+    }
+    
     .graduation-sparkles {
         position: absolute;
         width: 150px;
@@ -892,6 +907,10 @@
         
         .magical-grad-icon {
             font-size: 4rem;
+        }
+        
+        .magical-grad-image {
+            max-width: 300px;
         }
     }
 </style>
