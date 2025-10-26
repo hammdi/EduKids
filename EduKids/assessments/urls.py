@@ -4,6 +4,7 @@ URLs pour l'application assessments
 from django.urls import path
 from . import views
 from . import story_views
+from . import story_crud_views
 
 app_name = 'assessments'
 
@@ -33,6 +34,15 @@ urlpatterns = [
     path('story-correction/', story_views.story_correction, name='story_correction'),
     path('story-correction/submit/', story_views.submit_story_correction, name='submit_story_correction'),
     path('story-correction/view/<int:assessment_id>/', story_views.view_story_assessment, name='view_story_assessment'),
+    
+    # Story CRUD Management (Teacher/Admin only)
+    path('stories/manage/', story_crud_views.story_manage_list, name='story_manage_list'),
+    path('stories/manage/create/', story_crud_views.story_create, name='story_create'),
+    path('stories/manage/<int:pk>/', story_crud_views.story_manage_detail, name='story_manage_detail'),
+    path('stories/manage/<int:pk>/edit/', story_crud_views.story_update, name='story_update'),
+    path('stories/manage/<int:pk>/delete/', story_crud_views.story_delete, name='story_delete'),
+    path('stories/manage/<int:pk>/duplicate/', story_crud_views.story_duplicate, name='story_duplicate'),
+    path('stories/manage/bulk-delete/', story_crud_views.story_bulk_delete, name='story_bulk_delete'),
     
     # API
     path('api/voice-assessment/analyze/', views.voice_assessment_analyze, name='voice_analyze_api'),

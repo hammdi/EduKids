@@ -25,9 +25,14 @@
                 </div>
                 <div class="col-lg-4 text-end">
                     {% if user.user_type == 'teacher' or user.is_staff %}
-                    <a href="{% url 'assessments:generate_story' %}" class="btn btn-magical-generate btn-lg">
-                        <i class="fas fa-magic me-2"></i>Generate New Story
-                    </a>
+                    <div class="d-flex gap-2 justify-content-end flex-wrap">
+                        <a href="{% url 'assessments:generate_story' %}" class="btn btn-magical-generate btn-lg">
+                            <i class="fas fa-magic me-2"></i>Generate New Story
+                        </a>
+                        <a href="{% url 'assessments:story_manage_list' %}" class="btn btn-magical-manage btn-lg">
+                            <i class="fas fa-cog me-2"></i>Manage Stories
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -326,6 +331,23 @@
     .btn-magical-generate:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+    
+    .btn-magical-manage {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        font-weight: 600;
+        padding: 0.8rem 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-magical-manage:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
         color: white;
     }
     
