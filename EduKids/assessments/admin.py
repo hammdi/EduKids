@@ -3,7 +3,8 @@ from .models import (
     Assessment, StudentResponse, Progress, 
     Report, Recommendation,
     VoiceAssessment, VoiceAssessmentCriteria,
-    Story, StoryProgress, Badge, StudentBadge
+    Story, StoryProgress, Badge, StudentBadge,
+    CharacterDrawing
 )
 @admin.register(Assessment)
 class AssessmentAdmin(admin.ModelAdmin):
@@ -75,3 +76,11 @@ class StudentBadgeAdmin(admin.ModelAdmin):
     list_filter = ('badge', 'earned_at')
     search_fields = ('student__user__username', 'badge__name')
     date_hierarchy = 'earned_at'
+
+@admin.register(CharacterDrawing)
+class CharacterDrawingAdmin(admin.ModelAdmin):
+    list_display = ('title', 'student', 'story', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('title', 'student__user__username', 'story__title')
+    date_hierarchy = 'created_at'
+    readonly_fields = ('created_at', 'updated_at')

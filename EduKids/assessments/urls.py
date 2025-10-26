@@ -5,6 +5,7 @@ from django.urls import path
 from . import views
 from . import story_views
 from . import story_crud_views
+from . import drawing_views
 
 app_name = 'assessments'
 
@@ -43,6 +44,13 @@ urlpatterns = [
     path('stories/manage/<int:pk>/delete/', story_crud_views.story_delete, name='story_delete'),
     path('stories/manage/<int:pk>/duplicate/', story_crud_views.story_duplicate, name='story_duplicate'),
     path('stories/manage/bulk-delete/', story_crud_views.story_bulk_delete, name='story_bulk_delete'),
+    
+    # Character Drawing
+    path('drawing/', drawing_views.drawing_page, name='drawing_page'),
+    path('drawing/save/', drawing_views.save_drawing, name='save_drawing'),
+    path('drawing/gallery/', drawing_views.gallery_page, name='gallery_page'),
+    path('drawing/cartoonify/<int:drawing_id>/', drawing_views.cartoonify_drawing, name='cartoonify_drawing'),
+    path('drawing/delete/<int:drawing_id>/', drawing_views.delete_drawing, name='delete_drawing'),
     
     # API
     path('api/voice-assessment/analyze/', views.voice_assessment_analyze, name='voice_analyze_api'),
