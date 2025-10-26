@@ -926,7 +926,8 @@ class AssistantConsumer(AsyncWebsocketConsumer):
         else:
             phrase = ', '.join([cap_word(w) for w in selected[:-1]]) + f" et {cap_word(selected[-1])}"
 
-        topic = f"Sujet: {phrase}"
+        # Display topic label in English for history display
+        topic = f"Topic: {phrase}"
         # final cleanup and limit length
         topic = topic.strip()
         if len(topic) > 80:
