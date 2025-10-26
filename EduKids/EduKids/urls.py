@@ -28,6 +28,8 @@ urlpatterns = [
     # Assessments and exercises
     path('assessments/', include('assessments.urls')),
     path('exercises/', include('exercises.urls')),
+    # Assistant chat
+    path('assistant/', include('assistant.urls')),
 ]
 
 # Servir les fichiers media en développement

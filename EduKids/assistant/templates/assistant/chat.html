@@ -1,0 +1,455 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>🎨 NOUVEAU DESIGN ENFANTS v4 🎨</title>
+    <style>
+      /* ===== DESIGN COMPLET POUR ENFANTS - DIRECTEMENT DANS LE HTML ===== */
+      
+      * { box-sizing: border-box !important; }
+      
+      body { 
+        font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        min-height: 100vh !important;
+      }
+      
+      .chat-wrap { 
+        max-width: 900px !important;
+        margin: 0 auto !important;
+        background: #fff !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+        animation: slideIn 0.5s ease-out !important;
+      }
+      
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      h2 { 
+        color: #667eea !important;
+        text-align: center !important;
+        font-size: 36px !important;
+        margin: 0 0 20px 0 !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1) !important;
+        font-weight: bold !important;
+      }
+      
+      .header-controls {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 16px !important;
+        flex-wrap: wrap !important;
+        margin-bottom: 20px !important;
+        padding: 16px !important;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+      }
+      
+      #search-query {
+        flex: 1 !important;
+        min-width: 220px !important;
+        max-width: 420px !important;
+        padding: 10px 14px !important;
+        border-radius: 12px !important;
+        border: 2px solid #fff !important;
+        font-weight: bold !important;
+        background: rgba(255,255,255,0.96) !important;
+        color: #333 !important;
+        font-family: 'Comic Sans MS', cursive !important;
+        font-size: 14px !important;
+      }
+      
+      #search-query:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.5) !important;
+      }
+      
+      #search-btn {
+        min-width: 44px !important;
+        background: #667eea !important;
+        color: #fff !important;
+        padding: 10px 14px !important;
+        border-radius: 12px !important;
+        border: none !important;
+        cursor: pointer !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+      }
+      
+      #search-btn:hover {
+        background: #764ba2 !important;
+        transform: scale(1.05) !important;
+      }
+      
+      #search-results {
+        background: #fff !important;
+        border: 2px dashed #667eea !important;
+        border-radius: 12px !important;
+        padding: 10px !important;
+        margin: 8px 0 !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1) !important;
+      }
+      
+      #search-results a {
+        color: #667eea !important;
+        font-weight: bold !important;
+        text-decoration: none !important;
+      }
+      
+      #search-results a:hover {
+        text-decoration: underline !important;
+      }
+
+      /* Petits boutons icones (édition / suppression) */
+      .icon-btn {
+        width: 36px !important;
+        height: 36px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
+        background: #ffffffcc !important;
+        border: 2px solid #667eea !important;
+        color: #333 !important;
+        box-shadow: none !important;
+      }
+      .icon-btn:hover { background: #eef !important; transform: none !important; }
+
+      .msg-actions { text-align: right !important; margin-top: -8px !important; margin-bottom: 8px !important; }
+      
+      .header-controls label {
+        color: white !important;
+        font-weight: bold !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 16px !important;
+        margin: 0 !important;
+      }
+      
+      .lang { 
+        padding: 8px 12px !important;
+        border: 2px solid white !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+        background: rgba(255,255,255,0.9) !important;
+        cursor: pointer !important;
+        font-weight: bold !important;
+      }
+      
+      #messages { 
+        height: 450px !important;
+        overflow-y: auto !important;
+        padding: 20px !important;
+        border-radius: 20px !important;
+        background: linear-gradient(to bottom, #ffecd2 0%, #fcb69f 100%) !important;
+        margin-bottom: 20px !important;
+        scroll-behavior: smooth !important;
+        border: 3px solid #667eea !important;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.1) !important;
+      }
+      
+      #messages::-webkit-scrollbar {
+        width: 12px !important;
+      }
+      
+      #messages::-webkit-scrollbar-track {
+        background: #ffecd2 !important;
+        border-radius: 10px !important;
+      }
+      
+      #messages::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-radius: 10px !important;
+      }
+      
+      .controls {
+        display: flex !important;
+        gap: 12px !important;
+        align-items: center !important;
+        margin-top: 12px !important;
+      }
+      
+      .controls #input {
+        flex: 1 !important;
+        padding: 14px 18px !important;
+        border-radius: 20px !important;
+        border: 3px solid #667eea !important;
+        font-size: 16px !important;
+        font-family: 'Comic Sans MS', cursive !important;
+        resize: vertical !important;
+        min-height: 50px !important;
+      }
+      
+      .controls button {
+        padding: 14px 24px !important;
+        border-radius: 20px !important;
+        border: none !important;
+        cursor: pointer !important;
+        font-weight: bold !important;
+        font-family: 'Comic Sans MS', cursive !important;
+        transition: all 0.3s ease !important;
+      }
+      
+      .clearfix {
+        clear: both !important;
+        height: 0 !important;
+        overflow: hidden !important;
+      }
+      
+      .msg { 
+        padding: 14px 18px !important;
+        margin: 12px 0 !important;
+        border-radius: 20px !important;
+        max-width: 70% !important;
+        word-wrap: break-word !important;
+        line-height: 1.6 !important;
+        animation: messageAppear 0.3s ease-out !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15) !important;
+        position: relative !important;
+        font-size: 16px !important;
+      }
+      
+      @keyframes messageAppear {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      
+      /* MESSAGE ÉLÈVE - À DROITE avec emoji */
+      .msg.student { 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        float: right !important;
+        clear: right !important;
+        margin-left: auto !important;
+        text-align: left !important;
+        border-bottom-right-radius: 4px !important;
+      }
+      
+      .msg.student::before {
+        content: ' ' !important;
+        font-size: 18px !important;
+        margin-right: 6px !important;
+      }
+      
+      /* MESSAGE ASSISTANT - À GAUCHE avec emoji 🤖 */
+      .msg.assistant { 
+        background: white !important;
+        color: #333 !important;
+        float: left !important;
+        clear: left !important;
+        margin-right: auto !important;
+        text-align: left !important;
+        border-bottom-left-radius: 4px !important;
+        border: 3px solid #667eea !important;
+      }
+      
+      .msg.assistant::before {
+        content: '🤖 ' !important;
+        font-size: 18px !important;
+        margin-right: 6px !important;
+      }
+      
+      .input-controls {
+        display: flex !important;
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+      }
+      
+      #userInput { 
+        flex: 1 !important;
+        padding: 14px 18px !important;
+        border-radius: 20px !important;
+        border: 3px solid #667eea !important;
+        font-size: 16px !important;
+        font-family: 'Comic Sans MS', cursive !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1) !important;
+        transition: all 0.3s ease !important;
+      }
+      
+      #userInput:focus {
+        outline: none !important;
+        border-color: #764ba2 !important;
+        box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.2) !important;
+        transform: scale(1.02) !important;
+      }
+      
+      button { 
+        padding: 14px 24px !important;
+        border: none !important;
+        border-radius: 20px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        font-family: 'Comic Sans MS', cursive !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+      }
+      
+      button:hover {
+        transform: translateY(-2px) scale(1.05) !important;
+      }
+      
+      button:active {
+        transform: translateY(0) scale(0.98) !important;
+      }
+      
+      #sendBtn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        min-width: 120px !important;
+      }
+      
+      #sendBtn:hover {
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
+      }
+      
+      #clearBtn {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        color: white !important;
+        min-width: 120px !important;
+      }
+      
+      #clearBtn:hover {
+        box-shadow: 0 6px 16px rgba(245, 87, 108, 0.4) !important;
+      }
+      
+      #micBtn {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        color: white !important;
+        min-width: 100px !important;
+      }
+      
+      #micBtn.recording {
+        animation: pulse 1s infinite !important;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.9; }
+      }
+      
+      #status {
+        text-align: center !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+        padding: 8px !important;
+        border-radius: 12px !important;
+        margin-top: 12px !important;
+        animation: slideIn 0.3s ease-out !important;
+      }
+      
+      #status.connected {
+        background: #d4edda !important;
+        color: #155724 !important;
+        border: 2px solid #c3e6cb !important;
+      }
+      
+      #status.disconnected {
+        background: #f8d7da !important;
+        color: #721c24 !important;
+        border: 2px solid #f5c6cb !important;
+      }
+      
+      .lottie-section {
+        text-align: center !important;
+        margin-top: 20px !important;
+        padding: 20px !important;
+        background: rgba(255,255,255,0.9) !important;
+        border-radius: 20px !important;
+      }
+      
+      #start-discussion {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        padding: 12px 24px !important;
+        border-radius: 20px !important;
+        border: none !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        font-size: 16px !important;
+        font-family: 'Comic Sans MS', cursive !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="assistant-chat-root">
+      <div class="chat-wrap">
+      <h2>🎓 Assistant EduKids 🤖✨</h2>
+      
+      <div class="header-controls">
+        <label for="language">🌍 Langue:</label>
+        <select id="language" class="lang">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="pt">🇵🇹 Português</option>
+          <option value="ar">🇸🇦 العربية</option>
+        </select>
+        <label style="margin-left:12px">
+          <input type="checkbox" id="tts" checked> 🔊 Lecture vocale
+        </label>
+      </div>
+
+      <!-- Barre de recherche séparée pour plus de visibilité -->
+      <div class="header-controls" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;">
+        <label for="search-query" style="color:#fff;font-weight:bold;font-size:16px;">🔍 Recherche:</label>
+        <input id="search-query" placeholder="Rechercher dans l'historique..." 
+               style="flex:1;min-width:280px;max-width:500px;padding:12px 16px;border-radius:12px;border:2px solid #fff;font-weight:bold;background:rgba(255,255,255,0.96);color:#333;font-size:15px;"/>
+        <button id="search-btn" style="min-width:100px;background:#fff;color:#667eea;padding:12px 20px;border-radius:12px;border:none;font-weight:bold;font-size:15px;" title="Rechercher">🔎 Chercher</button>
+        <button id="bulk-delete-btn" style="min-width:140px;background:#ffb703;color:#333;padding:12px 20px;border-radius:12px;border:none;font-weight:bold;font-size:14px;" title="Supprimer anciennes">🗑️ Anciennes</button>
+        <button id="delete-all-btn" style="min-width:140px;background:#f5576c;color:#fff;padding:12px 20px;border-radius:12px;border:none;font-weight:bold;font-size:14px;" title="Tout supprimer">❌ Tout supprimer</button>
+      </div>
+
+      <!-- Zone de résultats de recherche -->
+      <div id="search-results" style="display:none;"></div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="controls">
+        <button id="mic-btn" title="Microphone">🎤</button>
+        <textarea id="input" placeholder="Écris ton message ici... 💬" aria-label="message"></textarea>
+        <button id="send">Envoyer ✨</button>
+      </div>
+    </div>
+    
+    <!-- Lottie animation section -->
+    <div class="lottie-section">
+      <div id="assistant-lottie" style="width:320px;margin:0 auto;cursor:pointer"></div>
+      <div style="margin-top:8px;">
+        <button id="start-discussion">🚀 Commencer une discussion</button>
+      </div>
+    </div>
+
+    <!-- lottie-web from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js" integrity="sha512-0pQxkhi/8XGkKZowm5z3sY8fG7ZtW6b1nqJ5pR+N+z5JQ7x2Q6l1m7a7Ldz8F3P2Q3wHpcg7bqf1xqXwQ+Xg8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {% if request.user.is_authenticated %}
+    <script>
+      // If user is authenticated, store their user id in localStorage so the chat frontend
+      // can send the correct student_id expected by the websocket consumer.
+      try {
+        localStorage.setItem('edukids_student_id', '{{ request.user.id }}');
+      } catch(e) { /* ignore */ }
+    </script>
+    {% endif %}
+  <script src="{% static 'js/assistant_chat.js' %}?v=2.5"></script>
+    </div>
+  </body>
+  </html>

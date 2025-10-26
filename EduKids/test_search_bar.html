@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test - Barre de Recherche</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .chat-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px;
+        }
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+        }
+        #search-query {
+            flex: 1;
+            min-width: 280px;
+            max-width: 500px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid #fff;
+            font-weight: bold;
+            background: rgba(255,255,255,0.96);
+            color: #333;
+            font-size: 15px;
+        }
+        button {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #search-btn {
+            min-width: 100px;
+            background: #fff;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-wrap">
+        <h2 style="text-align:center;color:#667eea;">🎓 Test Barre de Recherche</h2>
+        
+        <!-- Barre de recherche -->
+        <div class="header-controls">
+            <label for="search-query" style="color:#fff;font-weight:bold;font-size:16px;">🔍 Recherche:</label>
+            <input id="search-query" placeholder="Rechercher dans l'historique..." />
+            <button id="search-btn">🔎 Chercher</button>
+        </div>
+        
+        <div style="padding:20px;text-align:center;">
+            <p><strong>✅ Si vous voyez la barre de recherche ci-dessus, elle fonctionne !</strong></p>
+            <p>Elle devrait avoir :</p>
+            <ul style="text-align:left;max-width:400px;margin:20px auto;">
+                <li>Un fond violet/bleu dégradé</li>
+                <li>Un champ de saisie blanc</li>
+                <li>Un bouton "🔎 Chercher"</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const query = document.getElementById('search-query').value;
+            alert('Recherche pour : ' + query);
+        });
+    </script>
+</body>
+</html>

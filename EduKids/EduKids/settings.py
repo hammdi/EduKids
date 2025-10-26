@@ -12,9 +12,16 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Charger automatiquement les variables d'environnement depuis un fichier .env
+# (utile pour MISTRAL_API_KEY et autres secrets en développement). Créez un
+# fichier `.env` à la racine du projet avec la clé MISTRAL_API_KEY.
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,26 +39,34 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Assistant doit être en premier pour que sa commande 'runserver' soit prioritaire
+    'assistant.apps.AssistantConfig',
+    
+    # Django core apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
     # Third-party apps
     'crispy_forms',
     'crispy_bootstrap5',
+    
     # EduKids Applications
     'students.apps.StudentsConfig',
     'exercises.apps.ExercisesConfig',
-    'assistant.apps.AssistantConfig',
     'assessments.apps.AssessmentsConfig',
     'gamification.apps.GamificationConfig',
-   
+    
+    # Channels for WebSocket / realtime features
+    'channels',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Must be after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,6 +94,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'EduKids.wsgi.application'
+ASGI_APPLICATION = 'EduKids.asgi.application'
 
 
 # Database
@@ -168,9 +184,19 @@ LOGOUT_REDIRECT_URL = '/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# WhiteNoise configuration for serving static files with Daphne/ASGI
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Media files (User uploads)
 MEDIA_URL = 'media/'
@@ -187,3 +213,10 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Custom User Model for EduKids
 AUTH_USER_MODEL = 'students.User'
+
+# Channels configuration (development - in-memory channel layer)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
