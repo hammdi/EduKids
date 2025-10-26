@@ -675,9 +675,28 @@ class AssistantConsumer(AsyncWebsocketConsumer):
             except Conversation.DoesNotExist:
                 pass
 
-        # create minimal conversation if not exists; student/assistant can be null-checked by FK constraints
-        assistant = VirtualAssistant.objects.get(id=assistant_id) if assistant_id else VirtualAssistant.objects.filter(is_active=True).first()
-        # Student linking left as optional: the Student must be provided in payload for proper linking
+        # create minimal conversation if not exists; ensure assistant is present
+        assistant = None
+        # If an explicit assistant_id was provided, try to fetch it
+        if assistant_id:
+            try:
+                assistant = VirtualAssistant.objects.get(id=assistant_id)
+            except VirtualAssistant.DoesNotExist:
+                assistant = None
+
+        # If no explicit assistant, try to get an active one
+        if assistant is None:
+            assistant = VirtualAssistant.objects.filter(is_active=True).first()
+
+        # If still None, create a default assistant record to satisfy FK (minimal safe defaults)
+        if assistant is None:
+            assistant = VirtualAssistant.objects.create(
+                name='Assistant par défaut',
+                system_prompt='',
+                is_active=True
+            )
+
+        # Student linking left as optional in caller; here we pass the student_id (should be a Student.pk)
         conv = Conversation.objects.create(student_id=student_id if student_id else None, assistant=assistant, title='Conversation')
         return conv
 
