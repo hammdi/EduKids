@@ -39,18 +39,56 @@ class LessonForm(forms.ModelForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['question_text', 'question_type', 'points', 'hint']  # Changed 'hints' to 'hint'
+        fields = ['question_text', 'question_type', 'points', 'hint']
+        widgets = {
+            'question_text': forms.Textarea(attrs={
+                'class': 'form-control form-control-lg rounded-3 px-4 py-3',
+                'rows': 5,
+                'placeholder': 'Texte de dictée...',
+                'style': 'border: 2px solid #e2e8f0; resize: vertical;'
+            }),
+            'points': forms.NumberInput(attrs={
+                'class': 'form-control form-control-lg rounded-pill px-4',
+                'style': 'border: 2px solid #e2e8f0;'
+            }),
+            'hint': forms.Textarea(attrs={
+                'rows': 2,
+                'class': 'form-control form-control-lg rounded-3 px-4 py-3',
+                'style': 'border: 2px solid #e2e8f0; resize: vertical;',
+                'placeholder': 'Indice optionnel...'
+            }),
+        }
 
 class QuestionWithAnswersForm(forms.Form):
     question_text = forms.CharField(
         label="Question Text",
-        widget=forms.Textarea(attrs={'rows': 3}),
+        widget=forms.Textarea(attrs={
+            'class': 'form-control form-control-lg rounded-3 px-4 py-3',
+            'rows': 3,
+            'placeholder': 'Énoncez votre question...',
+            'style': 'border: 2px solid #e2e8f0; resize: vertical;'
+        }),
         required=False,
         help_text="For dictée: Enter the text to be read aloud."
     )
     question_type = forms.ChoiceField(choices=Question.QUESTION_TYPE_CHOICES, initial='text')
-    points = forms.IntegerField(initial=1, min_value=1)
-    hint = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 2}))
+    points = forms.IntegerField(
+        initial=1, 
+        min_value=1,
+        widget=forms.NumberInput(attrs={  # ADDED: Custom attrs for styling
+            'class': 'form-control form-control-lg rounded-pill px-4',
+            'style': 'border: 2px solid #e2e8f0;'
+        })
+    )
+    hint = forms.CharField(
+        required=False, 
+        widget=forms.Textarea(attrs={  # ADDED: Custom attrs for styling (kept as Textarea for multi-line)
+            'rows': 2,
+            'class': 'form-control form-control-lg rounded-3 px-4 py-3',
+            'style': 'border: 2px solid #e2e8f0; resize: vertical;',
+            'placeholder': 'Indice optionnel...'
+        })
+    )
 
 class AnswerForm(forms.Form):
     answer_text = forms.CharField(label="Answer Text", required=False)  # Not required

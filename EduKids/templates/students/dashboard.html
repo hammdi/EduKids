@@ -4,21 +4,161 @@
 {% block title %}Student Dashboard - EduKids{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh;">
     <!-- Welcome Section -->
-    <div class="row mb-4">
+    <div class="row mb-5">
         <div class="col-12">
-            <div class="card bg-gradient-primary text-white border-0">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="display-6 fw-bold mb-2">
-                                Welcome back, {{ user.get_full_name|default:user.username }}! 👋
-                            </h1>
-                            <p class="lead mb-0">Ready for today's learning adventure?</p>
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 25px;">
+                <div class="position-relative" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 200px;">
+                    <div class="position-absolute bottom-0 start-0 p-4 w-100" 
+                         style="background: linear-gradient(transparent, rgba(255,255,255,0.1));">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-container me-4 d-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px; background: white; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);">
+                                <i class="fas fa-user-graduate fa-2x" style="color: #667eea;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h1 class="mb-2 fw-bold text-white">
+                                    Welcome back, {{ user.get_full_name|default:user.username }}! 👋
+                                </h1>
+                                <p class="lead mb-0 text-white opacity-90" style="font-size: 1.1rem;">
+                                    Ready for today's learning adventure?
+                                </p>
+                            </div>
                         </div>
-                        <div class="col-md-4 text-center">
-                            <i class="fas fa-user-graduate fa-4x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Level Test Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+                <div class="card-header border-0 p-4" 
+                     style="background: linear-gradient(135deg, #667eea08, #667eea15); border-radius: 25px 25px 0 0;">
+                    <h3 class="fw-bold text-dark mb-0">
+                        <i class="fas fa-language me-3" style="color: #667eea;"></i>
+                        Language Level Assessment
+                    </h3>
+                    <p class="text-muted mb-0 mt-2">Test your current language level to get personalized content</p>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row g-4">
+                        <!-- Test Options -->
+                        <div class="col-lg-8">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="test-option-card p-4 rounded-3 border" 
+                                         style="cursor: pointer; transition: all 0.3s ease; background: white;"
+                                         onclick="startLanguageTest('listening')">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="test-icon me-3 d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px; background: #e3f2fd; border-radius: 15px;">
+                                                <i class="fas fa-headphones fa-lg" style="color: #2196f3;"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold text-dark mb-1">Listening Test</h5>
+                                                <small class="text-muted">Test your listening comprehension</small>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mb-0">Listen to audio clips and answer questions to assess your listening skills.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="test-option-card p-4 rounded-3 border" 
+                                         style="cursor: pointer; transition: all 0.3s ease; background: white;"
+                                         onclick="startLanguageTest('reading')">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="test-icon me-3 d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px; background: #f3e5f5; border-radius: 15px;">
+                                                <i class="fas fa-book fa-lg" style="color: #9c27b0;"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold text-dark mb-1">Reading Test</h5>
+                                                <small class="text-muted">Test your reading comprehension</small>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mb-0">Read passages and answer questions to assess your reading skills.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="test-option-card p-4 rounded-3 border" 
+                                         style="cursor: pointer; transition: all 0.3s ease; background: white;"
+                                         onclick="startLanguageTest('speaking')">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="test-icon me-3 d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px; background: #e8f5e8; border-radius: 15px;">
+                                                <i class="fas fa-microphone fa-lg" style="color: #4caf50;"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold text-dark mb-1">Speaking Test</h5>
+                                                <small class="text-muted">Test your speaking abilities</small>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mb-0">Record yourself speaking to assess your pronunciation and fluency.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="test-option-card p-4 rounded-3 border" 
+                                         style="cursor: pointer; transition: all 0.3s ease; background: white;"
+                                         onclick="startLanguageTest('writing')">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="test-icon me-3 d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px; background: #fff3e0; border-radius: 15px;">
+                                                <i class="fas fa-pen fa-lg" style="color: #ff9800;"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold text-dark mb-1">Writing Test</h5>
+                                                <small class="text-muted">Test your writing skills</small>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted small mb-0">Write essays and stories to assess your writing abilities.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Test Info -->
+                        <div class="col-lg-4">
+                            <div class="card border-0" style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 20px;">
+                                <div class="card-body p-4">
+                                    <h5 class="fw-bold text-dark mb-3">
+                                        <i class="fas fa-info-circle me-2" style="color: #667eea;"></i>
+                                        About the Test
+                                    </h5>
+                                    <ul class="list-unstyled mb-4">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <small>Adaptive difficulty</small>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <small>Personalized results</small>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <small>Progress tracking</small>
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <small>Certificate generation</small>
+                                        </li>
+                                    </ul>
+                                    <div class="text-center">
+                                        <button class="btn btn-lg rounded-pill px-4" 
+                                                style="background: #667eea; border: none; color: white;"
+                                                onclick="startFullAssessment()">
+                                            <i class="fas fa-play me-2"></i>Start Full Assessment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -27,10 +167,10 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-5">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-body text-center p-4">
                     <div class="text-primary mb-3">
                         <i class="fas fa-book fa-3x"></i>
                     </div>
@@ -41,8 +181,8 @@
         </div>
         
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-body text-center p-4">
                     <div class="text-success mb-3">
                         <i class="fas fa-chart-line fa-3x"></i>
                     </div>
@@ -53,8 +193,8 @@
         </div>
         
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-body text-center p-4">
                     <div class="text-warning mb-3">
                         <i class="fas fa-trophy fa-3x"></i>
                     </div>
@@ -65,8 +205,8 @@
         </div>
         
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-body text-center p-4">
                     <div class="text-info mb-3">
                         <i class="fas fa-microphone fa-3x"></i>
                     </div>
@@ -78,24 +218,38 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-5">
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-0 pb-0">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-header bg-white border-0 pb-0 p-4">
                     <h5 class="fw-bold mb-0">
                         <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'assessments:student_exercises' %}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-play me-2"></i>Start New Exercise
-                        </a>
-                        <a href="{% url 'assessments:voice_assessment' %}" class="btn btn-success btn-lg">
-                            <i class="fas fa-microphone me-2"></i>Voice Assessment
-                        </a>
-                        <a href="{% url 'assessments:story_list' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-book-reader me-2"></i>Read Stories
+<div class="card-body p-4">
+    <div class="d-grid gap-3">
+        <!-- Start New Exercise (keep remote styling with rounded-pill) -->
+        <a href="{% url 'assessments:student_exercises' %}" class="btn btn-primary btn-lg rounded-pill">
+            <i class="fas fa-play me-2"></i>Start New Exercise
+        </a>
+
+        <!-- Voice Assessment (combine remote & local info) -->
+        <a href="{% url 'assessments:voice_assessment' %}" class="btn btn-success btn-lg rounded-pill">
+            <i class="fas fa-microphone me-2"></i>Voice Assessment OPENAI
+        </a>
+
+        <!-- Read Stories (from local) -->
+        <a href="{% url 'assessments:story_list' %}" class="btn btn-outline-primary rounded-pill">
+            <i class="fas fa-book-reader me-2"></i>Read Stories
+        </a>
+
+        <!-- View Progress (from remote) -->
+        <a href="#" class="btn btn-outline-primary rounded-pill">
+            <i class="fas fa-chart-bar me-2"></i>View Progress
+        </a>
+    </div>
+</div>
+
                         </a>
                     </div>
                 </div>
@@ -103,13 +257,13 @@
         </div>
         
         <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-0 pb-0">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-header bg-white border-0 pb-0 p-4">
                     <h5 class="fw-bold mb-0">
                         <i class="fas fa-star text-warning me-2"></i>Recent Achievements
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="list-group list-group-flush">
                         <div class="list-group-item border-0 px-0">
                             <div class="d-flex align-items-center">
@@ -147,13 +301,13 @@
     <!-- Recent Activity -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
+            <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                <div class="card-header bg-white border-0 p-4">
                     <h5 class="fw-bold mb-0">
                         <i class="fas fa-clock text-primary me-2"></i>Recent Activity
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="timeline">
                         <div class="timeline-item">
                             <div class="timeline-marker bg-success"></div>
@@ -181,6 +335,36 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Language Test Modal -->
+<div class="modal fade" id="languageTestModal" tabindex="-1" aria-labelledby="languageTestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" 
+                 style="background: linear-gradient(135deg, #667eea05, #667eea08); border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title fw-bold" id="languageTestModalLabel">
+                    <i class="fas fa-language me-2" style="color: #667eea;"></i>
+                    Language Level Test
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="testContent">
+                    <!-- Test content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="background: #f8fafc; border-radius: 0 0 20px 20px;">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn rounded-pill px-4" 
+                        style="background: #667eea; border: none; color: white;" id="startTestBtn">
+                    <i class="fas fa-play me-2"></i>Start Test
+                </button>
             </div>
         </div>
     </div>
@@ -221,5 +405,531 @@
         width: 2px;
         background: #e9ecef;
     }
+    
+    /* Language Test Styles */
+    .test-option-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+        border-color: #667eea !important;
+    }
+    
+    .test-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .test-option-card:hover .test-icon {
+        transform: scale(1.1);
+    }
+    
+    .icon-container:hover {
+        transform: scale(1.02);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Test Interface Styles */
+    .test-question {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .test-answer {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .test-answer:hover {
+        border-color: #667eea;
+        background: #f8fafc;
+    }
+    
+    .test-answer.selected {
+        border-color: #667eea;
+        background: #667eea08;
+    }
+    
+    .test-progress {
+        height: 8px;
+        border-radius: 10px;
+        background: #e2e8f0;
+        overflow: hidden;
+    }
+    
+    .test-progress-bar {
+        height: 100%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Audio Controls */
+    .audio-controls {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .recording-indicator {
+        display: none;
+        background: #ff5722;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-align: center;
+        margin: 10px 0;
+    }
+    
+    .recording-indicator.active {
+        display: block;
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    /* Writing Area */
+    .writing-area {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 20px;
+        min-height: 200px;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    .writing-area:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem #667eea25;
+    }
+    
+    /* Results Display */
+    .test-results {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .level-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .level-beginner { background: #e8f5e8; color: #2e7d32; }
+    .level-intermediate { background: #fff3e0; color: #f57c00; }
+    .level-advanced { background: #e3f2fd; color: #1976d2; }
+    .level-expert { background: #f3e5f5; color: #7b1fa2; }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTest = null;
+let testQuestions = [];
+let currentQuestionIndex = 0;
+let testAnswers = {};
+let mediaRecorder = null;
+let audioChunks = [];
+
+// Language Test Functions
+function startLanguageTest(testType) {
+    currentTest = testType;
+    testQuestions = getTestQuestions(testType);
+    currentQuestionIndex = 0;
+    testAnswers = {};
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('languageTestModal'));
+    modal.show();
+    
+    // Load first question
+    loadQuestion();
+}
+
+function startFullAssessment() {
+    // Start with listening test
+    startLanguageTest('listening');
+}
+
+function getTestQuestions(testType) {
+    const questions = {
+        listening: [
+            {
+                id: 1,
+                question: "Listen to the audio and choose the correct answer:",
+                audio: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+                options: [
+                    { id: 'a', text: "The weather is sunny today", correct: true },
+                    { id: 'b', text: "The weather is rainy today", correct: false },
+                    { id: 'c', text: "The weather is cloudy today", correct: false },
+                    { id: 'd', text: "The weather is windy today", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                question: "What did the speaker say about the meeting?",
+                audio: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+                options: [
+                    { id: 'a', text: "The meeting is tomorrow", correct: false },
+                    { id: 'b', text: "The meeting is cancelled", correct: true },
+                    { id: 'c', text: "The meeting is at 3 PM", correct: false },
+                    { id: 'd', text: "The meeting is postponed", correct: false }
+                ]
+            }
+        ],
+        reading: [
+            {
+                id: 1,
+                passage: "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is commonly used for typing practice.",
+                question: "What is the purpose of this sentence?",
+                options: [
+                    { id: 'a', text: "To teach grammar", correct: false },
+                    { id: 'b', text: "For typing practice", correct: true },
+                    { id: 'c', text: "To test reading speed", correct: false },
+                    { id: 'd', text: "For vocabulary building", correct: false }
+                ]
+            }
+        ],
+        speaking: [
+            {
+                id: 1,
+                question: "Please describe your favorite hobby in detail. You have 2 minutes to speak.",
+                prompt: "Tell us about your favorite hobby. Include: what it is, why you like it, how often you do it, and what you've learned from it."
+            }
+        ],
+        writing: [
+            {
+                id: 1,
+                question: "Write a short story about a magical adventure. Minimum 150 words.",
+                prompt: "Create an original story about a character who discovers a magical object and goes on an adventure. Be creative and use descriptive language."
+            }
+        ]
+    };
+    
+    return questions[testType] || [];
+}
+
+function loadQuestion() {
+    const testContent = document.getElementById('testContent');
+    const question = testQuestions[currentQuestionIndex];
+    
+    if (!question) {
+        showResults();
+        return;
+    }
+    
+    let html = `
+        <div class="test-question">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Question ${currentQuestionIndex + 1} of ${testQuestions.length}</h5>
+                <div class="test-progress" style="width: 200px;">
+                    <div class="test-progress-bar" style="width: ${((currentQuestionIndex + 1) / testQuestions.length) * 100}%"></div>
+                </div>
+            </div>
+            <h6 class="fw-bold mb-3">${question.question}</h6>
+    `;
+    
+    if (currentTest === 'listening' && question.audio) {
+        html += `
+            <div class="audio-controls">
+                <button class="btn btn-primary rounded-pill px-4" onclick="playAudio('${question.audio}')">
+                    <i class="fas fa-play me-2"></i>Play Audio
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill px-4 ms-2" onclick="pauseAudio()">
+                    <i class="fas fa-pause me-2"></i>Pause
+                </button>
+            </div>
+        `;
+    }
+    
+    if (currentTest === 'speaking') {
+        html += `
+            <div class="mb-3">
+                <p class="text-muted">${question.prompt}</p>
+            </div>
+            <div class="recording-indicator" id="recordingIndicator">
+                <i class="fas fa-microphone me-2"></i>Recording... Click to stop
+            </div>
+            <div class="text-center">
+                <button class="btn btn-success btn-lg rounded-pill px-5" id="recordBtn" onclick="toggleRecording()">
+                    <i class="fas fa-microphone me-2"></i>Start Recording
+                </button>
+            </div>
+        `;
+    } else if (currentTest === 'writing') {
+        html += `
+            <div class="mb-3">
+                <p class="text-muted">${question.prompt}</p>
+            </div>
+            <textarea class="writing-area w-100" id="writingText" placeholder="Start writing your story here..."></textarea>
+            <div class="mt-2">
+                <small class="text-muted">Word count: <span id="wordCount">0</span></small>
+            </div>
+        `;
+    } else {
+        // Multiple choice questions
+        html += '<div class="test-options">';
+        question.options.forEach(option => {
+            html += `
+                <div class="test-answer" onclick="selectAnswer('${option.id}')" data-answer="${option.id}">
+                    <div class="d-flex align-items-center">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="radio" name="answer" value="${option.id}">
+                        </div>
+                        <span>${option.text}</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    testContent.innerHTML = html;
+    
+    // Update word count for writing test
+    if (currentTest === 'writing') {
+        const textarea = document.getElementById('writingText');
+        const wordCount = document.getElementById('wordCount');
+        
+        textarea.addEventListener('input', function() {
+            const words = this.value.trim().split(/\s+/).filter(word => word.length > 0);
+            wordCount.textContent = words.length;
+        });
+    }
+}
+
+function selectAnswer(answerId) {
+    // Remove previous selection
+    document.querySelectorAll('.test-answer').forEach(el => {
+        el.classList.remove('selected');
+        el.querySelector('input[type="radio"]').checked = false;
+    });
+    
+    // Select current answer
+    const selectedAnswer = document.querySelector(`[data-answer="${answerId}"]`);
+    selectedAnswer.classList.add('selected');
+    selectedAnswer.querySelector('input[type="radio"]').checked = true;
+    
+    // Store answer
+    testAnswers[currentQuestionIndex] = answerId;
+}
+
+function nextQuestion() {
+    if (currentTest === 'writing') {
+        const text = document.getElementById('writingText').value;
+        testAnswers[currentQuestionIndex] = text;
+    } else if (currentTest === 'speaking') {
+        // Speaking answers are handled by recording
+    }
+    
+    currentQuestionIndex++;
+    if (currentQuestionIndex < testQuestions.length) {
+        loadQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    const testContent = document.getElementById('testContent');
+    const score = calculateScore();
+    const level = getLanguageLevel(score);
+    
+    testContent.innerHTML = `
+        <div class="test-results">
+            <div class="mb-4">
+                <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
+                <h3 class="fw-bold">Test Completed!</h3>
+                <p class="text-muted">Your ${currentTest} assessment results</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <h4 class="fw-bold text-primary">${score}%</h4>
+                            <p class="text-muted mb-0">Overall Score</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="level-badge ${level.class}">${level.name}</div>
+                            <p class="text-muted mb-0">Language Level</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5 class="fw-bold mb-3">Recommendations</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>${level.recommendations[0]}</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>${level.recommendations[1]}</li>
+                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>${level.recommendations[2]}</li>
+                </ul>
+            </div>
+            
+            <div class="mt-4">
+                <button class="btn btn-primary btn-lg rounded-pill px-5" onclick="downloadCertificate()">
+                    <i class="fas fa-download me-2"></i>Download Certificate
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function calculateScore() {
+    let correctAnswers = 0;
+    let totalQuestions = testQuestions.length;
+    
+    testQuestions.forEach((question, index) => {
+        if (currentTest === 'listening' || currentTest === 'reading') {
+            const userAnswer = testAnswers[index];
+            const correctOption = question.options.find(opt => opt.correct);
+            if (userAnswer === correctOption.id) {
+                correctAnswers++;
+            }
+        } else {
+            // For speaking and writing, give a random score for demo
+            correctAnswers += Math.floor(Math.random() * 40) + 60;
+        }
+    });
+    
+    return Math.round((correctAnswers / totalQuestions) * 100);
+}
+
+function getLanguageLevel(score) {
+    if (score >= 90) {
+        return {
+            name: "Expert",
+            class: "level-expert",
+            recommendations: [
+                "Continue advanced practice",
+                "Focus on specialized vocabulary",
+                "Consider teaching others"
+            ]
+        };
+    } else if (score >= 70) {
+        return {
+            name: "Advanced",
+            class: "level-advanced",
+            recommendations: [
+                "Practice complex conversations",
+                "Read advanced literature",
+                "Join discussion groups"
+            ]
+        };
+    } else if (score >= 50) {
+        return {
+            name: "Intermediate",
+            class: "level-intermediate",
+            recommendations: [
+                "Practice daily conversations",
+                "Read news articles",
+                "Watch movies with subtitles"
+            ]
+        };
+    } else {
+        return {
+            name: "Beginner",
+            class: "level-beginner",
+            recommendations: [
+                "Start with basic vocabulary",
+                "Practice simple sentences",
+                "Use language learning apps"
+            ]
+        };
+    }
+}
+
+// Audio functions
+function playAudio(audioUrl) {
+    const audio = new Audio(audioUrl);
+    audio.play();
+}
+
+function pauseAudio() {
+    // Implementation for pausing audio
+}
+
+// Recording functions
+function toggleRecording() {
+    const recordBtn = document.getElementById('recordBtn');
+    const indicator = document.getElementById('recordingIndicator');
+    
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        recordBtn.innerHTML = '<i class="fas fa-microphone me-2"></i>Start Recording';
+        indicator.classList.remove('active');
+    } else {
+        startRecording();
+        recordBtn.innerHTML = '<i class="fas fa-stop me-2"></i>Stop Recording';
+        indicator.classList.add('active');
+    }
+}
+
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                // Store the recording
+                testAnswers[currentQuestionIndex] = audioBlob;
+            };
+            
+            mediaRecorder.start();
+        })
+        .catch(err => {
+            console.error('Error accessing microphone:', err);
+            alert('Microphone access denied. Please allow microphone access to continue.');
+        });
+}
+
+function downloadCertificate() {
+    // Create and download certificate
+    alert('Certificate download functionality would be implemented here.');
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize test modal
+    const startTestBtn = document.getElementById('startTestBtn');
+    if (startTestBtn) {
+        startTestBtn.addEventListener('click', function() {
+            if (currentTest === 'speaking' || currentTest === 'writing') {
+                // For speaking and writing, go to next question after completion
+                setTimeout(() => {
+                    nextQuestion();
+                }, 2000);
+            } else {
+                nextQuestion();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
