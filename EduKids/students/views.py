@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
@@ -18,6 +18,46 @@ def home(request):
     """Home page view"""
     return render(request, 'base/home.html')
 
+def custom_login(request):
+    """Custom login view that accepts both username and email"""
+    if request.method == 'POST':
+        username_or_email = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Try to authenticate with username first
+        user = authenticate(request, username=username_or_email, password=password)
+        
+        # If that fails, try to find user by email and authenticate with username
+        if user is None:
+            try:
+                user_by_email = User.objects.get(email=username_or_email)
+                user = authenticate(request, username=user_by_email.username, password=password)
+            except User.DoesNotExist:
+                pass
+        
+        if user is not None:
+            if user.is_active and user.email_verified:
+                login(request, user)
+                messages.success(request, f'Welcome back, {user.get_full_name()}!')
+                
+                # Redirect based on user type
+                if user.user_type == 'student':
+                    return redirect('student_dashboard')
+                elif user.user_type == 'teacher':
+                    return redirect('teacher_dashboard')
+                elif user.user_type == 'admin':
+                    return redirect('/admin/')
+                else:
+                    return redirect('home')
+            else:
+                messages.error(request, 'Your account is not active or email not verified. Please check your email.')
+        else:
+            messages.error(request, 'Invalid username/email or password.')
+    
+    # Create form for GET request
+    form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
 def register(request):
     """Registration view with role selection and email verification"""
     user_type = request.GET.get('type', 'student')  # Default to student
@@ -33,14 +73,14 @@ def register(request):
             
             # Generate email verification token
             user.email_verification_token = uuid.uuid4()
-            user.email_verified = False
-            user.is_active = False  # Deactivate until email is verified
+            user.email_verified = True  # Temporairement activé pour les tests
+            user.is_active = True  # Activé pour les tests
             user.save()
             
-            # Send verification email
-            send_verification_email(user)
+            # Send verification email (désactivé pour les tests)
+            # send_verification_email(user)
             
-            messages.success(request, f'{user_type.title()} account created successfully! Please check your email to activate your account.')
+            messages.success(request, f'{user_type.title()} account created successfully! You can now login.')
             return redirect('login')
     else:
         if user_type == 'teacher':
