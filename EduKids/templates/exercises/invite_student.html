@@ -231,6 +231,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewName = document.getElementById('previewName');
     const previewDetails = document.getElementById('previewDetails');
     const submitBtn = document.getElementById('submitBtn');
+    const inviteForm = document.getElementById('inviteForm');
+    
+    // Only run if elements exist
+    if (!studentSelect || !studentPreview || !previewName || !previewDetails || !submitBtn) {
+        console.error('One or more required elements are missing');
+        return;
+    }
     
     studentSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -263,13 +270,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Form validation
-    document.getElementById('inviteForm').addEventListener('submit', function(e) {
-        if (!studentSelect.value) {
-            e.preventDefault();
-            alert('Veuillez sélectionner un étudiant avant de continuer.');
-            studentSelect.focus();
-        }
-    });
+    if (inviteForm) {
+        inviteForm.addEventListener('submit', function(e) {
+            if (!studentSelect.value) {
+                e.preventDefault();
+                alert('Veuillez sélectionner un étudiant avant de continuer.');
+                studentSelect.focus();
+            }
+        });
+    }
 });
 </script>
 {% endblock %}
