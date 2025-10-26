@@ -1,0 +1,288 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Story Assessment - EduKids{% endblock %}
+
+{% block content %}
+<div class="assessment-view-page">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Back Button -->
+                <div class="mb-4">
+                    <a href="{% url 'assessments:story_correction' %}" class="btn btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Story Correction
+                    </a>
+                </div>
+
+                <!-- Assessment Date -->
+                <div class="text-center mb-4">
+                    <h2 class="assessment-title">Story Assessment</h2>
+                    <p class="assessment-date">
+                        <i class="fas fa-calendar me-2"></i>
+                        {{ assessment.created_at|date:"F d, Y" }} at {{ assessment.created_at|date:"g:i A" }}
+                    </p>
+                </div>
+
+                <!-- Badge Card -->
+                <div class="badge-card mb-4">
+                    <h3 class="text-center mb-3">
+                        <i class="fas fa-trophy me-2"></i>Badge Earned
+                    </h3>
+                    <div class="badge-display-center">
+                        {% if assessment.badge == 'enchanted_storybook' %}
+                            <img src="{% static 'images/enchanted_storybook.png' %}" alt="Enchanted Storybook" class="badge-img">
+                            <div class="badge-name">📖 Enchanted Storybook</div>
+                        {% elif assessment.badge == 'adventure_scroll' %}
+                            <img src="{% static 'images/adventure_scroll.png' %}" alt="Adventure Scroll" class="badge-img">
+                            <div class="badge-name">📜 Adventure Scroll</div>
+                        {% elif assessment.badge == 'fantasy_narrator' %}
+                            <img src="{% static 'images/fantasy_narrator.png' %}" alt="Fantasy Narrator" class="badge-img">
+                            <div class="badge-name">🎭 Fantasy Narrator</div>
+                        {% elif assessment.badge == 'imagination_explorer' %}
+                            <img src="{% static 'images/imagination_explorer.png' %}" alt="Imagination Explorer" class="badge-img">
+                            <div class="badge-name">🌟 Imagination Explorer</div>
+                        {% endif %}
+                    </div>
+                    <div class="creativity-display">
+                        <span class="creativity-label">Creativity Score:</span>
+                        <span class="creativity-value">{{ assessment.creativity_score }}/10</span> 🌟
+                    </div>
+                </div>
+
+                <!-- Feedback -->
+                <div class="feedback-section mb-4">
+                    <h4 class="section-header">
+                        <i class="fas fa-comment-dots me-2"></i>AI Feedback
+                    </h4>
+                    <div class="feedback-content">
+                        {{ assessment.feedback }}
+                    </div>
+                </div>
+
+                <!-- Original Story -->
+                <div class="story-section mb-4">
+                    <h4 class="section-header">
+                        <i class="fas fa-pen me-2"></i>Your Original Story
+                    </h4>
+                    <div class="story-content original">
+                        {{ assessment.original_story }}
+                    </div>
+                </div>
+
+                <!-- Corrected Story -->
+                <div class="story-section mb-4">
+                    <h4 class="section-header">
+                        <i class="fas fa-check-circle me-2"></i>Corrected Version
+                    </h4>
+                    <div class="story-content corrected">
+                        {{ assessment.corrected_story }}
+                    </div>
+                </div>
+
+                <!-- Questions -->
+                <div class="questions-section mb-4">
+                    <h4 class="section-header">
+                        <i class="fas fa-question-circle me-2"></i>Reflection Questions
+                    </h4>
+                    <div class="questions-container">
+                        {% for question in assessment.questions %}
+                        <div class="question-box">
+                            <span class="q-num">Q{{ forloop.counter }}</span>
+                            <span class="q-text">{{ question }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .assessment-view-page {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 50%, #FFF0F9 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .btn-back {
+        background: #6B7280;
+        color: white;
+        padding: 0.7rem 1.5rem;
+        border-radius: 15px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-back:hover {
+        background: #4B5563;
+        color: white;
+        transform: translateX(-5px);
+    }
+
+    .assessment-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .assessment-date {
+        color: #6B7280;
+        font-size: 1.1rem;
+    }
+
+    .badge-card {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        padding: 2.5rem;
+        border-radius: 25px;
+        border: 3px dashed #F59E0B;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.2);
+    }
+
+    .badge-display-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .badge-img {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+    }
+
+    .badge-name {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #92400E;
+    }
+
+    .creativity-display {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #92400E;
+    }
+
+    .creativity-value {
+        font-size: 1.8rem;
+        color: #F59E0B;
+    }
+
+    .feedback-section {
+        background: linear-gradient(135deg, #E0E7FF, #DBEAFE);
+        padding: 2rem;
+        border-radius: 20px;
+        border: 3px solid #C7D2FE;
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .section-header {
+        color: #4338CA;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    .feedback-content {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #1E3A8A;
+    }
+
+    .story-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        border: 3px solid #F3F4F6;
+    }
+
+    .story-section .section-header {
+        color: #1F2937;
+    }
+
+    .story-content {
+        background: #F9FAFB;
+        padding: 1.5rem;
+        border-radius: 15px;
+        font-size: 1.05rem;
+        line-height: 1.9;
+        color: #374151;
+        white-space: pre-wrap;
+    }
+
+    .story-content.original {
+        border-left: 5px solid #F59E0B;
+    }
+
+    .story-content.corrected {
+        border-left: 5px solid #10B981;
+    }
+
+    .questions-section {
+        background: linear-gradient(135deg, #FCE7F3, #FBE7F3);
+        padding: 2rem;
+        border-radius: 20px;
+        border: 3px solid #FBCFE8;
+        box-shadow: 0 6px 20px rgba(236, 72, 153, 0.15);
+    }
+
+    .questions-section .section-header {
+        color: #BE185D;
+    }
+
+    .questions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .question-box {
+        background: white;
+        padding: 1.2rem;
+        border-radius: 12px;
+        border-left: 5px solid #EC4899;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .q-num {
+        display: inline-block;
+        background: #EC4899;
+        color: white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+    }
+
+    .q-text {
+        font-size: 1.05rem;
+        color: #374151;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .assessment-title {
+            font-size: 2rem;
+        }
+
+        .badge-img {
+            width: 100px;
+            height: 100px;
+        }
+    }
+</style>
+{% endblock %}

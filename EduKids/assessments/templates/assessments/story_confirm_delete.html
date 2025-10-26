@@ -1,0 +1,232 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Delete Story - EduKids{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block content %}
+<div class="delete-page">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="delete-card">
+                    <!-- Warning Icon -->
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+
+                    <!-- Title -->
+                    <h2 class="delete-title">Delete Story?</h2>
+                    
+                    <!-- Story Info -->
+                    <div class="story-info">
+                        <h4 class="story-title">{{ story.title }}</h4>
+                        <div class="story-meta">
+                            <span class="badge badge-theme">{{ story.get_theme_display }}</span>
+                            <span class="badge badge-age">{{ story.get_age_group_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Warning Message -->
+                    <div class="warning-message">
+                        <p><strong>⚠️ Warning:</strong> This action cannot be undone!</p>
+                        
+                        {% if progress_count > 0 %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Impact:</strong> This story has been read by <strong>{{ progress_count }}</strong> student(s). 
+                            Deleting it will also remove all associated progress records and scores.
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No students have read this story yet.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Confirmation Form -->
+                    <form method="post" class="delete-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash me-2"></i>Yes, Delete Story
+                            </button>
+                            <a href="{% url 'assessments:story_manage_detail' story.pk %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Additional Info -->
+                    <div class="additional-info">
+                        <p class="text-muted small">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            <strong>Tip:</strong> Consider duplicating the story before deleting if you want to keep a backup.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .delete-page {
+        background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .delete-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(239, 68, 68, 0.2);
+        text-align: center;
+    }
+
+    .warning-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #FEE2E2, #FEF2F2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #DC2626;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .delete-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 2rem;
+    }
+
+    .story-info {
+        background: #F9FAFB;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .story-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 1rem;
+    }
+
+    .story-meta {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge-theme {
+        background: #DBEAFE;
+        color: #1E40AF;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .badge-age {
+        background: #D1FAE5;
+        color: #065F46;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .warning-message {
+        text-align: left;
+        margin-bottom: 2rem;
+    }
+
+    .warning-message p {
+        color: #374151;
+        font-size: 1.05rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert-danger {
+        background: #FEF2F2;
+        border: 2px solid #FEE2E2;
+        color: #991B1B;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: left;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #DC2626, #EF4444);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6B7280;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4B5563;
+        color: white;
+    }
+
+    .additional-info {
+        padding-top: 1.5rem;
+        border-top: 2px solid #F3F4F6;
+    }
+
+    .additional-info p {
+        margin: 0;
+        color: #6B7280;
+    }
+
+    @media (max-width: 768px) {
+        .delete-card {
+            padding: 2rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

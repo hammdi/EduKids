@@ -1,0 +1,771 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Manage Stories - EduKids{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block content %}
+<div class="story-manage-page">
+    <div class="container py-5">
+        <!-- Floating Decorations -->
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+
+        <!-- Header -->
+        <div class="page-header mb-5">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="page-title">
+                        Manage Stories
+                    </h1>
+                    <p class="page-subtitle">Create, edit, and organize your magical story collection</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <a href="{% url 'assessments:story_create' %}" class="btn btn-create">
+                        <span class="btn-text">Create New Story</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ total_stories }}</div>
+                        <div class="stat-label">Total Stories</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ ai_generated }}</div>
+                        <div class="stat-label">AI Generated</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ manual_stories }}</div>
+                        <div class="stat-label">Manual Stories</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Form -->
+        <div class="filter-card mb-4">
+            <form method="get" class="filter-form">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        {{ search_form.search }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Theme</label>
+                        {{ search_form.theme }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Age Group</label>
+                        {{ search_form.age_group }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Difficulty</label>
+                        {{ search_form.difficulty }}
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-filter">
+                        <i class="fas fa-search me-2"></i>Filter
+                    </button>
+                    <a href="{% url 'assessments:story_manage_list' %}" class="btn btn-reset">
+                        <i class="fas fa-redo me-2"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stories Table -->
+        <div class="table-card">
+            {% if page_obj %}
+            <form method="post" action="{% url 'assessments:story_bulk_delete' %}" id="bulkForm">
+                {% csrf_token %}
+                <div class="table-actions mb-3">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete selected stories?')">
+                        <i class="fas fa-trash me-2"></i>Delete Selected
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table story-table">
+                        <thead>
+                            <tr>
+                                <th width="40">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                                <th width="250">Title</th>
+                                <th width="130">Theme</th>
+                                <th width="100">Age</th>
+                                <th width="100">Level</th>
+                                <th width="80">Time</th>
+                                <th width="90">Type</th>
+                                <th width="120">Created</th>
+                                <th width="180">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for story in page_obj %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="story_ids" value="{{ story.id }}" class="form-check-input story-checkbox">
+                                </td>
+                                <td>
+                                    <strong>{{ story.title }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-theme">{{ story.get_theme_display }}</span>
+                                </td>
+                                <td>{{ story.get_age_group_display }}</td>
+                                <td>
+                                    <span class="difficulty-badge level-{{ story.difficulty_level }}">
+                                        Level {{ story.difficulty_level }}
+                                    </span>
+                                </td>
+                                <td>{{ story.reading_time_minutes }} min</td>
+                                <td>
+                                    {% if story.generated_by_ai %}
+                                        <span class="type-badge type-ai">AI</span>
+                                    {% else %}
+                                        <span class="type-badge type-manual">Manual</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ story.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="action-buttons-group">
+                                        <a href="{% url 'assessments:story_manage_detail' story.pk %}" 
+                                           class="action-btn action-btn-view" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'assessments:story_update' story.pk %}" 
+                                           class="action-btn action-btn-edit" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'assessments:story_duplicate' story.pk %}" 
+                                           class="action-btn action-btn-duplicate" title="Duplicate">
+                                            <i class="fas fa-copy"></i>
+                                        </a>
+                                        <a href="{% url 'assessments:story_delete' story.pk %}" 
+                                           class="action-btn action-btn-delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <h3>No Stories Found</h3>
+                <p>Start by creating your first story!</p>
+                <a href="{% url 'assessments:story_create' %}" class="btn btn-create">
+                    <i class="fas fa-plus me-2"></i>Create Story
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    body, h1, h2, h3, h4, h5, h6, p, span, div, label, input, select, textarea, button, a {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    /* Preserve Font Awesome icons */
+    .fas, .far, .fab, .fa, [class^="fa-"], [class*=" fa-"], i[class^="fa"], i[class*=" fa"] {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Ensure icons in stat cards display */
+    .stat-icon i, .action-btn i, .btn i {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+
+    .story-manage-page {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 50%, #FFF0F9 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Floating Shapes */
+    .floating-shapes {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.15;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .shape-1 {
+        width: 150px;
+        height: 150px;
+        background: linear-gradient(135deg, #A78BFA, #EC4899);
+        top: 10%;
+        left: 5%;
+        animation-delay: 0s;
+    }
+
+    .shape-2 {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #FBBF24, #F59E0B);
+        top: 60%;
+        right: 10%;
+        animation-delay: 5s;
+    }
+
+    .shape-3 {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #34D399, #10B981);
+        bottom: 20%;
+        left: 15%;
+        animation-delay: 10s;
+    }
+
+    .shape-4 {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #60A5FA, #3B82F6);
+        top: 30%;
+        right: 20%;
+        animation-delay: 15s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) translateX(0px); }
+        25% { transform: translateY(-20px) translateX(10px); }
+        50% { transform: translateY(-10px) translateX(-10px); }
+        75% { transform: translateY(-30px) translateX(5px); }
+    }
+
+    .page-header {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 30px;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+        position: relative;
+        z-index: 2;
+        border: 3px solid #F3E8FF;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #6B7280;
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-create:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    /* Statistics Cards */
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 25px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+        border: 2px solid #F3F4F6;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .stat-primary .stat-icon {
+        background: linear-gradient(135deg, #DDD6FE, #C4B5FD);
+        color: #7C3AED;
+    }
+
+    .stat-success .stat-icon {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #059669;
+    }
+
+    .stat-info .stat-icon {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #2563EB;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1F2937;
+    }
+
+    .stat-label {
+        color: #6B7280;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 25px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        position: relative;
+        z-index: 2;
+        border: 2px solid #F3F4F6;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #E5E7EB;
+        border-radius: 15px;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #8B5CF6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 20px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    .btn-reset {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 20px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-reset:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        color: white;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 25px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        position: relative;
+        z-index: 2;
+        border: 2px solid #F3F4F6;
+    }
+
+    .story-table {
+        margin: 0;
+        border-radius: 15px;
+        overflow: hidden;
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .story-table thead {
+        background: linear-gradient(135deg, #E0E7FF, #DDD6FE, #FBCFE8);
+    }
+
+    .story-table th {
+        font-weight: 700;
+        color: #7C3AED;
+        border-bottom: 3px solid #DDD6FE;
+        padding: 1.2rem;
+        font-size: 0.95rem;
+        text-align: center;
+    }
+    
+    .story-table th:first-child {
+        text-align: left;
+    }
+
+    .story-table td {
+        padding: 1.2rem;
+        vertical-align: middle;
+        border-bottom: 2px solid #F9FAFB;
+        font-weight: 500;
+        text-align: center;
+    }
+    
+    .story-table td:first-child,
+    .story-table td:nth-child(2) {
+        text-align: left;
+    }
+
+    .story-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .story-table tbody tr:hover {
+        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+        transform: scale(1.01);
+    }
+
+    .badge-theme {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .difficulty-badge {
+        padding: 0.5rem 0.8rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: inline-block;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .level-1 { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); color: #065F46; }
+    .level-2 { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1E40AF; }
+    .level-3 { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; }
+    .level-4 { background: linear-gradient(135deg, #FED7AA, #FDBA74); color: #9A3412; }
+    .level-5 { background: linear-gradient(135deg, #FEE2E2, #FECACA); color: #991B1B; }
+
+    /* Action Buttons - Circular */
+    .action-buttons-group {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        border-radius: 50% !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        font-size: 0.85rem;
+        padding: 0;
+        flex-shrink: 0;
+    }
+
+    .action-btn i {
+        line-height: 1;
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal;
+        display: inline-block;
+    }
+    
+    .action-btn i::before {
+        font-family: "Font Awesome 6 Free" !important;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px) scale(1.15);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    }
+
+    .action-btn-view {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+        border-color: #93C5FD;
+    }
+
+    .action-btn-view:hover {
+        background: linear-gradient(135deg, #BFDBFE, #93C5FD);
+        color: #1E40AF;
+    }
+
+    .action-btn-edit {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #92400E;
+        border-color: #FCD34D;
+    }
+
+    .action-btn-edit:hover {
+        background: linear-gradient(135deg, #FDE68A, #FCD34D);
+        color: #92400E;
+    }
+
+    .action-btn-duplicate {
+        background: linear-gradient(135deg, #E9D5FF, #D8B4FE);
+        color: #7C3AED;
+        border-color: #C4B5FD;
+    }
+
+    .action-btn-duplicate:hover {
+        background: linear-gradient(135deg, #D8B4FE, #C4B5FD);
+        color: #7C3AED;
+    }
+
+    .action-btn-delete {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        color: #991B1B;
+        border-color: #FCA5A5;
+    }
+
+    .action-btn-delete:hover {
+        background: linear-gradient(135deg, #FECACA, #FCA5A5);
+        color: #991B1B;
+    }
+
+    /* Type Badges */
+    .type-badge {
+        padding: 0.5rem 1.2rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+
+    .type-ai {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+    }
+
+    .type-manual {
+        background: linear-gradient(135deg, #E0E7FF, #C7D2FE);
+        color: #3730A3;
+    }
+
+    .table-actions .btn-danger {
+        background: linear-gradient(135deg, #EF4444, #F87171);
+        border: none;
+        border-radius: 15px;
+        font-weight: 700;
+        padding: 0.6rem 1.5rem;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .table-actions .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        color: #6B7280;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: #DDD6FE;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        color: #374151;
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 2rem;
+    }
+
+    .pagination .page-link {
+        color: #8B5CF6;
+        border: 2px solid #E9D5FF;
+        border-radius: 12px;
+        margin: 0 5px;
+        font-weight: 700;
+        padding: 0.6rem 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        border-color: #8B5CF6;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .pagination .page-link:hover {
+        background: #F3E8FF;
+        border-color: #8B5CF6;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .stat-card {
+            margin-bottom: 1rem;
+        }
+
+        .table-responsive {
+            border-radius: 15px;
+        }
+    }
+</style>
+
+<script>
+    // Select all checkbox functionality
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.story-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+</script>
+{% endblock %}

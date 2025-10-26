@@ -30,37 +30,43 @@
     </div>
   </div>
 
-  <!-- Search Section -->
+  <!-- Search Section (UPDATED for real-time search) -->
   <div class="row justify-content-center mb-5">
     <div class="col-lg-8 col-xl-6">
-      <form method="get" class="position-relative">
+      <div class="position-relative">
         <div class="input-group shadow-lg" style="border-radius: 25px; overflow: hidden;">
           <input 
             type="text" 
-            name="search" 
+            id="search-subjects" 
             class="form-control border-0 py-3 px-4" 
             placeholder="🔍 Rechercher une matière..." 
-            value="{{ search_query }}"
             style="font-size: 1.1rem; background: rgba(255,255,255,0.95);"
           >
-          <button class="btn btn-primary px-4" type="submit" style="border: none;">
-            <i class="fas fa-search"></i>
-          </button>
-          {% if search_query %}
-            <a href="{% url 'student_subjects_list' %}" class="btn btn-outline-secondary px-4" style="border: none;">
-              <i class="fas fa-times"></i>
-            </a>
-          {% endif %}
+          
+            <span class="input-group-text border-0 px-4" 
+                  style="background: rgba(255,255,255,0.95);">
+              <i class="fas fa-search text-muted"></i>
+            </span>
+          
         </div>
-      </form>
+        <!-- Search results counter -->
+        <div id="search-results" class="mt-2 text-center text-white" style="display: none;">
+          <small class="opacity-75">
+            <span id="results-count">0</span> matière(s) trouvée(s)
+          </small>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Subjects Grid -->
   <div class="container">
-    <div class="row g-4">
+    <div class="row g-4" id="subjects-container">
       {% for item in subjects_with_indicators %}
-        <div class="col-lg-4 col-md-6 col-12">
+        <div class="col-lg-4 col-md-6 col-12 subject-card-container" 
+             data-subject-name="{{ item.subject.name|lower }}"
+             data-subject-description="{{ item.subject.description|lower }}"
+             data-subject-grade="{{ item.subject.grade_level|lower }}">
           <a href="{% url 'student_subject_detail' item.subject.pk %}" class="text-decoration-none">
             <div class="card subject-card h-100 border-0 shadow-sm position-relative overflow-hidden" 
                  style="border-radius: 20px; transition: all 0.3s ease; background: white;">
@@ -107,12 +113,12 @@
                     </div>
                   {% endif %}
                   <div class="flex-grow-1">
-                    <h5 class="card-title mb-0 fw-bold text-dark">{{ item.subject.name }}</h5>
-                    <small class="text-muted">{{ item.subject.grade_level }}</small>
+                    <h5 class="card-title mb-0 fw-bold text-dark subject-name">{{ item.subject.name }}</h5>
+                    <small class="text-muted subject-grade">{{ item.subject.grade_level }}</small>
                   </div>
                 </div>
 
-                <p class="card-text text-muted flex-grow-1 mb-3" style="line-height: 1.6;">
+                <p class="card-text text-muted flex-grow-1 mb-3 subject-description" style="line-height: 1.6;">
                   {{ item.subject.description|truncatechars:120 }}
                 </p>
 
@@ -138,7 +144,7 @@
           </a>
         </div>
       {% empty %}
-        <div class="col-12">
+        <div class="col-12" id="empty-state">
           <div class="text-center py-5">
             <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px; border-radius: 20px;">
               <div class="card-body p-5">
@@ -160,6 +166,29 @@
           </div>
         </div>
       {% endfor %}
+    </div>
+
+    <!-- No Search Results Message -->
+    <div class="row" id="no-results" style="display: none;">
+      <div class="col-12">
+        <div class="text-center py-5">
+          <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px; border-radius: 20px; background: rgba(255,255,255,0.95);">
+            <div class="card-body p-5">
+              <div class="mb-4">
+                <i class="fas fa-search fa-4x" style="color: #667eea; opacity: 0.5;"></i>
+              </div>
+              <h4 class="text-dark mb-3">Aucun résultat trouvé</h4>
+              <p class="text-muted mb-4">
+                Aucune matière ne correspond à votre recherche.
+                Essayez avec d'autres mots-clés.
+              </p>
+              <button type="button" id="clear-search" class="btn btn-outline-primary rounded-pill px-4">
+                <i class="fas fa-times me-2"></i>Effacer la recherche
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -200,7 +229,176 @@
     transform: translateY(-2px);
     transition: transform 0.3s ease;
   }
+
+  /* Search highlighting */
+  .highlight {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+  }
+
+  /* Search animations */
+  .subject-card-container {
+    transition: all 0.3s ease;
+  }
+
+  .subject-card-container.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0);
+    }
+  }
+
+  /* Search input focus effect */
+  #search-subjects:focus {
+    box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.25) !important;
+    transform: translateY(-2px);
+  }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-subjects');
+    const subjectCards = document.querySelectorAll('.subject-card-container');
+    const noResults = document.getElementById('no-results');
+    const emptyState = document.getElementById('empty-state');
+    const searchResults = document.getElementById('search-results');
+    const resultsCount = document.getElementById('results-count');
+    const clearSearchBtn = document.getElementById('clear-search');
+
+    // Real-time search functionality
+    searchInput?.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (searchTerm === '') {
+            // Show all cards when search is empty
+            subjectCards.forEach(card => {
+                card.style.display = 'block';
+                card.classList.remove('hidden');
+                removeHighlights(card);
+            });
+            
+            noResults.style.display = 'none';
+            searchResults.style.display = 'none';
+            
+            // Show empty state if no subjects exist
+            if (subjectCards.length === 0 && emptyState) {
+                emptyState.style.display = 'block';
+            }
+        } else {
+            // Filter and highlight
+            subjectCards.forEach(card => {
+                const subjectName = card.dataset.subjectName || '';
+                const subjectDescription = card.dataset.subjectDescription || '';
+                const subjectGrade = card.dataset.subjectGrade || '';
+                
+                const isMatch = subjectName.includes(searchTerm) || 
+                               subjectDescription.includes(searchTerm) || 
+                               subjectGrade.includes(searchTerm);
+
+                if (isMatch) {
+                    card.style.display = 'block';
+                    card.classList.remove('hidden');
+                    highlightText(card, searchTerm);
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                    setTimeout(() => {
+                        if (card.classList.contains('hidden')) {
+                            card.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+
+            // Hide empty state during search
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+                searchResults.style.display = 'none';
+            } else {
+                noResults.style.display = 'none';
+                searchResults.style.display = 'block';
+                resultsCount.textContent = visibleCount;
+            }
+        }
+    });
+
+    // Clear search functionality
+    clearSearchBtn?.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        searchInput.focus();
+    });
+
+    // Highlight search terms
+    function highlightText(card, searchTerm) {
+        removeHighlights(card);
+        
+        const nameElement = card.querySelector('.subject-name');
+        const descriptionElement = card.querySelector('.subject-description');
+        const gradeElement = card.querySelector('.subject-grade');
+        
+        [nameElement, descriptionElement, gradeElement].forEach(element => {
+            if (element && element.textContent.toLowerCase().includes(searchTerm)) {
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                element.innerHTML = element.textContent.replace(regex, '<span class="highlight">$1</span>');
+            }
+        });
+    }
+
+    // Remove highlights
+    function removeHighlights(card) {
+        const highlightedElements = card.querySelectorAll('.highlight');
+        highlightedElements.forEach(element => {
+            const parent = element.parentNode;
+            parent.replaceChild(document.createTextNode(element.textContent), element);
+            parent.normalize();
+        });
+    }
+
+    // Add animation to cards on page load
+    subjectCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('fade-in');
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Focus search on Ctrl+F or Cmd+F
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchInput?.focus();
+        }
+        
+        // Clear search on Escape
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    });
+});
+</script>
 {% endblock %}
 
 {% block extra_js %}
