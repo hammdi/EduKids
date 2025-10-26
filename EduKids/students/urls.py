@@ -18,6 +18,10 @@ urlpatterns = [
     path('admin/users/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('admin/users/<int:user_id>/delete/', views.user_delete, name='user_delete'),
     
+    # Email verification URLs
+    path('verify-email/<uuid:token>/', views.verify_email, name='verify_email'),
+    path('resend-verification/', views.resend_verification, name='resend_verification'),
+    
     # Redirect old Django default URLs
     path('accounts/profile/', views.profile, name='old_profile'),
 ]

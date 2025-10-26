@@ -173,55 +173,52 @@
             </div>
         </div>
 
-        <!-- Registration Card -->
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="register-card">
-                    <div class="row g-0">
-                        <!-- Image Side -->
-                        <div class="col-md-5 register-image-side {% if user_type == 'teacher' %}teacher{% endif %}">
-                            <img src="{% static 'images/waving.png' %}" alt="Join Us" class="waving-avatar">
-                            {% if user_type == 'teacher' %}
-                                <h2 class="magical-title">Welcome Teacher!</h2>
-                                <p class="magical-subtitle">🌟 Start inspiring young minds today!</p>
-                            {% else %}
-                                <h2 class="magical-title">Join the Fun!</h2>
-                                <p class="magical-subtitle">✨ Begin your magical learning journey!</p>
-                            {% endif %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="register-card shadow-lg border-0 mt-3">
+            <div class="row g-0">
+                <!-- Left/Image Side (your local version) -->
+                <div class="col-md-5 register-image-side {% if user_type == 'teacher' %}teacher{% endif %}">
+                    <img src="{% static 'images/waving.png' %}" alt="Join Us" class="waving-avatar">
+                    {% if user_type == 'teacher' %}
+                        <h2 class="magical-title">Welcome Teacher!</h2>
+                        <p class="magical-subtitle">🌟 Start inspiring young minds today!</p>
+                    {% else %}
+                        <h2 class="magical-title">Join the Fun!</h2>
+                        <p class="magical-subtitle">✨ Begin your magical learning journey!</p>
+                    {% endif %}
+                </div>
+
+                <!-- Right/Form Side (remote version) -->
+                <div class="col-md-7 register-form-side">
+                    <div class="text-center mb-4">
+                        {% if user_type == 'teacher' %}
+                            <i class="fas fa-chalkboard-teacher fa-3x text-info mb-3"></i>
+                            <h2 class="fw-bold">Join as Teacher</h2>
+                            <p class="text-muted">Create your teacher account and start managing your classroom</p>
+                        {% else %}
+                            <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                            <h2 class="fw-bold">Join as Student</h2>
+                            <p class="text-muted">Create your student account and start learning</p>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" id="registrationForm">
+                        {% csrf_token %}
+                        <!-- Include the rest of the remote form fields -->
+                        ...
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create {{ user_type.title }} Account
+                            </button>
                         </div>
-                        
-                        <!-- Form Side -->
-                        <div class="col-md-7 register-form-side">
-                            <h2 class="form-title">Create Account</h2>
-                            <p class="form-subtitle">
-                                {% if user_type == 'teacher' %}
-                                    Set up your teacher account and manage your classroom
-                                {% else %}
-                                    Set up your student account and start learning
-                                {% endif %}
-                            </p>
-                            
-                            <form method="post">
-                                {% csrf_token %}
-                                {{ form|crispy }}
-                                
-                                <div class="d-grid gap-2 mt-4">
-                                    <button type="submit" class="btn btn-magical-register {% if user_type == 'teacher' %}teacher{% endif %}">
-                                        {% if user_type == 'teacher' %}
-                                            🚀 Create Teacher Account
-                                        {% else %}
-                                            🎉 Start Learning!
-                                        {% endif %}
-                                    </button>
-                                </div>
-                            </form>
-                            
-                            <div class="text-center mt-4">
-                                <p class="text-muted">
-                                    Already have an account? 
-                                    <a href="{% url 'login' %}" class="signin-link">Sign in here!</a>
-                                </p>
-                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
                         </div>
                     </div>
                 </div>
@@ -229,4 +226,162 @@
         </div>
     </div>
 </div>
+
+<style>
+    .student-type-card {
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .student-type-card:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        background: #fff;
+    }
+    
+    .student-type-card .form-check-input:checked + .form-check-label {
+        color: #667eea;
+    }
+    
+    .student-type-card .form-check-input:checked ~ * {
+        color: #667eea;
+    }
+    
+    .student-type-card.selected {
+        border-color: #667eea;
+        background: #e3f2fd;
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        position: relative;
+    }
+    
+    .student-type-card.selected::before {
+        content: '✓';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .student-type-card i {
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .student-type-card h6 {
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .student-type-card small {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    
+    .conditional-fields {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const studentTypeRadios = document.querySelectorAll('input[name="student_type"]');
+    const conditionalFields = document.getElementById('conditional-fields');
+    const classroomFields = document.getElementById('classroom-fields');
+    const parentFields = document.getElementById('parent-fields');
+    
+    // Handle student type selection
+    studentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                // Show conditional fields
+                conditionalFields.style.display = 'block';
+                
+                // Hide all conditional sections first
+                classroomFields.style.display = 'none';
+                parentFields.style.display = 'none';
+                
+                // Show relevant section based on selection
+                if (this.value === 'classroom') {
+                    classroomFields.style.display = 'block';
+                } else if (this.value === 'parent_monitored') {
+                    parentFields.style.display = 'block';
+                }
+                
+                // Remove selected class from all cards
+                document.querySelectorAll('.student-type-card').forEach(c => c.classList.remove('selected'));
+                // Add selected class to parent card
+                const parentCard = this.closest('.student-type-card');
+                if (parentCard) {
+                    parentCard.classList.add('selected');
+                }
+            }
+        });
+    });
+    
+    // Handle card clicks and selection effects
+    document.querySelectorAll('.student-type-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            const cardType = this.getAttribute('data-type');
+            
+            if (radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+                
+                // Remove selected class from all cards
+                document.querySelectorAll('.student-type-card').forEach(c => c.classList.remove('selected'));
+                // Add selected class to clicked card
+                this.classList.add('selected');
+            }
+        });
+    });
+    
+    
+    // Form validation
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        const selectedType = document.querySelector('input[name="student_type"]:checked');
+        
+        if (selectedType) {
+            if (selectedType.value === 'classroom') {
+                const invitationCode = document.querySelector('input[name="teacher_invitation_code"]').value.trim();
+                if (!invitationCode) {
+                    e.preventDefault();
+                    alert('Veuillez entrer votre code d\'invitation pour une classe d\'enseignant.');
+                    return false;
+                }
+            } else if (selectedType.value === 'parent_monitored') {
+                const parentEmail = document.querySelector('input[name="parent_email"]').value.trim();
+                if (!parentEmail) {
+                    e.preventDefault();
+                    alert('Veuillez entrer l\'email de votre parent.');
+                    return false;
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
