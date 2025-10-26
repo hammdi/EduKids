@@ -90,6 +90,17 @@
                 <li><a class="dropdown-item" href="{% url 'assessments:student_badges' %}"> My Badges</a></li>
               </ul>
             </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="voiceTestDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-microphone me-1"></i>Voice Language Test
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="voiceTestDropdown">
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_view' %}">🎤 Start Voice Test</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_real' %}">🎯 Advanced Voice Test</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_history' %}">📊 My Voice History</a></li>
+              </ul>
+            </li>
             {% elif user.user_type == 'teacher' %}
             <!-- Teacher Navigation -->
             <li class="nav-item">
@@ -110,6 +121,18 @@
                 <li><a class="dropdown-item" href="{% url 'assessments:story_list' %}">📚 View Stories</a></li>
                 <li><a class="dropdown-item" href="{% url 'assessments:story_manage_list' %}">⚙️ Manage Stories</a></li>
                 <li><a class="dropdown-item" href="{% url 'assessments:story_create' %}">➕ Create Story</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="voiceTestDropdownTeacher" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-microphone me-1"></i>Voice Language Test
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="voiceTestDropdownTeacher">
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_view' %}">🎤 Voice Assessment</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_real' %}">🎯 Advanced Assessment</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:teacher_assessments' %}">📊 Manage Assessments</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_history' %}">📈 All Students History</a></li>
               </ul>
             </li>
             {% else %}
