@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Main app URLs (students, auth, home)
+    path('student/', include('students.urls')),
     path('', include('students.urls')),
     
     # Assessments and exercises

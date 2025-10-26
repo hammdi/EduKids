@@ -1,6 +1,5 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block title %}Register - EduKids{% endblock %}
 
@@ -145,9 +144,263 @@
         transition: all 0.3s ease;
     }
     
-    .signin-link:hover {
-        color: #EC4899;
-    }
+     .signin-link:hover {
+         color: #EC4899;
+     }
+     
+     /* Enhanced Form Styles */
+     .form-group {
+         position: relative;
+         margin-bottom: 1.5rem;
+     }
+     
+     .form-label {
+         display: block;
+         font-weight: 600;
+         color: #374151;
+         margin-bottom: 0.5rem;
+         font-size: 0.95rem;
+         text-transform: uppercase;
+         letter-spacing: 0.5px;
+     }
+     
+     .form-group input[type="text"],
+     .form-group input[type="email"],
+     .form-group input[type="password"] {
+         width: 100%;
+         padding: 0.875rem 1rem;
+         border: 2px solid #E5E7EB;
+         border-radius: 12px;
+         background: #FAFAFA;
+         transition: all 0.3s ease;
+         font-size: 1rem;
+         font-family: 'Nunito', sans-serif;
+     }
+     
+     .form-group input:focus {
+         outline: none;
+         border-color: #8B5CF6;
+         box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+         background: white;
+         transform: translateY(-1px);
+     }
+     
+     .form-group input:hover {
+         border-color: #9CA3AF;
+         background: white;
+     }
+     
+     .form-hint {
+         display: flex;
+         align-items: center;
+         font-size: 0.8rem;
+         color: #6B7280;
+         margin-top: 0.5rem;
+         padding: 0.5rem 0.75rem;
+         background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+         border-radius: 8px;
+         border-left: 3px solid #0EA5E9;
+         font-style: italic;
+         transition: all 0.3s ease;
+     }
+     
+     .form-hint:hover {
+         background: linear-gradient(135deg, #E0F2FE, #BAE6FD);
+         transform: translateX(2px);
+     }
+     
+     .form-error {
+         display: flex;
+         align-items: center;
+         font-size: 0.8rem;
+         color: #EF4444;
+         margin-top: 0.5rem;
+         padding: 0.5rem 0.75rem;
+         background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+         border-radius: 8px;
+         border-left: 3px solid #EF4444;
+         font-weight: 500;
+         animation: shake 0.5s ease-in-out;
+     }
+     
+     .form-group.success input {
+         border-color: #10B981;
+         background: #F0FDF4;
+         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+     }
+     
+     .form-group.success .form-hint {
+         background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+         border-left-color: #10B981;
+         color: #059669;
+     }
+     
+     .form-group.error input {
+         border-color: #EF4444;
+         background: #FEF2F2;
+         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+     }
+     
+     /* Enhanced Button Styles */
+     .btn-magical-register {
+         position: relative;
+         overflow: hidden;
+         font-weight: 600;
+         letter-spacing: 0.5px;
+         text-transform: uppercase;
+         font-size: 1rem;
+     }
+     
+     .btn-magical-register::before {
+         content: '';
+         position: absolute;
+         top: 0;
+         left: -100%;
+         width: 100%;
+         height: 100%;
+         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+         transition: left 0.5s;
+     }
+     
+     .btn-magical-register:hover::before {
+         left: 100%;
+     }
+     
+     .btn-magical-register:active {
+         transform: translateY(0);
+     }
+     
+     /* Loading Animation */
+     .btn-magical-register.loading {
+         pointer-events: none;
+     }
+     
+     .btn-magical-register.loading i {
+         animation: spin 1s linear infinite;
+     }
+     
+     @keyframes spin {
+         0% { transform: rotate(0deg); }
+         100% { transform: rotate(360deg); }
+     }
+     
+     /* Success Animation */
+     .form-floating.success .form-control {
+         border-color: #10B981;
+         background: #F0FDF4;
+     }
+     
+     .form-floating.success label {
+         color: #10B981;
+     }
+     
+     /* Error Animation */
+     .form-floating.error .form-control {
+         border-color: #EF4444;
+         background: #FEF2F2;
+         animation: shake 0.5s ease-in-out;
+     }
+     
+     .form-floating.error label {
+         color: #EF4444;
+     }
+     
+     @keyframes shake {
+         0%, 100% { transform: translateX(0); }
+         25% { transform: translateX(-5px); }
+         75% { transform: translateX(5px); }
+     }
+     
+     /* Password Strength Indicator */
+     .password-strength {
+         margin-top: 0.5rem;
+         padding: 0.5rem;
+         border-radius: 8px;
+         background: #F8F9FA;
+         border: 1px solid #E5E7EB;
+     }
+     
+     .strength-bar {
+         height: 4px;
+         background: #E5E7EB;
+         border-radius: 2px;
+         overflow: hidden;
+         margin-bottom: 0.25rem;
+     }
+     
+     .strength-fill {
+         height: 100%;
+         transition: width 0.3s ease;
+         border-radius: 2px;
+     }
+     
+     .strength-text {
+         font-size: 0.75rem;
+         font-weight: 600;
+         text-transform: uppercase;
+         letter-spacing: 0.5px;
+     }
+     
+     .strength-weak .strength-fill {
+         background: #EF4444;
+     }
+     
+     .strength-weak .strength-text {
+         color: #EF4444;
+     }
+     
+     .strength-fair .strength-fill {
+         background: #F59E0B;
+     }
+     
+     .strength-fair .strength-text {
+         color: #F59E0B;
+     }
+     
+     .strength-good .strength-fill {
+         background: #3B82F6;
+     }
+     
+     .strength-good .strength-text {
+         color: #3B82F6;
+     }
+     
+     .strength-strong .strength-fill {
+         background: #10B981;
+     }
+     
+     .strength-strong .strength-text {
+         color: #10B981;
+     }
+     
+     .strength-very-strong .strength-fill {
+         background: #059669;
+     }
+     
+     .strength-very-strong .strength-text {
+         color: #059669;
+     }
+     
+     /* Responsive Design */
+     @media (max-width: 768px) {
+         .form-floating > .form-control {
+             height: calc(3rem + 2px);
+             padding: 0.75rem 0.5rem;
+         }
+         
+         .form-floating > label {
+             padding: 0.75rem 0.5rem;
+         }
+         
+         .btn-magical-register {
+             font-size: 0.9rem;
+             padding: 0.75rem 1.5rem;
+         }
+         
+         .password-strength {
+             padding: 0.25rem;
+         }
+     }
 </style>
 {% endblock %}
 
@@ -173,55 +426,151 @@
             </div>
         </div>
 
-        <!-- Registration Card -->
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="register-card">
-                    <div class="row g-0">
-                        <!-- Image Side -->
-                        <div class="col-md-5 register-image-side {% if user_type == 'teacher' %}teacher{% endif %}">
-                            <img src="{% static 'images/waving.png' %}" alt="Join Us" class="waving-avatar">
-                            {% if user_type == 'teacher' %}
-                                <h2 class="magical-title">Welcome Teacher!</h2>
-                                <p class="magical-subtitle">🌟 Start inspiring young minds today!</p>
-                            {% else %}
-                                <h2 class="magical-title">Join the Fun!</h2>
-                                <p class="magical-subtitle">✨ Begin your magical learning journey!</p>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Form Side -->
-                        <div class="col-md-7 register-form-side">
-                            <h2 class="form-title">Create Account</h2>
-                            <p class="form-subtitle">
-                                {% if user_type == 'teacher' %}
-                                    Set up your teacher account and manage your classroom
-                                {% else %}
-                                    Set up your student account and start learning
-                                {% endif %}
-                            </p>
-                            
-                            <form method="post">
-                                {% csrf_token %}
-                                {{ form|crispy }}
-                                
-                                <div class="d-grid gap-2 mt-4">
-                                    <button type="submit" class="btn btn-magical-register {% if user_type == 'teacher' %}teacher{% endif %}">
-                                        {% if user_type == 'teacher' %}
-                                            🚀 Create Teacher Account
-                                        {% else %}
-                                            🎉 Start Learning!
-                                        {% endif %}
-                                    </button>
-                                </div>
-                            </form>
-                            
-                            <div class="text-center mt-4">
-                                <p class="text-muted">
-                                    Already have an account? 
-                                    <a href="{% url 'login' %}" class="signin-link">Sign in here!</a>
-                                </p>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="register-card shadow-lg border-0 mt-3">
+            <div class="row g-0">
+                <!-- Left/Image Side (your local version) -->
+                <div class="col-md-5 register-image-side {% if user_type == 'teacher' %}teacher{% endif %}">
+                    <img src="{% static 'images/waving.png' %}" alt="Join Us" class="waving-avatar">
+                    {% if user_type == 'teacher' %}
+                        <h2 class="magical-title">Welcome Teacher!</h2>
+                        <p class="magical-subtitle">🌟 Start inspiring young minds today!</p>
+                    {% else %}
+                        <h2 class="magical-title">Join the Fun!</h2>
+                        <p class="magical-subtitle">✨ Begin your magical learning journey!</p>
+                    {% endif %}
+                </div>
+
+                <!-- Right/Form Side (remote version) -->
+                <div class="col-md-7 register-form-side">
+                    <div class="text-center mb-4">
+                        {% if user_type == 'teacher' %}
+                            <i class="fas fa-chalkboard-teacher fa-3x text-info mb-3"></i>
+                            <h2 class="fw-bold">Join as Teacher</h2>
+                            <p class="text-muted">Create your teacher account and start managing your classroom</p>
+                        {% else %}
+                            <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                            <h2 class="fw-bold">Join as Student</h2>
+                            <p class="text-muted">Create your student account and start learning</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" id="registrationForm" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="form-group mb-4">
+                            <label for="id_username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+                            <div class="form-hint">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choose a unique username (max 150 characters)
+                            </div>
+                        </div>
+
+                        <!-- First Name Field -->
+                        <div class="form-group mb-4">
+                            <label for="id_first_name" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>First Name
+                            </label>
+                            <input type="text" name="first_name" id="id_first_name" class="form-control" required>
+                            <div class="form-hint">
+                                <i class="fas fa-smile me-1"></i>
+                                What should we call you?
+                            </div>
+                        </div>
+
+                        <!-- Last Name Field -->
+                        <div class="form-group mb-4">
+                            <label for="id_last_name" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>Last Name
+                            </label>
+                            <input type="text" name="last_name" id="id_last_name" class="form-control" required>
+                            <div class="form-hint">
+                                <i class="fas fa-signature me-1"></i>
+                                Your family name
+                            </div>
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="form-group mb-4">
+                            <label for="id_email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email Address
+                            </label>
+                            <input type="email" name="email" id="id_email" class="form-control" required>
+                            <div class="form-hint">
+                                <i class="fas fa-at me-1"></i>
+                                We'll use this to keep you updated
+                            </div>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="form-group mb-4">
+                            <label for="id_password1" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <input type="password" name="password1" id="id_password1" class="form-control" required>
+                            <div class="form-hint">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Make it strong and secure!
+                            </div>
+                            <div id="password-strength" class="password-strength" style="display: none;">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <span class="strength-text">Enter a password</span>
+                            </div>
+                        </div>
+
+                        <!-- Password Confirmation Field -->
+                        <div class="form-group mb-4">
+                            <label for="id_password2" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirm Password
+                            </label>
+                            <input type="password" name="password2" id="id_password2" class="form-control" required>
+                            <div class="form-hint">
+                                <i class="fas fa-check-double me-1"></i>
+                                Type your password again to confirm
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-magical-register btn-lg {% if user_type == 'teacher' %}teacher{% endif %}">
+                                <i class="fas fa-user-plus me-2"></i>Create {{ user_type.title }} Account
+                            </button>
+                        </div>
+
+                        <!-- Sign In Link -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Already have an account? 
+                                <a href="{% url 'login' %}" class="signin-link fw-bold">
+                                    Sign In Here
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
                         </div>
                     </div>
                 </div>
@@ -229,4 +578,255 @@
         </div>
     </div>
 </div>
+
+<style>
+    .student-type-card {
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    .student-type-card:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        background: #fff;
+    }
+    
+    .student-type-card .form-check-input:checked + .form-check-label {
+        color: #667eea;
+    }
+    
+    .student-type-card .form-check-input:checked ~ * {
+        color: #667eea;
+    }
+    
+    .student-type-card.selected {
+        border-color: #667eea;
+        background: #e3f2fd;
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        position: relative;
+    }
+    
+    .student-type-card.selected::before {
+        content: '✓';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+    
+    .student-type-card i {
+        display: block;
+        margin-bottom: 10px;
+    }
+    
+    .student-type-card h6 {
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .student-type-card small {
+        color: #666;
+        font-size: 0.85rem;
+    }
+    
+    .conditional-fields {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+ <script>
+ document.addEventListener('DOMContentLoaded', function() {
+     const form = document.getElementById('registrationForm');
+     const submitBtn = form.querySelector('button[type="submit"]');
+     const formGroups = form.querySelectorAll('.form-group');
+     
+     // Enhanced form validation and interactivity
+     formGroups.forEach(group => {
+         const input = group.querySelector('input');
+         
+         if (input) {
+             // Real-time validation
+             input.addEventListener('input', function() {
+                 validateField(this);
+                 updateFieldState(this);
+             });
+             
+             input.addEventListener('blur', function() {
+                 validateField(this);
+                 updateFieldState(this);
+             });
+             
+             input.addEventListener('focus', function() {
+                 group.classList.add('focused');
+             });
+             
+             // Password strength indicator
+             if (input.type === 'password' && input.name === 'password1') {
+                 input.addEventListener('input', function() {
+                     showPasswordStrength(this.value);
+                 });
+             }
+             
+             // Password confirmation matching
+             if (input.name === 'password2') {
+                 input.addEventListener('input', function() {
+                     const password1 = form.querySelector('input[name="password1"]');
+                     if (password1.value && this.value) {
+                         if (password1.value === this.value) {
+                             group.classList.add('success');
+                             group.classList.remove('error');
+                         } else {
+                             group.classList.add('error');
+                             group.classList.remove('success');
+                         }
+                     }
+                 });
+             }
+         }
+     });
+     
+     // Form submission with enhanced UX
+     form.addEventListener('submit', function(e) {
+         e.preventDefault();
+         
+         // Validate all fields
+         let isValid = true;
+         formGroups.forEach(group => {
+             const input = group.querySelector('input');
+             if (input && !validateField(input)) {
+                 isValid = false;
+             }
+         });
+         
+         if (isValid) {
+             // Show loading state
+             submitBtn.classList.add('loading');
+             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+             
+             // Add success animation to all fields
+             formGroups.forEach(group => {
+                 group.classList.add('success');
+             });
+             
+             // Submit form after animation
+             setTimeout(() => {
+                 form.submit();
+             }, 1000);
+         } else {
+             // Show error animation
+             formGroups.forEach(group => {
+                 const input = group.querySelector('input');
+                 if (input && !input.checkValidity()) {
+                     group.classList.add('error');
+                     setTimeout(() => {
+                         group.classList.remove('error');
+                     }, 500);
+                 }
+             });
+         }
+     });
+     
+     // Field validation function
+     function validateField(input) {
+         const group = input.closest('.form-group');
+         const isValid = input.checkValidity();
+         
+         if (isValid) {
+             group.classList.remove('error');
+             group.classList.add('success');
+         } else {
+             group.classList.remove('success');
+             group.classList.add('error');
+         }
+         
+         return isValid;
+     }
+     
+     // Update field visual state
+     function updateFieldState(input) {
+         const group = input.closest('.form-group');
+         
+         if (input.value.trim() !== '') {
+             group.classList.add('has-value');
+         } else {
+             group.classList.remove('has-value');
+         }
+     }
+     
+     // Password strength indicator
+     function showPasswordStrength(password) {
+         const strengthIndicator = document.getElementById('password-strength');
+         if (!strengthIndicator) return;
+         
+         const strength = calculatePasswordStrength(password);
+         
+         strengthIndicator.style.display = 'block';
+         strengthIndicator.className = `password-strength strength-${strength.level}`;
+         strengthIndicator.innerHTML = `
+             <div class="strength-bar">
+                 <div class="strength-fill" style="width: ${strength.percentage}%"></div>
+             </div>
+             <span class="strength-text">${strength.text}</span>
+         `;
+     }
+     
+     function calculatePasswordStrength(password) {
+         let score = 0;
+         
+         if (password.length >= 8) score += 1;
+         if (/[a-z]/.test(password)) score += 1;
+         if (/[A-Z]/.test(password)) score += 1;
+         if (/[0-9]/.test(password)) score += 1;
+         if (/[^A-Za-z0-9]/.test(password)) score += 1;
+         
+         const levels = [
+             { level: 'weak', percentage: 20, text: 'Weak' },
+             { level: 'fair', percentage: 40, text: 'Fair' },
+             { level: 'good', percentage: 60, text: 'Good' },
+             { level: 'strong', percentage: 80, text: 'Strong' },
+             { level: 'very-strong', percentage: 100, text: 'Very Strong' }
+         ];
+         
+         return levels[Math.min(score, 4)];
+     }
+     
+     // Add smooth animations
+     const card = document.querySelector('.register-card');
+     if (card) {
+         card.style.opacity = '0';
+         card.style.transform = 'translateY(30px)';
+         
+         setTimeout(() => {
+             card.style.transition = 'all 0.6s ease';
+             card.style.opacity = '1';
+             card.style.transform = 'translateY(0)';
+         }, 100);
+     }
+     
+     console.log('🎓 Enhanced registration form initialized successfully!');
+ });
+ </script>
 {% endblock %}

@@ -466,6 +466,11 @@ class Avatar(models.Model):
         related_name='avatar',
         verbose_name="Élève"
     )
+    name = models.CharField(
+        max_length=100,
+        default="Mon Avatar",
+        verbose_name="Nom de l'avatar"
+    )
     image = models.ImageField(
         upload_to='avatars/custom/',
         blank=True,
@@ -475,6 +480,10 @@ class Avatar(models.Model):
     level = models.IntegerField(
         default=1,
         verbose_name="Niveau de l'élève"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Actif"
     )
     accessories = models.ManyToManyField(
         'Accessory',

@@ -27,7 +27,9 @@
                 {% for student_badge in earned_badges %}
                 <div class="badge-card earned" style="background: {{student_badge.badge.color}};">
                     <div class="badge-icon-xl">
-                        {% if student_badge.badge.badge_type == 'enchanted_storybook' %}
+                        {% if student_badge.badge.image %}
+                            <img src="{{ student_badge.badge.image.url }}" alt="{{ student_badge.badge.name }}" class="badge-image">
+                        {% elif student_badge.badge.badge_type == 'enchanted_storybook' %}
                             <img src="{% static 'images/enchanted_storybook.png' %}" alt="Enchanted Storybook" class="badge-image">
                         {% elif student_badge.badge.badge_type == 'adventure_scroll' %}
                             <img src="{% static 'images/adventure_scroll.png' %}" alt="Adventure Scroll" class="badge-image">
@@ -74,7 +76,9 @@
                         <i class="fas fa-lock fa-2x"></i>
                     </div>
                     <div class="badge-icon-xl grayscale">
-                        {% if badge.badge_type == 'enchanted_storybook' %}
+                        {% if badge.image %}
+                            <img src="{{ badge.image.url }}" alt="{{ badge.name }}" class="badge-image">
+                        {% elif badge.badge_type == 'enchanted_storybook' %}
                             <img src="{% static 'images/enchanted_storybook.png' %}" alt="Enchanted Storybook" class="badge-image">
                         {% elif badge.badge_type == 'adventure_scroll' %}
                             <img src="{% static 'images/adventure_scroll.png' %}" alt="Adventure Scroll" class="badge-image">

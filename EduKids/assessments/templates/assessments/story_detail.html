@@ -39,9 +39,31 @@
                         <i class="fas fa-book-open fa-3x"></i>
                     </div>
                     
-                    {% for paragraph in story.story_content %}
-                    <p class="story-paragraph">{{ paragraph }}</p>
-                    {% endfor %}
+                    <!-- Voice Reader Controls -->
+                    <div class="voice-controls mb-4">
+                        <button type="button" id="playStoryBtn" class="btn btn-voice-play">
+                            <i class="fas fa-play me-2"></i>Listen to Story
+                        </button>
+                        <button type="button" id="pauseStoryBtn" class="btn btn-voice-pause" style="display: none;">
+                            <i class="fas fa-pause me-2"></i>Pause
+                        </button>
+                        <button type="button" id="stopStoryBtn" class="btn btn-voice-stop" style="display: none;">
+                            <i class="fas fa-stop me-2"></i>Stop
+                        </button>
+                        <div class="voice-settings ms-3">
+                            <label class="voice-label">
+                                <i class="fas fa-tachometer-alt me-1"></i>Speed:
+                                <input type="range" id="speedControl" min="0.5" max="1.5" step="0.1" value="0.9" class="voice-slider">
+                                <span id="speedValue">0.9x</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="storyContent" class="story-text-content">
+                        {% for paragraph in story.story_content %}
+                        <p class="story-paragraph" data-paragraph="{{ forloop.counter0 }}">{{ paragraph }}</p>
+                        {% endfor %}
+                    </div>
                 </div>
 
                 <!-- Comprehension Questions -->
@@ -296,5 +318,257 @@
         box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         color: white;
     }
+    
+    /* Voice Controls */
+    .voice-controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #F3E8FF, #E0E7FF);
+        border-radius: 20px;
+        border: 2px solid #C4B5FD;
+    }
+    
+    .btn-voice-play {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        border: none;
+        color: white;
+        border-radius: 15px;
+        font-weight: 600;
+        padding: 0.7rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-voice-play:hover {
+        background: linear-gradient(135deg, #059669, #10B981);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+    
+    .btn-voice-pause {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        border: none;
+        color: white;
+        border-radius: 15px;
+        font-weight: 600;
+        padding: 0.7rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    
+    .btn-voice-pause:hover {
+        background: linear-gradient(135deg, #D97706, #F59E0B);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .btn-voice-stop {
+        background: linear-gradient(135deg, #EF4444, #F87171);
+        border: none;
+        color: white;
+        border-radius: 15px;
+        font-weight: 600;
+        padding: 0.7rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-voice-stop:hover {
+        background: linear-gradient(135deg, #DC2626, #EF4444);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .voice-settings {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .voice-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: #7C3AED;
+        margin: 0;
+    }
+    
+    .voice-slider {
+        width: 100px;
+        accent-color: #8B5CF6;
+    }
+    
+    #speedValue {
+        min-width: 40px;
+        font-weight: 700;
+        color: #8B5CF6;
+    }
+    
+    .story-paragraph.reading {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        padding: 1rem;
+        border-radius: 12px;
+        border-left: 4px solid #F59E0B;
+        transition: all 0.3s ease;
+    }
 </style>
+
+<script>
+// Text-to-Speech Voice Reader for Kids
+document.addEventListener('DOMContentLoaded', function() {
+    const playBtn = document.getElementById('playStoryBtn');
+    const pauseBtn = document.getElementById('pauseStoryBtn');
+    const stopBtn = document.getElementById('stopStoryBtn');
+    const speedControl = document.getElementById('speedControl');
+    const speedValue = document.getElementById('speedValue');
+    const storyContent = document.getElementById('storyContent');
+    const paragraphs = storyContent.querySelectorAll('.story-paragraph');
+    
+    let synthesis = window.speechSynthesis;
+    let utterance = null;
+    let isPaused = false;
+    let currentParagraphIndex = 0;
+    let kidVoice = null;
+    
+    // Find the best kid-friendly voice
+    function findKidVoice() {
+        const voices = synthesis.getVoices();
+        
+        // Priority order for kid-friendly voices
+        const preferredVoices = [
+            'Google UK English Female',  // Young-sounding
+            'Microsoft Zira',            // Female, clear
+            'Google US English Female',  // Clear female voice
+            'Microsoft David',           // Male, clear
+            'Google UK English Male',
+            'Samantha',                  // Mac voice
+            'Karen',                     // Mac voice
+            'Fiona'                      // Mac voice
+        ];
+        
+        // Try to find preferred voices
+        for (let preferred of preferredVoices) {
+            const voice = voices.find(v => v.name.includes(preferred));
+            if (voice) return voice;
+        }
+        
+        // Fallback: Find any female voice (usually higher pitch, more kid-friendly)
+        const femaleVoice = voices.find(v => 
+            v.name.toLowerCase().includes('female') || 
+            v.name.toLowerCase().includes('woman') ||
+            v.name.includes('Zira') ||
+            v.name.includes('Samantha')
+        );
+        
+        if (femaleVoice) return femaleVoice;
+        
+        // Last resort: first available voice
+        return voices[0];
+    }
+    
+    // Load voices
+    function loadVoices() {
+        kidVoice = findKidVoice();
+        console.log('Selected voice:', kidVoice ? kidVoice.name : 'Default');
+    }
+    
+    // Load voices when available
+    if (synthesis.onvoiceschanged !== undefined) {
+        synthesis.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+    
+    // Read story function
+    function readStory() {
+        if (currentParagraphIndex >= paragraphs.length) {
+            stopReading();
+            return;
+        }
+        
+        const paragraph = paragraphs[currentParagraphIndex];
+        const text = paragraph.textContent;
+        
+        // Highlight current paragraph
+        paragraphs.forEach(p => p.classList.remove('reading'));
+        paragraph.classList.add('reading');
+        paragraph.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        utterance = new SpeechSynthesisUtterance(text);
+        
+        // Set voice
+        if (kidVoice) {
+            utterance.voice = kidVoice;
+        }
+        
+        // Voice settings for kid-friendly reading
+        utterance.rate = parseFloat(speedControl.value);  // Slightly slower
+        utterance.pitch = 1.2;  // Higher pitch for kid-friendly voice
+        utterance.volume = 1.0;
+        
+        // When paragraph finishes, move to next
+        utterance.onend = function() {
+            paragraph.classList.remove('reading');
+            currentParagraphIndex++;
+            if (currentParagraphIndex < paragraphs.length && !isPaused) {
+                readStory();
+            } else if (currentParagraphIndex >= paragraphs.length) {
+                stopReading();
+            }
+        };
+        
+        synthesis.speak(utterance);
+    }
+    
+    // Play button
+    playBtn.addEventListener('click', function() {
+        if (isPaused) {
+            synthesis.resume();
+            isPaused = false;
+        } else {
+            currentParagraphIndex = 0;
+            readStory();
+        }
+        
+        playBtn.style.display = 'none';
+        pauseBtn.style.display = 'inline-block';
+        stopBtn.style.display = 'inline-block';
+    });
+    
+    // Pause button
+    pauseBtn.addEventListener('click', function() {
+        synthesis.pause();
+        isPaused = true;
+        playBtn.style.display = 'inline-block';
+        pauseBtn.style.display = 'none';
+    });
+    
+    // Stop button
+    function stopReading() {
+        synthesis.cancel();
+        isPaused = false;
+        currentParagraphIndex = 0;
+        paragraphs.forEach(p => p.classList.remove('reading'));
+        playBtn.style.display = 'inline-block';
+        pauseBtn.style.display = 'none';
+        stopBtn.style.display = 'none';
+    }
+    
+    stopBtn.addEventListener('click', stopReading);
+    
+    // Speed control
+    speedControl.addEventListener('input', function() {
+        speedValue.textContent = this.value + 'x';
+        if (utterance && synthesis.speaking) {
+            // Update speed on the fly
+            synthesis.cancel();
+            readStory();
+        }
+    });
+});
+</script>
 {% endblock %}

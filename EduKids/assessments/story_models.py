@@ -199,6 +199,13 @@ class Badge(models.Model):
         default="🏆",
         verbose_name="Icon/Emoji"
     )
+    image = models.ImageField(
+        upload_to='badges/',
+        null=True,
+        blank=True,
+        verbose_name="Badge Image",
+        help_text="Custom badge image (optional, uses icon if not provided)"
+    )
     color = models.CharField(
         max_length=20,
         default="#FFB6C1",

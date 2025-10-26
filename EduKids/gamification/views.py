@@ -119,25 +119,121 @@ class AvatarViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(student=self.request.user.student_profile)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'post'], url_path='my-avatar')
     def my_avatar(self, request):
         """
-        Retourne l'avatar de l'utilisateur actuel
+        GET: Retourne l'avatar de l'utilisateur actuel
+        POST: Met à jour l'avatar (nom, etc.)
         """
         avatar, created = Avatar.objects.get_or_create(
             student=request.user.student_profile,
             defaults={
                 'name': f"Avatar de {request.user.first_name}",
-                'is_active': True
+                'is_active': True,
+                'level': 1
             }
         )
+        
+        if request.method == 'POST':
+            # Mettre à jour les champs si fournis
+            if 'name' in request.data:
+                avatar.name = request.data['name']
+                avatar.save()
+        
         serializer = self.get_serializer(avatar)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'], url_path='my-avatar/upload_image')
+    def upload_my_avatar_image(self, request):
+        """
+        Upload une nouvelle image pour l'avatar de l'utilisateur actuel
+        POST /gamification/api/avatars/my-avatar/upload_image/
+        """
+        try:
+            from PIL import Image
+        except ImportError:
+            return Response({
+                'success': False,
+                'error': 'Pillow non installé. Contactez l\'administrateur.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Vérifier que l'utilisateur est un étudiant
+        if not hasattr(request.user, 'student_profile'):
+            return Response({
+                'success': False,
+                'error': 'Profil étudiant non trouvé. Seuls les étudiants peuvent uploader un avatar.'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        try:
+            # Récupérer ou créer l'avatar
+            avatar, created = Avatar.objects.get_or_create(
+                student=request.user.student_profile,
+                defaults={
+                    'name': f"Avatar de {request.user.first_name}",
+                    'is_active': True,
+                    'level': 1
+                }
+            )
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': f'Erreur lors de la création de l\'avatar : {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        if 'image' not in request.FILES:
+            return Response({
+                'success': False,
+                'error': 'Aucune image fournie. Veuillez sélectionner une image.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        image_file = request.FILES['image']
+        
+        # Validation du format
+        allowed_formats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+        if image_file.content_type not in allowed_formats:
+            return Response({
+                'success': False,
+                'error': 'Format non supporté. Utilisez JPG, PNG, GIF ou WebP.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validation de la taille (max 5MB)
+        max_size = 5 * 1024 * 1024  # 5MB
+        if image_file.size > max_size:
+            return Response({
+                'success': False,
+                'error': 'Image trop grande. Taille maximale : 5MB.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Vérifier que c'est une image valide
+            img = Image.open(image_file)
+            img.verify()
+            
+            # Réouvrir l'image après verify()
+            image_file.seek(0)
+            
+            # Sauvegarder l'image
+            avatar.image = image_file
+            avatar.save()
+            
+            serializer = self.get_serializer(avatar)
+            return Response({
+                'success': True,
+                'message': 'Avatar mis à jour avec succès !',
+                'avatar': serializer.data,
+                'image_url': avatar.image.url if avatar.image else None
+            })
+            
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': f'Erreur lors du traitement de l\'image : {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'])
     def upload_image(self, request, pk=None):
         """
-        Upload une nouvelle image pour l'avatar
+        Upload une nouvelle image pour l'avatar (avec pk)
         """
         avatar = self.get_object()
         

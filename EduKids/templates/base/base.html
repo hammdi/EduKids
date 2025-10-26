@@ -81,10 +81,23 @@
                 <i class="fas fa-book-open me-1"></i>Stories
               </a>
               <ul class="dropdown-menu" aria-labelledby="storiesDropdown">
-                <li><a class="dropdown-item" href="{% url 'assessments:story_list' %}">📚 Read Stories</a></li>
-                <li><a class="dropdown-item" href="{% url 'assessments:story_correction' %}">✍️ AI Story Correction</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:story_list' %}"> Read Stories</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:story_correction' %}"> AI Story Correction</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:drawing_page' %}"> Draw Character</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:gallery_page' %}"> My Gallery</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url 'assessments:student_badges' %}">🏆 My Badges</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:student_badges' %}"> My Badges</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="voiceTestDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-microphone me-1"></i>Voice Language Test
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="voiceTestDropdown">
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_view' %}">🎤 Start Voice Test</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_real' %}">🎯 Advanced Voice Test</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_history' %}">📊 My Voice History</a></li>
               </ul>
             </li>
             {% elif user.user_type == 'teacher' %}
@@ -99,10 +112,27 @@
                 <i class="fas fa-book me-1"></i>Subjects
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'assessments:story_list' %}">
-                Stories
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="storiesDropdownTeacher" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-book-open me-1"></i>Stories
               </a>
+              <ul class="dropdown-menu" aria-labelledby="storiesDropdownTeacher">
+                <li><a class="dropdown-item" href="{% url 'assessments:story_list' %}">📚 View Stories</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:story_manage_list' %}">⚙️ Manage Stories</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:story_create' %}">➕ Create Story</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="voiceTestDropdownTeacher" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-microphone me-1"></i>Voice Language Test
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="voiceTestDropdownTeacher">
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_view' %}">🎤 Voice Assessment</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_assessment_real' %}">🎯 Advanced Assessment</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:teacher_assessments' %}">📊 Manage Assessments</a></li>
+                <li><a class="dropdown-item" href="{% url 'assessments:voice_history' %}">📈 All Students History</a></li>
+              </ul>
             </li>
             {% else %}
             <!-- Fallback for other user types (Admin, etc.) -->
@@ -137,14 +167,15 @@
             {% if user.is_authenticated %}
             <li class="nav-item dropdown">
               <a
-                class="nav-link dropdown-toggle"
+                class="nav-link dropdown-toggle user-profile-link"
                 href="#"
                 id="navbarDropdown"
                 role="button"
                 data-bs-toggle="dropdown"
               >
-                <i class="fas fa-user me-1"></i>{{user.get_full_name|default:user.username }}<span class="badge bg-secondary ms-1">{{ user.user_type|capfirst }}</span
-                >
+                <i class="fas fa-user-circle me-2" style="font-size: 1.2rem;"></i>
+                <span class="user-name">{{user.get_full_name|default:user.username }}</span>
+                <span class="user-badge badge-{{ user.user_type }}">{{ user.user_type|capfirst }}</span>
               </a>
               <ul class="dropdown-menu">
                 <li>
@@ -223,7 +254,7 @@
             <p class="footer-description">✨ Magical Learning Adventures for Young Explorers</p>
           </div>
           <div class="col-md-6 text-md-end">
-            <p class="footer-text">&copy; 2024 EduKids. Made with 💖 for kids</p>
+            <p class="footer-text">&copy; 2025 EduKids. Made with 💖 for kids</p>
             <p class="footer-text">Built with Django Magic & AI Wonder</p>
           </div>
         </div>
@@ -315,8 +346,8 @@
       
       /* Magical Footer Styling */
       .magical-footer {
-        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
-        color: #E5E7EB;
+        background: linear-gradient(135deg, #667EEA 0%, #764BA2 50%, #8B5CF6 100%);
+        color: #F3E8FF;
         position: relative;
         overflow: hidden;
       }
@@ -327,8 +358,8 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 2px;
-        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+        height: 3px;
+        background: linear-gradient(135deg, #A78BFA, #C084FC, #E879F9);
       }
       
       .footer-brand {
@@ -368,6 +399,78 @@
       @keyframes gentleFloat {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-3px); }
+      }
+      
+      /* User Profile Styling - Pastel & Playful */
+      .user-profile-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.2rem !important;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(236, 72, 153, 0.08));
+        border-radius: 25px !important;
+        border: 2px solid rgba(139, 92, 246, 0.15);
+        transition: all 0.3s ease;
+      }
+      
+      .user-profile-link:hover {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15));
+        border-color: rgba(139, 92, 246, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+      }
+      
+      .user-profile-link .fa-user-circle {
+        color: #8B5CF6;
+        animation: gentleFloat 3s ease-in-out infinite;
+      }
+      
+      .user-name {
+        font-family: 'Nunito', sans-serif;
+        font-weight: 700;
+        color: #1F2937;
+        font-size: 0.95rem;
+      }
+      
+      .user-badge {
+        padding: 0.3rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        font-family: 'Nunito', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: 0.3rem;
+      }
+      
+      .badge-admin {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        color: #991B1B;
+        border: 2px solid #FCA5A5;
+      }
+      
+      .badge-teacher {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+        border: 2px solid #93C5FD;
+      }
+      
+      .badge-student {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+        border: 2px solid #6EE7B7;
+      }
+      
+      .badge-élève {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+        border: 2px solid #6EE7B7;
+      }
+      
+      .badge-enseignant {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+        border: 2px solid #93C5FD;
       }
     </style>
   </body>

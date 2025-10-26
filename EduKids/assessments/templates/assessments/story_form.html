@@ -1,0 +1,511 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} Story - EduKids{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block content %}
+<div class="story-form-page">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="page-header mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="page-title">
+                        <i class="fas fa-{% if action == 'Create' %}plus{% else %}edit{% endif %} me-2"></i>
+                        {{ action }} Story
+                    </h1>
+                    <p class="page-subtitle">
+                        {% if action == 'Create' %}
+                            Create a new educational story for students
+                        {% else %}
+                            Update story details and content
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'assessments:story_manage_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Display non-field errors -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle me-2"></i>Basic Information
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label required">
+                                Story Title
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.title.help_text }}</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.theme.id_for_label }}" class="form-label required">
+                                Theme
+                            </label>
+                            {{ form.theme }}
+                            {% if form.theme.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.theme.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.theme.help_text }}</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.age_group.id_for_label }}" class="form-label required">
+                                Age Group
+                            </label>
+                            {{ form.age_group }}
+                            {% if form.age_group.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.age_group.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.age_group.help_text }}</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.difficulty_level.id_for_label }}" class="form-label required">
+                                Difficulty Level
+                            </label>
+                            {{ form.difficulty_level }}
+                            {% if form.difficulty_level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.difficulty_level.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.difficulty_level.help_text }}</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.reading_time_minutes.id_for_label }}" class="form-label required">
+                                Reading Time (minutes)
+                            </label>
+                            {{ form.reading_time_minutes }}
+                            {% if form.reading_time_minutes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.reading_time_minutes.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.reading_time_minutes.help_text }}</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Story Type</label>
+                            <div class="form-check">
+                                {{ form.generated_by_ai }}
+                                <label class="form-check-label" for="{{ form.generated_by_ai.id_for_label }}">
+                                    Generated by AI
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">{{ form.generated_by_ai.help_text }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Story Content Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-book me-2"></i>Story Content
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.story_content.id_for_label }}" class="form-label required">
+                            Story Paragraphs
+                        </label>
+                        {{ form.story_content }}
+                        {% if form.story_content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.story_content.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">{{ form.story_content.help_text }}</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.characters.id_for_label }}" class="form-label required">
+                            Main Characters
+                        </label>
+                        {{ form.characters }}
+                        {% if form.characters.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.characters.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">{{ form.characters.help_text }}</small>
+                    </div>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-question-circle me-2"></i>Comprehension Questions
+                    </h3>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.questions.id_for_label }}" class="form-label required">
+                            Questions and Answers
+                        </label>
+                        {{ form.questions }}
+                        {% if form.questions.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.questions.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">{{ form.questions.help_text }}</small>
+                        
+                        <div class="alert alert-info mt-2">
+                            <strong>Format Example:</strong><br>
+                            What did the robot learn? | The robot learned about friendship<br>
+                            Where did the adventure take place? | In a magical forest<br>
+                            Who helped the main character? | A wise old owl
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save me-2"></i>{{ button_text }}
+                    </button>
+                    <a href="{% url 'assessments:story_manage_list' %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    body, h1, h2, h3, h4, h5, h6, p, span, div, label, input, select, textarea, button, a {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    /* Preserve Font Awesome icons */
+    .fas, .far, .fab, .fa, [class^="fa-"], [class*=" fa-"], i[class^="fa"], i[class*=" fa"] {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+    }
+
+    .story-form-page {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 50%, #FFF0F9 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Floating Shapes */
+    .story-form-page::before,
+    .story-form-page::after {
+        content: '';
+        position: fixed;
+        border-radius: 50%;
+        opacity: 0.1;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .story-form-page::before {
+        width: 200px;
+        height: 200px;
+        background: linear-gradient(135deg, #A78BFA, #EC4899);
+        top: 10%;
+        left: 5%;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .story-form-page::after {
+        width: 150px;
+        height: 150px;
+        background: linear-gradient(135deg, #FBBF24, #F59E0B);
+        bottom: 15%;
+        right: 8%;
+        animation: float 25s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) translateX(0px); }
+        25% { transform: translateY(-20px) translateX(10px); }
+        50% { transform: translateY(-10px) translateX(-10px); }
+        75% { transform: translateY(-30px) translateX(5px); }
+    }
+
+    .page-header {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 30px;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+        position: relative;
+        z-index: 2;
+        border: 3px solid #F3E8FF;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #6B7280;
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .form-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 30px;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+        position: relative;
+        z-index: 2;
+        border: 3px solid #F3E8FF;
+    }
+
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: #EC4899;
+        font-weight: 800;
+    }
+
+    .form-control, .form-select {
+        border: 3px solid #E9D5FF;
+        border-radius: 20px;
+        padding: 0.9rem 1.2rem;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: #FAFAFA;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #8B5CF6;
+        box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        background: white;
+        transform: translateY(-2px);
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #F87171;
+        background: #FEF2F2;
+    }
+
+    .invalid-feedback {
+        color: #EF4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        background: #FEE2E2;
+        border-radius: 12px;
+        display: inline-block;
+    }
+
+    .form-text {
+        color: #6B7280;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .form-check-input {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-top: 0.125rem;
+        cursor: pointer;
+        border: 3px solid #E9D5FF;
+        border-radius: 8px;
+    }
+
+    .form-check-input:checked {
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        border-color: #8B5CF6;
+    }
+
+    .form-check-label {
+        margin-left: 0.75rem;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        border: 3px solid #BFDBFE;
+        color: #1E40AF;
+        border-radius: 20px;
+        padding: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+        border: 3px solid #FCA5A5;
+        color: #991B1B;
+        border-radius: 20px;
+        padding: 1.25rem;
+        font-weight: 600;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        padding-top: 2rem;
+        border-top: 2px solid #F3F4F6;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        border: none;
+        padding: 1rem 2.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        border: none;
+        padding: 1rem 2.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        border-radius: 25px;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        color: white;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    // Character counter for textareas
+    document.querySelectorAll('textarea').forEach(textarea => {
+        const maxLength = textarea.getAttribute('maxlength');
+        if (maxLength) {
+            const counter = document.createElement('small');
+            counter.className = 'form-text text-muted d-block mt-1';
+            counter.textContent = `0 / ${maxLength} characters`;
+            textarea.parentNode.appendChild(counter);
+
+            textarea.addEventListener('input', function() {
+                counter.textContent = `${this.value.length} / ${maxLength} characters`;
+                if (this.value.length > maxLength * 0.9) {
+                    counter.style.color = '#EF4444';
+                } else {
+                    counter.style.color = '#6B7280';
+                }
+            });
+
+            // Trigger on load
+            textarea.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Form validation feedback
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const invalidFields = this.querySelectorAll('.is-invalid, .invalid-feedback');
+        if (invalidFields.length > 0) {
+            invalidFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>
+{% endblock %}

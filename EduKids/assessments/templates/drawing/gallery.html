@@ -1,0 +1,636 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Character Gallery - EduKids{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+{% endblock %}
+
+{% block content %}
+<div class="gallery-page">
+    <!-- Floating Sparkles -->
+    <div class="floating-sparkles">
+        <div class="sparkle sparkle-1">✨</div>
+        <div class="sparkle sparkle-2">🌟</div>
+        <div class="sparkle sparkle-3">💫</div>
+        <div class="sparkle sparkle-4">⭐</div>
+    </div>
+
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="page-header text-center mb-5">
+            <h1 class="page-title">🎨 My Character Gallery</h1>
+            <p class="page-subtitle">Your amazing creations!</p>
+        </div>
+
+        <!-- Badges Section -->
+        {% if badges %}
+        <div class="badges-section mb-5">
+            <h2 class="section-title text-center mb-4">
+                <i class="fas fa-trophy me-2"></i>Your Achievements
+            </h2>
+            <div class="badges-grid">
+                {% for badge in badges %}
+                <div class="badge-card badge-{{ badge.color }}">
+                    <div class="badge-icon">{{ badge.icon }}</div>
+                    <div class="badge-name">{{ badge.name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="stats-section mb-5">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ total_drawings }}</div>
+                            <div class="stat-label">Total Drawings</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ drawings|length }}</div>
+                            <div class="stat-label">Characters Created</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ badges|length }}</div>
+                            <div class="stat-label">Badges Earned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-bar mb-4">
+            <a href="{% url 'assessments:drawing_page' %}" class="btn-action btn-draw">
+                <i class="fas fa-plus me-2"></i>Draw New Character
+            </a>
+            <a href="{% url 'assessments:story_list' %}" class="btn-action btn-stories">
+                <i class="fas fa-book me-2"></i>My Stories
+            </a>
+        </div>
+
+        <!-- Gallery Grid -->
+        {% if drawings %}
+        <div class="gallery-grid">
+            {% for drawing in drawings %}
+            <div class="drawing-card">
+                <div class="drawing-image-container">
+                    <img src="{{ drawing.image.url }}" alt="{{ drawing.title }}" class="drawing-image">
+                    {% if drawing.ai_version %}
+                    <div class="ai-badge">
+                        <i class="fas fa-magic"></i> AI Enhanced
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="drawing-info">
+                    <h3 class="drawing-title">{{ drawing.title }}</h3>
+                    <p class="drawing-date">
+                        <i class="far fa-calendar me-1"></i>
+                        {{ drawing.created_at|date:"M d, Y" }}
+                    </p>
+                    
+                    {% if drawing.story %}
+                    <div class="linked-story">
+                        <i class="fas fa-link me-1"></i>
+                        <a href="{% url 'assessments:story_detail' drawing.story.id %}">
+                            {{ drawing.story.title }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="drawing-actions">
+                    {% if drawing.story %}
+                    <a href="{% url 'assessments:story_detail' drawing.story.id %}" class="btn-card btn-view">
+                        <i class="fas fa-book me-1"></i>View Story
+                    </a>
+                    {% endif %}
+                    
+                    <button class="btn-card btn-delete" onclick="deleteDrawing({{ drawing.id }}, '{{ drawing.title }}')">
+                        <i class="fas fa-trash me-1"></i>Delete
+                    </button>
+                </div>
+
+                {% if drawing.ai_version %}
+                <div class="ai-version-section">
+                    <h4 class="ai-title">✨ AI Enhanced Version</h4>
+                    <img src="{{ drawing.ai_version.url }}" alt="{{ drawing.title }} - AI" class="ai-image">
+                </div>
+                {% else %}
+                <div class="ai-enhance-section">
+                    <button class="btn-enhance" onclick="enhanceDrawing({{ drawing.id }})">
+                        <i class="fas fa-magic me-2"></i>Cartoonify with AI
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">🎨</div>
+            <h3>No drawings yet!</h3>
+            <p>Start creating amazing characters for your stories</p>
+            <a href="{% url 'assessments:drawing_page' %}" class="btn-create-first">
+                <i class="fas fa-plus me-2"></i>Create Your First Character
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Form -->
+<form id="deleteForm" method="POST" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<style>
+    body, h1, h2, h3, h4, h5, h6, p, span, div, label, input, select, textarea, button, a {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    .fas, .far, .fab, .fa {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+
+    .gallery-page {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 50%, #FFF0F9 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Floating Sparkles */
+    .floating-sparkles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .sparkle {
+        position: absolute;
+        font-size: 2.5rem;
+        animation: sparkle 12s ease-in-out infinite;
+        opacity: 0.5;
+    }
+
+    .sparkle-1 { top: 15%; left: 10%; animation-delay: 0s; }
+    .sparkle-2 { top: 25%; right: 15%; animation-delay: 3s; }
+    .sparkle-3 { bottom: 25%; left: 20%; animation-delay: 6s; }
+    .sparkle-4 { bottom: 15%; right: 10%; animation-delay: 9s; }
+
+    @keyframes sparkle {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+        50% { transform: scale(1.3) rotate(180deg); opacity: 0.8; }
+    }
+
+    .page-header {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-title {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+
+    .page-subtitle {
+        font-size: 1.3rem;
+        color: #6B7280;
+        font-weight: 600;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Badges */
+    .badges-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .badge-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 25px;
+        text-align: center;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        border: 3px solid;
+        transition: all 0.3s ease;
+    }
+
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    .badge-success { border-color: #A7F3D0; }
+    .badge-primary { border-color: #C4B5FD; }
+    .badge-warning { border-color: #FDE68A; }
+    .badge-info { border-color: #BFDBFE; }
+    .badge-danger { border-color: #FECACA; }
+
+    .badge-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .badge-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    /* Stats */
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 25px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        border: 2px solid #F3F4F6;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #DDD6FE, #C4B5FD);
+        color: #7C3AED;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1F2937;
+    }
+
+    .stat-label {
+        color: #6B7280;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* Action Bar */
+    .action-bar {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-action {
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-draw {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        color: white;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-draw:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    .btn-stories {
+        background: linear-gradient(135deg, #34D399, #10B981);
+        color: white;
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-stories:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+
+    /* Gallery Grid */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .drawing-card {
+        background: white;
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+        border: 3px solid #F3E8FF;
+        transition: all 0.3s ease;
+    }
+
+    .drawing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
+    }
+
+    .drawing-image-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
+    }
+
+    .drawing-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .ai-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .drawing-info {
+        padding: 1.5rem;
+    }
+
+    .drawing-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .drawing-date {
+        color: #6B7280;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .linked-story {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        margin-top: 0.75rem;
+        font-weight: 600;
+    }
+
+    .linked-story a {
+        color: #1E40AF;
+        text-decoration: none;
+    }
+
+    .linked-story a:hover {
+        text-decoration: underline;
+    }
+
+    .drawing-actions {
+        padding: 0 1.5rem 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-card {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: 15px;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #60A5FA, #3B82F6);
+        color: white;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        color: #991B1B;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .ai-enhance-section {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    .btn-enhance {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #A78BFA, #C084FC);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(167, 139, 250, 0.3);
+    }
+
+    .btn-enhance:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(167, 139, 250, 0.4);
+    }
+
+    .ai-version-section {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #F3E8FF, #E9D5FF);
+        border-top: 2px solid #DDD6FE;
+    }
+
+    .ai-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #7C3AED;
+        margin-bottom: 1rem;
+    }
+
+    .ai-image {
+        width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .empty-icon {
+        font-size: 6rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #374151;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        font-size: 1.2rem;
+        color: #6B7280;
+        margin-bottom: 2rem;
+    }
+
+    .btn-create-first {
+        display: inline-block;
+        padding: 1.25rem 2.5rem;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        color: white;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-create-first:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .gallery-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-bar {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    function deleteDrawing(drawingId, title) {
+        if (confirm(`Are you sure you want to delete "${title}"? 🗑️`)) {
+            const form = document.getElementById('deleteForm');
+            form.action = `/assessments/drawing/delete/${drawingId}/`;
+            form.submit();
+        }
+    }
+
+    function enhanceDrawing(drawingId) {
+        if (confirm('Transform your drawing with AI magic? ✨')) {
+            fetch(`/assessments/drawing/cartoonify/${drawingId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('🎉 ' + data.message);
+                    if (data.note) {
+                        alert('ℹ️ ' + data.note);
+                    }
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error: ' + error);
+            });
+        }
+    }
+</script>
+{% endblock %}

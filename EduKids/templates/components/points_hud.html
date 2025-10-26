@@ -164,9 +164,17 @@
 </style>
 
 <script>
-// Points HUD JavaScript
+// Points HUD JavaScript - v2.0 (Fixed 404)
 (function() {
     const pointsHUD = document.getElementById('points-hud');
+    
+    // Ne charger que si le HUD existe (utilisateur connecté en tant qu'étudiant)
+    if (!pointsHUD) {
+        console.log('Points HUD: Non affiché (utilisateur non étudiant)');
+        return;
+    }
+    
+    console.log('Points HUD: Initialisation pour étudiant');
     const pointsValue = document.getElementById('hud-points-value');
     const dailyRewardBtn = document.getElementById('daily-reward-btn');
     

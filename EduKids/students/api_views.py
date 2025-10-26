@@ -26,9 +26,17 @@ def get_student_points(request):
     
     try:
         student = request.user.student_profile
+        
+        # Récupérer le niveau depuis l'avatar s'il existe
+        try:
+            avatar = Avatar.objects.get(student=student)
+            level = avatar.level
+        except Avatar.DoesNotExist:
+            level = 1
+        
         return Response({
             'points': student.total_points,
-            'level': getattr(student.avatar, 'level', 1) if hasattr(student, 'avatar') else 1,
+            'level': level,
             'username': request.user.get_full_name() or request.user.username
         })
     except Student.DoesNotExist:
@@ -734,4 +742,66 @@ def list_store_accessories(request):
         return Response({
             'success': False,
             'message': f'Erreur: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_or_update_avatar(request):
+    """
+    POST /api/student/avatar/create
+    Créer ou mettre à jour l'avatar de l'étudiant
+    
+    Body (multipart/form-data):
+    - name: Nom de l'avatar (optionnel)
+    - image: Fichier image (optionnel)
+    """
+    if request.user.user_type != 'student':
+        return Response({
+            'success': False,
+            'error': 'Accès réservé aux étudiants'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        student = request.user.student_profile
+        
+        # Récupérer ou créer l'avatar
+        avatar, created = Avatar.objects.get_or_create(
+            student=student,
+            defaults={
+                'level': 1,
+                'name': request.data.get('name', f"Avatar de {student.user.first_name}")
+            }
+        )
+        
+        # Mettre à jour le nom si fourni
+        if 'name' in request.data and request.data['name']:
+            avatar.name = request.data['name']
+        
+        # Mettre à jour l'image si fournie
+        if 'image' in request.FILES:
+            avatar.image = request.FILES['image']
+        
+        avatar.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Avatar créé avec succès' if created else 'Avatar mis à jour avec succès',
+            'avatar': {
+                'id': avatar.id,
+                'name': avatar.name,
+                'level': avatar.level,
+                'image_url': avatar.image.url if avatar.image else None
+            }
+        })
+        
+    except Student.DoesNotExist:
+        return Response({
+            'success': False,
+            'error': 'Profil étudiant non trouvé'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': f'Erreur: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

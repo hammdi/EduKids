@@ -129,7 +129,8 @@ def equip_accessory_with_ai(request, accessory_id):
         if not avatar.image:
             return JsonResponse({
                 'success': False,
-                'message': 'Veuillez d\'abord uploader une image d\'avatar'
+                'message': 'Veuillez d\'abord uploader une image d\'avatar avant d\'équiper des accessoires.',
+                'action': 'upload_avatar_first'
             }, status=400)
         
         # Vérifier que l'accessoire a une image
