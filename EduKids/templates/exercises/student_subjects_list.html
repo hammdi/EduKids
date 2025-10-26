@@ -7,14 +7,11 @@
   <div class="row mb-5">
     <div class="col-12 text-center text-white">
       <h1 class="display-4 fw-bold mb-3">
-        <i class="fas fa-graduation-cap me-3"></i>
-        Mes Matières 
-        {% if student_grade %}
-          <span class="badge bg-light text-dark fs-6">{{ student_grade }}</span>
-        {% endif %}
-      </h1>
-      <!-- Assistant Lottie (click to open chat modal) -->
-      <div style="margin-top:12px; display:flex; align-items:center; gap:12px; justify-content:center;">
+       
+        <div class="mt-4 text-white" style="max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+        <h3 style="font-family: 'Comic Sans MS', cursive; font-size: 1.8rem; margin-bottom: 15px;">Meet Your super-smart study buddy for fun and easy learning! </h3>
+       
+         <div style="margin-top:12px; display:flex; align-items:center; gap:12px; justify-content:center;">
         <div id="assistant-lottie-trigger" style="display:inline-block; cursor:pointer;">
           <!-- placeholder for lottie animation -->
           <div id="assistant-lottie" style="width:120px;height:120px;margin:0 auto"></div>
@@ -24,8 +21,19 @@
           <i class="fas fa-robot me-1"></i>Parler à l'assistant
         </button>
       </div>
+      </div>
+        
+      
+
+       <h1 class="display-4 fw-bold mb-3">
+        <i class="fas fa-graduation-cap me-3"></i>
+       My Subjects
+        {% if student_grade %}
+          <span class="badge bg-light text-dark fs-6">{{ student_grade }}</span>
+        {% endif %}
+      </h1>
       <p class="lead opacity-90">
-        Découvrez vos matières et commencez votre apprentissage
+        Discover your subjects and start learning
       </p>
     </div>
   </div>
@@ -39,7 +47,7 @@
             type="text" 
             id="search-subjects" 
             class="form-control border-0 py-3 px-4" 
-            placeholder="🔍 Rechercher une matière..." 
+            placeholder="🔍 Search for a subject..." 
             style="font-size: 1.1rem; background: rgba(255,255,255,0.95);"
           >
           
