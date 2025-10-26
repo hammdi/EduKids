@@ -41,8 +41,8 @@ def resolve_reference(message: str, session: dict) -> str:
     topic = session.get('current_topic')
     # If topic looks like a phrase 'Sujet: X et Y' produced by classifier, try to extract key part
     if topic:
-        # strip leading 'Sujet:' or 'Sujet'
-        t = re.sub(r'^[sS]ujet\s*:?', '', topic).strip()
+        # strip leading 'Sujet:' or 'Sujet' or English 'Topic:' (case-insensitive)
+        t = re.sub(r'(?i)^(?:sujet|topic)\s*:?', '', topic).strip()
         if t:
             # Build an explicit phrasing suitable for children
             return f"À propos de {t}: {message}"
