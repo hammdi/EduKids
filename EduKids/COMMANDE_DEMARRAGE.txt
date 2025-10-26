@@ -1,0 +1,4 @@
+# COMMANDE EN UNE LIGNE POUR LANCER EDUKIDS
+# Copiez et collez cette ligne dans PowerShell :
+
+cd C:\Users\hadid\Downloads\ahmed\EduKids\Edukids; $env:MISTRAL_API_KEY='2WC2TOx7fBperEqMgasE390GYC0Isenq'; $p = Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue; if($p){Stop-Process -Id $p.OwningProcess -Force}; & 'C:\Users\hadid\Downloads\ahmed\EduKids\venv\Scripts\python.exe' -m daphne -b 127.0.0.1 -p 8000 EduKids.asgi:application

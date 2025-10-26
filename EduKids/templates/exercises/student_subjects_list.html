@@ -7,14 +7,33 @@
   <div class="row mb-5">
     <div class="col-12 text-center text-white">
       <h1 class="display-4 fw-bold mb-3">
+       
+        <div class="mt-4 text-white" style="max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+        <h3 style="font-family: 'Comic Sans MS', cursive; font-size: 1.8rem; margin-bottom: 15px;">Meet Your super-smart study buddy for fun and easy learning! </h3>
+       
+         <div style="margin-top:12px; display:flex; align-items:center; gap:12px; justify-content:center;">
+        <div id="assistant-lottie-trigger" style="display:inline-block; cursor:pointer;">
+          <!-- placeholder for lottie animation -->
+          <div id="assistant-lottie" style="width:120px;height:120px;margin:0 auto"></div>
+        </div>
+        <!-- Accessible fallback button if Lottie fails -->
+        <button id="open-assistant-fallback" class="btn btn-light btn-sm" style="display:none;">
+          <i class="fas fa-robot me-1"></i>Parler à l'assistant
+        </button>
+      </div>
+      </div>
+        
+      
+
+       <h1 class="display-4 fw-bold mb-3">
         <i class="fas fa-graduation-cap me-3"></i>
-        Mes Matières 
+       My Subjects
         {% if student_grade %}
           <span class="badge bg-light text-dark fs-6">{{ student_grade }}</span>
         {% endif %}
       </h1>
       <p class="lead opacity-90">
-        Découvrez vos matières et commencez votre apprentissage
+        Discover your subjects and start learning
       </p>
     </div>
   </div>
@@ -28,7 +47,7 @@
             type="text" 
             id="search-subjects" 
             class="form-control border-0 py-3 px-4" 
-            placeholder="🔍 Rechercher une matière..." 
+            placeholder="🔍 Search for a subject..." 
             style="font-size: 1.1rem; background: rgba(255,255,255,0.95);"
           >
           
@@ -388,4 +407,867 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{% endblock %}
+
+{% block extra_js %}
+  <!-- Load lottie and assistant chat script only on this page -->
+  <script src="{% static 'js/lottie.min.js' %}"></script>
+  <script>
+    (function(){
+      const trigger = document.getElementById('assistant-lottie-trigger');
+      const animEl = document.getElementById('assistant-lottie');
+      // Load animation JSON and render small Lottie. If lottie isn't present, try to load it dynamically.
+      function showFallback() {
+        const fb = document.getElementById('open-assistant-fallback');
+        if (fb) fb.style.display = 'inline-block';
+      }
+
+      function loadAnimationData() {
+        if (!animEl) { showFallback(); return; }
+        // Prevent multiple animations
+        if (window.__lottie_animation_loaded) { return; }
+        window.__lottie_animation_loaded = true;
+        animEl.innerHTML = ''; // Clear any existing content
+        fetch('{% static "animations/assistant_lottie.json" %}')
+          .then(r => { if (!r.ok) throw new Error('not ok'); return r.json(); })
+          .then(data => {
+            try {
+              window.lottie.loadAnimation({
+                container: animEl,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                animationData: data
+              });
+            } catch (err) { showFallback(); }
+          }).catch(()=>{ showFallback(); });
+      }
+
+      if (window.lottie) {
+        loadAnimationData();
+      } else {
+        // Try to load lottie script dynamically and then load animation
+        const lottieScript = document.createElement('script');
+        lottieScript.src = '{% static "js/lottie.min.js" %}';
+        lottieScript.onload = () => { loadAnimationData(); };
+        lottieScript.onerror = () => { showFallback(); };
+        document.head.appendChild(lottieScript);
+      }
+
+      // Prepare modal markup for assistant chat (Bootstrap modal) - DESIGN ENFANTS
+      const modalHtml = `
+      <style>
+        /* Design pour enfants - Modal Chatbot */
+        #assistantChatModal .modal-dialog { max-width: 900px !important; }
+        #assistantChatModal .modal-content { 
+          border-radius: 24px !important; 
+          border: 4px solid #667eea !important;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+        }
+        #assistantChatModal .modal-header { 
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          color: white !important;
+          border-radius: 20px 20px 0 0 !important;
+          padding: 20px !important;
+        }
+        #assistantChatModal .modal-title { 
+          font-family: 'Comic Sans MS', cursive !important;
+          font-size: 28px !important;
+          font-weight: bold !important;
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        #assistantChatModal .btn-close {
+          filter: brightness(0) invert(1) !important;
+          opacity: 1 !important;
+        }
+        #assistantChatModal .modal-body {
+          background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+          padding: 24px !important;
+          font-family: 'Comic Sans MS', cursive !important;
+        }
+        #assistantChatModal .chat-wrap {
+          background: white !important;
+          border-radius: 20px !important;
+          padding: 20px !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+        #assistantChatModal .header-controls {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          margin-bottom: 16px !important;
+          padding: 12px !important;
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+          border-radius: 12px !important;
+        }
+        #assistantChatModal .header-controls label {
+          color: white !important;
+          font-weight: bold !important;
+          margin: 0 !important;
+          font-size: 15px !important;
+        }
+        #assistantChatModal #language {
+          padding: 6px 12px !important;
+          border-radius: 10px !important;
+          border: 2px solid white !important;
+          font-weight: bold !important;
+          cursor: pointer !important;
+          margin-left: 8px !important;
+        }
+        #assistantChatModal #messages {
+          height: 420px !important;
+          overflow-y: auto !important;
+          border: 3px solid #667eea !important;
+          border-radius: 16px !important;
+          padding: 16px !important;
+          background: linear-gradient(to bottom, #ffecd2 0%, #fcb69f 100%) !important;
+          margin-bottom: 16px !important;
+        }
+        #assistantChatModal #messages::-webkit-scrollbar {
+          width: 10px !important;
+        }
+        #assistantChatModal #messages::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          border-radius: 10px !important;
+        }
+        #assistantChatModal .clearfix {
+          clear: both !important;
+          height: 0 !important;
+          overflow: hidden !important;
+        }
+        #assistantChatModal .msg {
+          padding: 12px 16px !important;
+          margin: 10px 0 !important;
+          border-radius: 18px !important;
+          max-width: 75% !important;
+          word-wrap: break-word !important;
+          line-height: 1.5 !important;
+          font-size: 15px !important;
+          box-shadow: 0 3px 8px rgba(0,0,0,0.15) !important;
+          animation: messageSlide 0.3s ease-out !important;
+        }
+        @keyframes messageSlide {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        #assistantChatModal .msg.student {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          color: white !important;
+          float: right !important;
+          clear: right !important;
+          text-align: left !important;
+          border-bottom-right-radius: 4px !important;
+        }
+        #assistantChatModal .msg.student::before {
+          content: '👦 ' !important;
+          font-size: 16px !important;
+        }
+        #assistantChatModal .msg.assistant {
+          background: white !important;
+          color: #333 !important;
+          float: left !important;
+          clear: left !important;
+          text-align: left !important;
+          border: 3px solid #667eea !important;
+          border-bottom-left-radius: 4px !important;
+        }
+        #assistantChatModal .msg.assistant::before {
+          content: '🤖 ' !important;
+          font-size: 16px !important;
+        }
+        #assistantChatModal .controls {
+          display: flex !important;
+          gap: 10px !important;
+          align-items: center !important;
+        }
+        #assistantChatModal #input {
+          flex: 1 !important;
+          height: 60px !important;
+          padding: 12px !important;
+          border: 3px solid #667eea !important;
+          border-radius: 16px !important;
+          font-size: 15px !important;
+          font-family: 'Comic Sans MS', cursive !important;
+          resize: none !important;
+          transition: all 0.3s !important;
+        }
+        #assistantChatModal #input:focus {
+          outline: none !important;
+          border-color: #764ba2 !important;
+          box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2) !important;
+        }
+        #assistantChatModal #mic-btn {
+          width: 50px !important;
+          height: 50px !important;
+          border-radius: 50% !important;
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+          border: none !important;
+          color: white !important;
+          font-size: 20px !important;
+          cursor: pointer !important;
+          transition: all 0.3s !important;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+        }
+        #assistantChatModal #mic-btn:hover {
+          transform: scale(1.1) !important;
+        }
+        #assistantChatModal #mic-btn.recording {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+          animation: pulse 1s infinite !important;
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+        #assistantChatModal #send {
+          padding: 12px 28px !important;
+          border-radius: 16px !important;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          border: none !important;
+          color: white !important;
+          font-weight: bold !important;
+          font-size: 16px !important;
+          cursor: pointer !important;
+          transition: all 0.3s !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+        #assistantChatModal #send:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
+        }
+        #assistantChatModal .info-text {
+          text-align: center !important;
+          margin-top: 12px !important;
+          color: #666 !important;
+          font-size: 13px !important;
+        }
+        #assistantChatModal .search-bar {
+          display: flex !important;
+          gap: 10px !important;
+          align-items: center !important;
+          padding: 12px !important;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+          border-radius: 12px !important;
+          margin: 10px 0 !important;
+        }
+        #assistantChatModal #search-query {
+          flex: 1 !important;
+          padding: 10px 14px !important;
+          border-radius: 10px !important;
+          border: 2px solid white !important;
+          font-size: 14px !important;
+          font-weight: bold !important;
+        }
+        #assistantChatModal #search-btn {
+          padding: 10px 16px !important;
+          background: white !important;
+          color: #667eea !important;
+          border: none !important;
+          border-radius: 10px !important;
+          font-weight: bold !important;
+          cursor: pointer !important;
+        }
+        #assistantChatModal #search-results {
+          background: #f8f9fa !important;
+          border: 2px dashed #667eea !important;
+          border-radius: 10px !important;
+          padding: 10px !important;
+          margin: 10px 0 !important;
+          max-height: 200px !important;
+          overflow-y: auto !important;
+        }
+        /* PDF History Button */
+        #assistantChatModal #toggle-pdf-history {
+          padding: 8px 16px !important;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 10px !important;
+          font-weight: bold !important;
+          cursor: pointer !important;
+          font-size: 14px !important;
+          transition: all 0.3s !important;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+        }
+        #assistantChatModal #toggle-pdf-history:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+        }
+        /* PDF History Panel */
+        #assistantChatModal .pdf-history-panel {
+          display: none !important;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+          border-radius: 12px !important;
+          padding: 16px !important;
+          margin: 12px 0 !important;
+          border: 3px solid #fbbf24 !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+          position: relative !important;
+          z-index: 10 !important;
+          min-height: 100px !important;
+        }
+        #assistantChatModal .pdf-history-panel.active {
+          display: block !important;
+        }
+        #assistantChatModal .pdf-history-header {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          margin-bottom: 16px !important;
+          padding-bottom: 12px !important;
+          border-bottom: 2px dashed #fbbf24 !important;
+        }
+        #assistantChatModal .pdf-history-header h3 {
+          margin: 0 !important;
+          color: #92400e !important;
+          font-size: 1.3rem !important;
+          font-family: 'Comic Sans MS', cursive !important;
+        }
+        #assistantChatModal .close-history-btn {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+          color: white !important;
+          border: none !important;
+          padding: 6px 12px !important;
+          border-radius: 8px !important;
+          cursor: pointer !important;
+          font-weight: bold !important;
+          transition: all 0.3s !important;
+        }
+        #assistantChatModal .close-history-btn:hover {
+          transform: scale(1.05) !important;
+        }
+        #assistantChatModal #pdf-list-container {
+          min-height: 50px !important;
+          width: 100% !important;
+          display: block !important;
+        }
+        #assistantChatModal .pdf-list {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 12px !important;
+          max-height: 300px !important;
+          overflow-y: auto !important;
+          width: 100% !important;
+        }
+        #assistantChatModal .pdf-item {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 12px !important;
+          border-radius: 12px !important;
+          border: 2px solid rgba(255,255,255,0.5) !important;
+          transition: all 0.3s !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+        #assistantChatModal .pdf-item:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
+        }
+        #assistantChatModal .pdf-icon {
+          font-size: 2rem !important;
+          flex-shrink: 0 !important;
+        }
+        #assistantChatModal .pdf-info {
+          flex: 1 !important;
+          min-width: 0 !important;
+        }
+        #assistantChatModal .pdf-title {
+          font-weight: bold !important;
+          color: #1e40af !important;
+          margin: 0 0 4px 0 !important;
+          font-size: 1rem !important;
+          font-family: 'Comic Sans MS', cursive !important;
+        }
+        #assistantChatModal .pdf-meta {
+          font-size: 0.85rem !important;
+          color: #6b7280 !important;
+        }
+        #assistantChatModal .pdf-actions {
+          display: flex !important;
+          gap: 8px !important;
+          flex-shrink: 0 !important;
+        }
+        #assistantChatModal .btn-download {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+          color: white !important;
+          text-decoration: none !important;
+          padding: 8px 12px !important;
+          border-radius: 8px !important;
+          font-size: 0.9rem !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          transition: all 0.3s !important;
+          font-weight: bold !important;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+        }
+        #assistantChatModal .btn-download:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+        }
+        #assistantChatModal .empty-state {
+          text-align: center !important;
+          padding: 40px 20px !important;
+          color: #6b7280 !important;
+        }
+        #assistantChatModal .empty-state-icon {
+          font-size: 4rem !important;
+          margin-bottom: 16px !important;
+        }
+        /* PDF History Modal Styles */
+        #pdfHistoryModal .pdf-list {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 12px !important;
+          width: 100% !important;
+        }
+        #pdfHistoryModal .pdf-item {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 16px !important;
+          border-radius: 12px !important;
+          border: 2px solid rgba(255,255,255,0.7) !important;
+          transition: all 0.3s !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+          min-height: 80px !important;
+        }
+        #pdfHistoryModal .pdf-item:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
+        }
+        #pdfHistoryModal .pdf-icon {
+          font-size: 2.5rem !important;
+          flex-shrink: 0 !important;
+        }
+        #pdfHistoryModal .pdf-info {
+          flex: 1 !important;
+          min-width: 0 !important;
+        }
+        #pdfHistoryModal .pdf-title {
+          font-weight: bold !important;
+          color: #1e40af !important;
+          margin: 0 0 6px 0 !important;
+          font-size: 1.1rem !important;
+          font-family: 'Comic Sans MS', cursive, sans-serif !important;
+        }
+        #pdfHistoryModal .pdf-meta {
+          font-size: 0.9rem !important;
+          color: #6b7280 !important;
+          margin-bottom: 4px !important;
+        }
+        #pdfHistoryModal .pdf-actions {
+          display: flex !important;
+          gap: 8px !important;
+          flex-shrink: 0 !important;
+        }
+        #pdfHistoryModal .btn-download {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+          color: white !important;
+          text-decoration: none !important;
+          padding: 10px 16px !important;
+          border-radius: 8px !important;
+          font-size: 0.95rem !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          transition: all 0.3s !important;
+          font-weight: bold !important;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+          border: none !important;
+        }
+        #pdfHistoryModal .btn-download:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+          text-decoration: none !important;
+        }
+        #pdfHistoryModal .empty-state {
+          text-align: center !important;
+          padding: 40px 20px !important;
+          color: #6b7280 !important;
+        }
+        #pdfHistoryModal .empty-state-icon {
+          font-size: 4rem !important;
+          margin-bottom: 16px !important;
+        }
+      </style>
+      <div class="modal fade" id="assistantChatModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"> EduKids Assistant ✨ </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="assistant-chat-root">
+                <div class="chat-wrap">
+                  <div class="header-controls">
+                    <div>
+                      <label for="language">🌍 Language:</label>
+                      <select id="language" class="lang">
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="pt">🇵🇹 Português</option>
+                        <option value="ar">🇸🇦 العربية</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label><input type="checkbox" id="tts" checked> 🔊 Voice Reading</label>
+                    </div>
+                    <div>
+                      <button id="toggle-pdf-history" data-bs-toggle="modal" data-bs-target="#pdfHistoryModal">📄 My PDFs</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Barre de recherche -->
+                  <div class="search-bar">
+                    <input type="text" id="search-query" placeholder="🔍 Search in history..." />
+                    <button id="search-btn">🔎 Search</button>
+                  </div>
+                  
+                  <!-- Zone de résultats de recherche (modal) -->
+                  <div id="assistant-search-results" style="display:none;"></div>
+                  
+                  <div class="messages" id="messages"></div>
+                  <div class="controls">
+                    <textarea id="input" placeholder="💬 Type your message here..." aria-label="message"></textarea>
+                    <button id="mic-btn" title="🎤 Record a voice message" class="btn">
+                      <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="send" class="primary btn">✨ Send</button>
+                  </div>
+                  <div class="info-text">
+                    <small>💡 You can type or talk using the microphone! The full chat history is displayed</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+      // La modal sera créée dynamiquement dans openAssistant() au premier clic
+
+      function openAssistant() {
+        console.log('🎯 openAssistant appelé');
+        
+        // CRÉER LA MODAL SI ELLE N'EXISTE PAS ENCORE
+        let modalEl = document.getElementById('assistantChatModal');
+        
+        if (!modalEl) {
+          console.log('📝 Création de la modal dans le DOM...');
+          try {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = modalHtml.trim();
+            
+            // modalHtml contient <style> + <div class="modal">
+            // On doit trouver la div.modal, pas le style
+            const styleEl = tmp.querySelector('style');
+            const modalNode = tmp.querySelector('.modal');
+            
+            if (!modalNode) {
+              console.error('❌ Impossible de trouver .modal dans modalHtml');
+              console.log('tmp.children:', tmp.children);
+              alert('Erreur: Structure de modal invalide');
+              return;
+            }
+            
+            // Ajouter le style ET la modal au body
+            if (styleEl) {
+              document.head.appendChild(styleEl);
+              console.log('✅ Style CSS ajouté');
+            }
+            document.body.appendChild(modalNode);
+            console.log('✅ Modal ajoutée au DOM');
+            
+            // Maintenant chercher la modal
+            modalEl = document.getElementById('assistantChatModal');
+            console.log('🔍 Recherche getElementById après ajout:', modalEl);
+            
+            if (!modalEl) {
+              console.error('❌ Modal ajoutée mais non trouvée par getElementById!');
+              console.log('Cherchons avec querySelector:', document.querySelector('#assistantChatModal'));
+              console.log('Cherchons avec .modal:', document.querySelector('.modal'));
+              alert('Erreur: Modal ajoutée mais non accessible');
+              return;
+            }
+          } catch(err) {
+            console.error('❌ Erreur lors de la création de la modal:', err);
+            alert('Erreur création modal: ' + err.message);
+            return;
+          }
+        } else {
+          console.log('✅ Modal déjà présente dans le DOM');
+        }
+        
+        // store student id for assistant to load history
+        try {
+          const studentId = '{{ user.id|default:"" }}';
+          if (studentId) {
+            localStorage.setItem('edukids_student_id', studentId);
+            console.log('✅ Student ID sauvegardé:', studentId);
+          }
+        } catch(e){
+          console.error('❌ Erreur sauvegarde student ID:', e);
+        }
+
+        // Load assistant script dynamically if not loaded
+        if (!window.__assistant_chat_loaded) {
+          console.log('📥 Chargement du script assistant_chat.js...');
+          const s = document.createElement('script');
+          s.src = '/static/js/assistant_chat.js';
+          s.onload = () => { 
+            window.__assistant_chat_loaded = true;
+            console.log('✅ Script assistant_chat.js chargé');
+          };
+          s.onerror = () => {
+            console.error('❌ Erreur chargement assistant_chat.js');
+          };
+          document.body.appendChild(s);
+        } else {
+          console.log('✅ Script assistant_chat.js déjà chargé');
+        }
+
+        // show bootstrap modal - utiliser getOrCreateInstance pour eviter les erreurs
+        console.log('🔍 Modal element final:', modalEl);
+        
+        if (modalEl) {
+          // Vérifier si Bootstrap est disponible
+          if (typeof bootstrap === 'undefined') {
+            console.error('❌ Bootstrap n\'est pas chargé!');
+            alert('Erreur: Bootstrap n\'est pas chargé. Rechargez la page.');
+            return;
+          }
+          
+          console.log('✅ Bootstrap disponible');
+          try {
+            // Utiliser getOrCreateInstance au lieu de new Modal
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            console.log('✅ Modal instance créée:', modal);
+            
+            modal.show();
+            console.log('🎉 Modal show() appelée!');
+            
+          } catch(err) {
+            console.error('❌ Erreur création/affichage modal:', err);
+            alert('Erreur ouverture modal: ' + err.message);
+          }
+        } else {
+          console.error('❌ Element modal non trouvé après tentative de création!');
+          alert('Erreur: Modal non trouvée dans le DOM');
+        }
+      }
+
+      console.log('🔍 Recherche du trigger...');
+      if (trigger) {
+        console.log('✅ Trigger trouvé:', trigger);
+        trigger.addEventListener('click', openAssistant);
+        console.log('✅ Event listener ajouté sur trigger');
+        
+        // also open if user clicks the Lottie container inside
+        const animInner = document.getElementById('assistant-lottie');
+        console.log('🔍 Recherche de assistant-lottie:', animInner);
+        if (animInner) {
+          animInner.addEventListener('click', openAssistant);
+          console.log('✅ Event listener ajouté sur Lottie');
+        } else {
+          console.warn('⚠️ Element assistant-lottie non trouvé');
+        }
+        } else {
+          console.error('❌ Trigger non trouvé!');
+        }
+      
+            
+      // ========= CREATE AND INITIALIZE PDF HISTORY MODAL =========
+      window.createPDFHistoryModal = function() {
+        console.log('📚 Creating PDF History Modal...');
+        
+        // Check if modal already exists
+        if (document.getElementById('pdfHistoryModal')) {
+          console.log('📚 PDF Modal already exists');
+          return document.getElementById('pdfHistoryModal');
+        }
+        
+        // Create modal HTML
+        const modalHTML = `
+          <div class="modal fade" id="pdfHistoryModal" tabindex="-1" aria-labelledby="pdfHistoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+              <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px 20px 0 0;">
+                  <h5 class="modal-title" id="pdfHistoryModalLabel" style="font-weight: bold;">
+                    📚 My PDF Documents.
+                  </h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px;">
+                  <div id="pdf-modal-list-container">
+                    <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+                      <div class="empty-state-icon" style="font-size: 4rem; margin-bottom: 15px;">📄</div>
+                      <p style="color: #667eea; font-size: 16px;">Chargement des PDFs...</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer" style="background: #f8f9fa; border-radius: 0 0 20px 20px;">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">✕ Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Append to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        console.log('✅ PDF Modal added to body');
+        
+        const pdfModal = document.getElementById('pdfHistoryModal');
+        
+        // Set up event listener to load PDFs when modal is shown
+        pdfModal.addEventListener('shown.bs.modal', function() {
+          console.log('🎉 PDF Modal shown - loading PDFs...');
+          window.loadPDFHistoryInModal();
+        });
+        
+        console.log('✅ PDF Modal initialized');
+        return pdfModal;
+      };
+      
+      // Load PDF history from API into modal
+      window.loadPDFHistoryInModal = function() {
+        console.log('📥 Chargement des PDFs dans le modal...');
+        
+        const pdfModalListContainer = document.getElementById('pdf-modal-list-container');
+        if (!pdfModalListContainer) {
+          console.error('❌ Container not found');
+          return;
+        }
+        
+        const studentId = localStorage.getItem('edukids_student_id');
+        if (!studentId) {
+          console.error('❌ Student ID non trouvé');
+          pdfModalListContainer.innerHTML = `
+            <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+              <div class="empty-state-icon" style="font-size: 4rem;">⚠️</div>
+              <p style="color: #ef4444;">Erreur: Identifiant étudiant non trouvé.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        pdfModalListContainer.innerHTML = `
+          <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+            <div class="empty-state-icon" style="font-size: 4rem;">⏳</div>
+            <p style="color: #667eea;">Chargement des PDFs...</p>
+          </div>
+        `;
+        
+        fetch(`/assistant/api/pdf_history/?student_id=${studentId}`)
+          .then(response => {
+            if (!response.ok) throw new Error('Erreur réseau');
+            return response.json();
+          })
+          .then(data => {
+            console.log('✅ PDFs chargés:', data);
+            
+            if (!data.pdfs || data.pdfs.length === 0) {
+              pdfModalListContainer.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+                  <div class="empty-state-icon" style="font-size: 4rem;">📭</div>
+                  <p style="color: #667eea;">No PDF found. Ask the assistant to create a PDF!</p>
+                </div>
+              `;
+              return;
+            }
+            
+            console.log('📊 Nombre de PDFs:', data.pdfs.length);
+            
+            // Render PDF list with pastel colors
+            const pdfItems = data.pdfs.map((pdf, index) => {
+              const colors = ['#FFD6E8', '#D6E8FF', '#FFF9D6', '#D6FFE8', '#E8D6FF', '#FFE8D6', '#D6FFF0'];
+              const bgColor = colors[index % colors.length];
+              const date = new Date(pdf.created_at);
+              const formattedDate = date.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+              
+              console.log(`📄 PDF ${index + 1}:`, pdf.title, 'URL:', pdf.file_url);
+              
+              return `
+                <div class="pdf-item" style="background: ${bgColor};">
+                  <div class="pdf-icon">📄</div>
+                  <div class="pdf-info">
+                    <h4 class="pdf-title">${pdf.title || 'Document PDF'}</h4>
+                    <div class="pdf-meta">
+                      📅 ${formattedDate}
+                      ${pdf.conversation_title ? `<br>💬 🏷️ Topic: ${pdf.conversation_title}` : ''}
+                    </div>
+                  </div>
+                  <div class="pdf-actions">
+                    <a href="${pdf.file_url}" target="_blank" class="btn-download" download>
+                      ⬇️ Download
+                    </a>
+                  </div>
+                </div>
+              `;
+            }).join('');
+            
+            console.log('📝 HTML généré, longueur:', pdfItems.length, 'caractères');
+            
+            const fullHTML = `<div class="pdf-list">${pdfItems}</div>`;
+            pdfModalListContainer.innerHTML = fullHTML;
+            
+            console.log('✅ HTML inséré dans le modal');
+            console.log('📦 Nombre de PDFs affichés:', data.pdfs.length);
+          })
+          .catch(error => {
+            console.error('❌ Erreur chargement PDFs:', error);
+            pdfModalListContainer.innerHTML = `
+              <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+                <div class="empty-state-icon" style="font-size: 4rem;">❌</div>
+                <p style="color: #ef4444;">Erreur lors du chargement des PDFs.</p>
+              </div>
+            `;
+          });
+      };
+      
+      // Set up global click handler for PDF history button
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'toggle-pdf-history') {
+          console.log('🔘 PDF History button clicked');
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Create modal if it doesn't exist
+          let pdfModal = document.getElementById('pdfHistoryModal');
+          if (!pdfModal) {
+            pdfModal = window.createPDFHistoryModal();
+          }
+          
+          // Show the modal
+          if (pdfModal && typeof bootstrap !== 'undefined') {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(pdfModal);
+            modalInstance.show();
+            console.log('✅ PDF Modal shown');
+          } else {
+            console.error('❌ Cannot show PDF modal - Bootstrap or modal not found');
+          }
+        }
+      }, true); // Use capture phase to ensure we catch it first
+      
+      // Initialize the PDF modal when document is ready
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('� DOM Ready - initializing PDF modal...');
+        // Wait a bit for the modal HTML to be in DOM
+        setTimeout(() => {
+          if (typeof window.initializePDFHistoryModal === 'function') {
+            window.initializePDFHistoryModal();
+          }
+        }, 500);
+      });
+    })();
+  </script>
 {% endblock %}
