@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
@@ -10,47 +10,202 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from django.urls import reverse
 import uuid
 from .models import Student, Teacher, Parent, User
 from .forms import StudentRegistrationForm, TeacherRegistrationForm
+
+def send_verification_email(user):
+    """Send email verification to user"""
+    # Always generate and save token first
+    token = uuid.uuid4()
+    user.email_verification_token = token
+    user.save()
+    
+    print(f"🎫 Token generated and saved: {token}")
+    
+    try:
+        # Create verification URL
+        verification_url = f"{settings.SITE_URL}/verify-email/{token}/"
+        
+        subject = "🎓 Verify Your EduKids Account"
+        message = f"""
+        Hi {user.first_name}!
+        
+        Welcome to EduKids! 🎉
+        
+        Please click the link below to verify your email address and activate your account:
+        
+        {verification_url}
+        
+        If you didn't create this account, please ignore this email.
+        
+        Best regards,
+        The EduKids Team
+        """
+        
+        # Send email
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        
+        print(f"✅ Verification email sent to {user.email}")
+        print(f"🔗 Verification URL: {verification_url}")
+        
+    except Exception as e:
+        print(f"❌ Error sending verification email: {e}")
+        print(f"🎫 But token is saved: {token}")
+
+def verify_email(request, token):
+    """Verify user email with token"""
+    try:
+        user = User.objects.get(email_verification_token=token)
+        user.email_verified = True
+        user.is_active = True
+        user.email_verification_token = None
+        user.save()
+        
+        messages.success(request, 'Email verified successfully! You can now login.')
+        return redirect('login')
+    except User.DoesNotExist:
+        messages.error(request, 'Invalid verification token.')
+        return redirect('login')
 
 def home(request):
     """Home page view"""
     return render(request, 'base/home.html')
 
+def custom_login(request):
+    """Custom login view that accepts both username and email"""
+    if request.method == 'POST':
+        username_or_email = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Try to authenticate with username first
+        user = authenticate(request, username=username_or_email, password=password)
+        
+        # If that fails, try to find user by email and authenticate with username
+        if user is None:
+            try:
+                user_by_email = User.objects.get(email=username_or_email)
+                user = authenticate(request, username=user_by_email.username, password=password)
+            except User.DoesNotExist:
+                pass
+        
+        if user is not None:
+            if user.is_active and user.email_verified:
+                login(request, user)
+                messages.success(request, f'Welcome back, {user.get_full_name()}!')
+                
+                # Redirect based on user type
+                if user.user_type == 'student':
+                    return redirect('student_dashboard')
+                elif user.user_type == 'teacher':
+                    return redirect('teacher_dashboard')
+                elif user.user_type == 'admin':
+                    return redirect('/admin/')
+                else:
+                    return redirect('home')
+            else:
+                messages.error(request, 'Your account is not active or email not verified. Please check your email.')
+        else:
+            messages.error(request, 'Invalid username/email or password.')
+    
+    # Create form for GET request
+    form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
 def register(request):
-    """Registration view with role selection and email verification"""
+    """Simplified registration view"""
     user_type = request.GET.get('type', 'student')  # Default to student
     
     if request.method == 'POST':
-        if user_type == 'teacher':
-            form = TeacherRegistrationForm(request.POST)
-        else:
-            form = StudentRegistrationForm(request.POST)
+        # Create a simple form for basic registration
+        username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        # Basic validation
+        if not all([username, first_name, last_name, email, password1, password2]):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'registration/register.html', {
+                'user_type': user_type,
+                'form': None
+            })
+        
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'registration/register.html', {
+                'user_type': user_type,
+                'form': None
+            })
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'registration/register.html', {
+                'user_type': user_type,
+                'form': None
+            })
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'registration/register.html', {
+                'user_type': user_type,
+                'form': None
+            })
+        
+        try:
+            # Create user
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password1,
+                first_name=first_name,
+                last_name=last_name,
+                user_type=user_type,
+                email_verified=False,  # Enable email verification
+                is_active=False  # User must verify email first
+            )
             
-        if form.is_valid():
-            user = form.save()
-            
-            # Generate email verification token
-            user.email_verification_token = uuid.uuid4()
-            user.email_verified = False
-            user.is_active = False  # Deactivate until email is verified
-            user.save()
+            # Create profile based on user type
+            if user_type == 'student':
+                Student.objects.create(
+                    user=user,
+                    birth_date='2000-01-01',  # Default birth date
+                    grade_level='middle_school',
+                    learning_style='visual'
+                )
+            elif user_type == 'teacher':
+                Teacher.objects.create(
+                    user=user,
+                    subject_specialties=['General'],
+                    teaching_experience=0,
+                    certification_level='bachelor'
+                )
             
             # Send verification email
             send_verification_email(user)
             
-            messages.success(request, f'{user_type.title()} account created successfully! Please check your email to activate your account.')
+            messages.success(request, f'{user_type.title()} account created successfully! Please check your email to verify your account.')
             return redirect('login')
-    else:
-        if user_type == 'teacher':
-            form = TeacherRegistrationForm()
-        else:
-            form = StudentRegistrationForm()
+            
+        except Exception as e:
+            messages.error(request, f'Error creating account: {str(e)}')
+            return render(request, 'registration/register.html', {
+                'user_type': user_type,
+                'form': None
+            })
     
     return render(request, 'registration/register.html', {
-        'form': form, 
-        'user_type': user_type
+        'user_type': user_type,
+        'form': None
     })
 
 @login_required
@@ -184,56 +339,6 @@ def user_delete(request, user_id):
     }
     return render(request, 'admin/user_delete.html', context)
 
-def send_verification_email(user):
-    """Send email verification to user"""
-    subject = 'Activate Your EduKids Account'
-    
-    # Create verification URL
-    verification_url = f"{settings.SITE_URL}/verify-email/{user.email_verification_token}/"
-    
-    # Render email template
-    html_message = render_to_string('emails/email_verification.html', {
-        'user': user,
-        'verification_url': verification_url,
-        'site_url': settings.SITE_URL,
-    })
-    
-    # Send email
-    try:
-        send_mail(
-            subject=subject,
-            message=f'Please click the link to verify your email: {verification_url}',
-            html_message=html_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
-        print(f"Verification email sent to {user.email}")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-def verify_email(request, token):
-    """Verify user email with token"""
-    try:
-        user = User.objects.get(email_verification_token=token)
-        
-        # Check if token is not expired (24 hours)
-        if user.date_joined < timezone.now() - timezone.timedelta(hours=24):
-            messages.error(request, 'Verification link has expired. Please register again.')
-            return redirect('register')
-        
-        # Activate user
-        user.email_verified = True
-        user.is_active = True
-        user.email_verification_token = None  # Clear token
-        user.save()
-        
-        messages.success(request, 'Your email has been verified successfully! You can now log in.')
-        return redirect('login')
-        
-    except User.DoesNotExist:
-        messages.error(request, 'Invalid verification link.')
-        return redirect('register')
 
 def resend_verification(request):
     """Resend verification email"""
