@@ -65,7 +65,7 @@
                 {% for story in stories %}
                 <div class="col-md-6 col-lg-4">
                     <div class="story-card">
-                        <div class="story-card-header" style="background: linear-gradient(135deg, #FFE4E6, #E0E7FF);">
+                        <div class="story-card-header theme-{{ story.theme }}">
                             <div class="story-theme-badge">
                                 {{ story.get_theme_display }}
                             </div>
@@ -234,6 +234,39 @@
         position: relative;
     }
     
+    /* Theme-Specific Colors */
+    .theme-teamwork {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE) !important;
+    }
+    
+    .theme-kindness {
+        background: linear-gradient(135deg, #FCE7F3, #FBCFE8) !important;
+    }
+    
+    .theme-curiosity {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A) !important;
+    }
+    
+    .theme-honesty {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0) !important;
+    }
+    
+    .theme-sharing {
+        background: linear-gradient(135deg, #E0E7FF, #C7D2FE) !important;
+    }
+    
+    .theme-problem_solving {
+        background: linear-gradient(135deg, #FED7AA, #FDBA74) !important;
+    }
+    
+    .theme-friendship {
+        background: linear-gradient(135deg, #F3E8FF, #E9D5FF) !important;
+    }
+    
+    .theme-courage {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA) !important;
+    }
+    
     .story-theme-badge {
         display: inline-block;
         background: rgba(255, 255, 255, 0.9);
@@ -352,19 +385,21 @@
     }
     
     .btn-story-read {
-        background: linear-gradient(135deg, #10B981, #34D399);
+        background: linear-gradient(135deg, #A78BFA, #C4B5FD);
         border: none;
         color: white;
         border-radius: 15px;
-        font-weight: 600;
+        font-weight: 700;
         padding: 0.7rem 1.5rem;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
     }
     
     .btn-story-read:hover {
-        background: linear-gradient(135deg, #059669, #10B981);
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
         transform: translateY(-2px);
         color: white;
+        box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
     }
     
     /* Empty State */
