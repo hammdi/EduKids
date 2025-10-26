@@ -8,9 +8,9 @@
 <section class="hero-section bg-gradient-primary text-white py-5">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-6 animate-fadeInLeft">
+            <div class="col-lg-6">
                 <h1 class="display-4 fw-bold mb-4">
-                    Welcome to <span class="text-warning animate-bounce">EduKids</span>
+                    Welcome to <span class="text-warning">EduKids</span>
                 </h1>
                 <p class="lead mb-4">
                     The future of primary education with AI-powered voice assessment, 
@@ -18,28 +18,28 @@
                 </p>
                 <div class="d-flex gap-3">
                     {% if not user.is_authenticated %}
-                        <a href="{% url 'register' %}" class="btn btn-warning btn-lg hover-lift">
+                        <a href="{% url 'register' %}" class="btn btn-warning btn-lg">
                             <i class="fas fa-rocket me-2"></i>Get Started
                         </a>
-                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg hover-lift">
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-sign-in-alt me-2"></i>Login
                         </a>
                     {% else %}
                         {% if user.student %}
-                            <a href="{% url 'student_dashboard' %}" class="btn btn-warning btn-lg hover-lift">
+                            <a href="{% url 'student_dashboard' %}" class="btn btn-warning btn-lg">
                                 <i class="fas fa-tachometer-alt me-2"></i>My Dashboard
                             </a>
                         {% elif user.teacher %}
-                            <a href="{% url 'teacher_dashboard' %}" class="btn btn-warning btn-lg hover-lift">
+                            <a href="{% url 'teacher_dashboard' %}" class="btn btn-warning btn-lg">
                                 <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Panel
                             </a>
                         {% endif %}
                     {% endif %}
                 </div>
             </div>
-            <div class="col-lg-6 animate-fadeInRight">
+            <div class="col-lg-6">
                 <div class="text-center">
-                    <i class="fas fa-robot display-1 text-warning mb-3 animate-bounce"></i>
+                    <i class="fas fa-robot display-1 text-warning mb-3"></i>
                     <h3>AI-Powered Learning</h3>
                     <p>Experience the future of education</p>
                 </div>
@@ -60,9 +60,9 @@
         
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card h-100 hover-lift animate-scaleIn">
+                <div class="card h-100 shadow-sm border-0">
                     <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center hover-glow" style="width: 80px; height: 80px;">
+                        <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
                             <i class="fas fa-microphone fa-2x"></i>
                         </div>
                         <h4 class="card-title">AI Voice Assessment</h4>
@@ -75,9 +75,9 @@
             </div>
             
             <div class="col-md-4">
-                <div class="card h-100 hover-lift animate-scaleIn" style="animation-delay: 0.2s;">
+                <div class="card h-100 shadow-sm border-0">
                     <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center hover-glow" style="width: 80px; height: 80px;">
+                        <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
                             <i class="fas fa-book fa-2x"></i>
                         </div>
                         <h4 class="card-title">Interactive Exercises</h4>
@@ -90,9 +90,9 @@
             </div>
             
             <div class="col-md-4">
-                <div class="card h-100 hover-lift animate-scaleIn" style="animation-delay: 0.4s;">
+                <div class="card h-100 shadow-sm border-0">
                     <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center hover-glow" style="width: 80px; height: 80px;">
+                        <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
                             <i class="fas fa-chart-line fa-2x"></i>
                         </div>
                         <h4 class="card-title">Progress Tracking</h4>

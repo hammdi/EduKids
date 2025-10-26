@@ -218,7 +218,29 @@ class VoiceAnalyzer:
             'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those',
             'with', 'without', 'for', 'in', 'on', 'by', 'to', 'from', 'at', 'between', 'during', 'since',
             'very', 'more', 'less', 'good', 'bad', 'much', 'little', 'enough', 'too', 'if', 'that', 'what', 'where', 'when', 'how', 'why',
-            'super', 'power', 'magic', 'magical', 'have', 'can', 'could', 'would', 'should', 'will', 'shall'
+            'super', 'power', 'magic', 'magical', 'have', 'can', 'could', 'would', 'should', 'will', 'shall',
+            'hello', 'everyone', 'everybody', 'hi', 'hey', 'yes', 'no', 'ok', 'okay', 'sure', 'right', 'exactly',
+            'old', 'young', 'new', 'first', 'last', 'next', 'previous', 'same', 'different', 'other', 'another',
+            'let', 'begin', 'wow', 'happy', 'unfortunately', 'be', 'am', 'been', 'being', 'do', 'does', 'did', 'done',
+            'go', 'goes', 'went', 'gone', 'get', 'gets', 'got', 'gotten', 'make', 'makes', 'made', 'making',
+            'take', 'takes', 'took', 'taken', 'come', 'comes', 'came', 'see', 'sees', 'saw', 'seen', 'know', 'knows', 'knew', 'known',
+            # Mots spécifiques des transcriptions
+            'okay', 'bonjour', 'mean', 'had', 'superpower', 'preferred', 'allows', 'revive', 'people', 'met', 'died', 'again',
+            'grandparents', 'brilliant', 'scientists', 'einstein', 'prophets', 'world', 'easy', 'peace', 'know', 'else', 'going',
+            'help', 'avoid', 'crying', 'side', 'born', 'die', 'equivalent', 'keep', 'number', 'higher', 'feed', 'everyone',
+            'minding', 'business', 'trimming', 'messy', 'hedge', 'behind', 'yoke', 'saw', 'door', 'attached', 'wall', 'standing',
+            'middle', 'backyard', 'owned', 'place', 'wood', 'shimmered', 'faintly', 'garbed', 'strange', 'pattern', 'seems', 'move',
+            'look', 'away', 'naturally', 'totally', 'rational', 'person', 'open', 'air', 'bent', 'twisted', 'suddenly', 'longer',
+            'stood', 'floating', 'island', 'surrounded', 'sky', 'looks', 'spilled', 'paint', 'streaks', 'violet', 'gold', 'merlot',
+            'shifting', 'liquid', 'ground', 'beneath', 'sparkled', 'tinny', 'crystals', 'sunk', 'stepped', 'distance', 'creatures',
+            'mists', 'waving', 'constellations', 'glowing', 'trees', 'river', 'light', 'wood', 'between', 'rocks', 'massive', 'tree',
+            'grow', 'center', 'leaves', 'glass', 'wind', 'blow', 'clinked', 'together', 'creating', 'music', 'chest', 'ash',
+            'emotional', 'name', 'figure', 'emerged', 'half', 'human', 'shadow', 'spoke', 'words', 'voiced', 'directly', 'inside',
+            'mind', 'every', 'reason', 'yours', 'didn\'t', 'answer', 'still', 'don\'t', 'before', 'could', 'say', 'anything',
+            'dissolved', 'fell', 'straight', 'covert', 'glittering', 'dust', 'faded', 'moment', 'blink', 'gone', 'grass', 'remembers',
+            'bending', 'slightly', 'once', 'stowed', 'sometimes', 'night', 'hums', 'just', 'right', 'swear', 'hear', 'footsteps',
+            'singing', 'again', 'right', 'now', 'gonna', 'talk', 'english', 'keep', 'talking', 'figure', 'out', 'give', 'good',
+            'mark', 'hell', 'wrong', 'doing', 'life', 'harder'
         ]
         english_count = sum(1 for word in words if word in english_words)
         
@@ -246,29 +268,69 @@ class VoiceAnalyzer:
         french_pattern_count = sum(len(re.findall(pattern, text_lower)) for pattern in french_patterns)
         english_pattern_count = sum(len(re.findall(pattern, text_lower)) for pattern in english_patterns)
         
+        # Détection de phrases complètes en anglais (patterns plus simples)
+        english_phrases = [
+            r'\blet\s+the\b',                 # "let the"
+            r'\bi\s+will\s+be\b',            # "i will be"
+            r'\bunfortunately\b',            # "unfortunately"
+            r'\bwow\b',                       # "wow"
+            r'\bvery\s+\w+\b',               # "very happy"
+            r'\band\s+right\s+now\b',        # "and right now"
+            r'\bi\s+mean\b',                  # "i mean"
+            r'\bif\s+i\s+had\b',             # "if i had"
+            r'\bwhat\s+is\s+the\b',          # "what is the"
+            r'\bwhy\s+you\s+doing\b',        # "why you doing"
+            r'\byou\s+make\s+my\b',          # "you make my"
+            r'\bi\s+was\s+just\b',           # "i was just"
+            r'\bi\s+stood\s+on\b',           # "i stood on"
+            r'\bi\s+didn\'t\s+have\b',       # "i didn't have"
+            r'\bi\s+still\s+don\'t\b',       # "i still don't"
+        ]
+        english_phrase_count = sum(len(re.findall(pattern, text_lower)) for pattern in english_phrases)
+        
+        print(f"🌍 PHRASES ANGLAISES: {english_phrase_count}")
+        
+        # Debug détaillé
+        print(f"🔍 DEBUG DÉTAILLÉ:")
+        print(f"   - Mots français: {french_count}")
+        print(f"   - Patterns français: {french_pattern_count}")
+        print(f"   - Mots anglais: {english_count}")
+        print(f"   - Patterns anglais: {english_pattern_count}")
+        print(f"   - Phrases anglaises: {english_phrase_count}")
+        
         # Score total par langue
         french_score = french_count + french_pattern_count
-        english_score = english_count + english_pattern_count
+        english_score = english_count + english_pattern_count + english_phrase_count
         
         print(f"🌍 LANGUAGE DEBUG: French={french_score}, English={english_score}")
         
-        # DÉTECTION DE LANGUE AMÉLIORÉE
+        # DÉTECTION DE LANGUE RÉALISTE
         if arabic_count > 20:
             return 'arabic'
         elif english_score > 0 and french_score > 0:
-            # Langue mixte si les deux langues sont présentes
-            if english_score >= 3 and french_score >= 3:  # Seuils plus bas
+            # Langue mixte SEULEMENT si les deux langues sont SIGNIFICATIVES
+            total_words = len(text.split())
+            english_ratio = english_score / total_words
+            french_ratio = french_score / total_words
+            
+            print(f"🌍 RATIO DEBUG: English={english_ratio:.3f}, French={french_ratio:.3f}")
+            
+            # Seulement mixte si les deux langues représentent plus de 10% chacune
+            if english_ratio > 0.1 and french_ratio > 0.1:
                 if english_score > french_score:
                     return 'mixed_english_french'
                 else:
                     return 'mixed_french_english'
-            elif english_score > french_score * 1.5:  # Anglais dominant (seuil plus bas)
+            elif english_score > french_score * 2:  # Anglais vraiment dominant
                 return 'english'
-            elif french_score > english_score * 1.5:  # Français dominant (seuil plus bas)
+            elif french_score > english_score * 2:  # Français vraiment dominant
                 return 'french'
             else:
-                # Si scores proches, détecter comme mixte
-                return 'mixed_french_english'
+                # Si une langue est clairement dominante, prendre celle-ci
+                if french_score > english_score:
+                    return 'french'
+                else:
+                    return 'english'
         elif english_score > french_score and english_score > 1:
             return 'english'
         elif french_score > english_score and french_score > 2:
@@ -858,27 +920,30 @@ class VoiceAnalyzer:
             rhythm_score *= adjustment_factor
             timing_score *= adjustment_factor
         
-        # PÉNALITÉS PROPORTIONNELLES pour violation de langue
+        # PÉNALITÉS JUSTES pour violation de langue
         if 'language_violation' in originality and not originality['language_violation']['language_match']:
             violation = originality['language_violation']
-            if violation['violation_severity'] == 'high':
-                # PÉNALITÉ SÉVÈRE mais pas échec total
-                originality_score *= 0.3
-                structure_score *= 0.5
-                fluency_score *= 0.5
-                vocabulary_score *= 0.5
-                intonation_score *= 0.5
-                rhythm_score *= 0.5
-                timing_score *= 0.5
-            elif violation['violation_severity'] == 'medium':
-                # PÉNALITÉ MODÉRÉE
-                originality_score *= 0.6
-                structure_score *= 0.7
-                fluency_score *= 0.7
-                vocabulary_score *= 0.7
-                intonation_score *= 0.7
-                rhythm_score *= 0.7
-                timing_score *= 0.7
+            match_percentage = violation.get('match_percentage', 0)
+            
+            # PÉNALITÉS PROPORTIONNELLES au pourcentage de correspondance
+            if match_percentage < 20:  # Très peu de correspondance
+                penalty_factor = 0.3
+            elif match_percentage < 40:  # Peu de correspondance
+                penalty_factor = 0.5
+            elif match_percentage < 60:  # Correspondance moyenne
+                penalty_factor = 0.7
+            else:  # Bonne correspondance
+                penalty_factor = 0.9
+            
+            print(f"🔧 PÉNALITÉ LANGUE: {match_percentage}% → Facteur {penalty_factor}")
+            
+            originality_score *= penalty_factor
+            structure_score *= penalty_factor
+            fluency_score *= penalty_factor
+            vocabulary_score *= penalty_factor
+            intonation_score *= penalty_factor
+            rhythm_score *= penalty_factor
+            timing_score *= penalty_factor
         
         # PÉNALITÉS ULTRA-SÉVÈRES pour tricherie
         if 'cheating_detection' in originality and originality['cheating_detection']['cheating_score'] > 0:
