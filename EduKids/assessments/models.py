@@ -9,6 +9,9 @@ from exercises.models import Exercise, Question
 # Import des modèles d'évaluation vocale
 from .voice_models import VoiceAssessment, VoiceAssessmentCriteria
 
+# Import des modèles de génération d'histoires
+from .story_models import Story, StoryProgress, Badge, StudentBadge
+
 
 class Assessment(models.Model):
     """
@@ -338,3 +341,53 @@ class Recommendation(models.Model):
     
     def __str__(self):
         return f"{self.student} - {self.title} ({self.get_priority_display()})"
+
+
+class CharacterDrawing(models.Model):
+    """
+    Character drawings created by students for their stories
+    """
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='character_drawings',
+        verbose_name="Student"
+    )
+    story = models.ForeignKey(
+        Story,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='character_drawings',
+        verbose_name="Linked Story"
+    )
+    title = models.CharField(
+        max_length=100,
+        verbose_name="Character Name"
+    )
+    image = models.ImageField(
+        upload_to='characters/%Y/%m/',
+        verbose_name="Drawing Image"
+    )
+    ai_version = models.ImageField(
+        upload_to='characters/ai/%Y/%m/',
+        null=True,
+        blank=True,
+        verbose_name="AI Enhanced Version"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Created At"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Updated At"
+    )
+    
+    class Meta:
+        verbose_name = "Character Drawing"
+        verbose_name_plural = "Character Drawings"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.title} by {self.student.user.username}"

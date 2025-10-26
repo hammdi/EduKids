@@ -1,0 +1,250 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Generate Story - EduKids{% endblock %}
+
+{% block content %}
+<div class="generate-story-section">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold magical-title mb-3">
+                        <i class="fas fa-magic me-3"></i>Generate Magical Story
+                    </h1>
+                    <p class="lead text-muted">
+                        Use AI to create a unique, educational story for your students!
+                    </p>
+                </div>
+
+                <!-- Generation Form -->
+                <div class="generation-card">
+                    <form method="post" action="{% url 'assessments:generate_story' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Theme Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-heart me-2"></i>Story Theme
+                            </label>
+                            <div class="theme-grid">
+                                {% for value, label in themes %}
+                                <div class="theme-option">
+                                    <input type="radio" name="theme" value="{{ value }}" id="theme_{{ value }}" 
+                                           {% if forloop.first %}checked{% endif %}>
+                                    <label for="theme_{{ value }}">
+                                        <span class="theme-icon">
+                                            {% if value == 'teamwork' %}🤝
+                                            {% elif value == 'kindness' %}💖
+                                            {% elif value == 'curiosity' %}🔍
+                                            {% elif value == 'honesty' %}✨
+                                            {% elif value == 'sharing' %}🎁
+                                            {% elif value == 'problem_solving' %}🧩
+                                            {% elif value == 'friendship' %}👫
+                                            {% elif value == 'courage' %}🦁
+                                            {% endif %}
+                                        </span>
+                                        <span class="theme-label">{{ label }}</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Age Group -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-child me-2"></i>Age Group
+                            </label>
+                            <select name="age_group" class="form-select magical-select">
+                                {% for value, label in age_groups %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Difficulty Level -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-signal me-2"></i>Difficulty Level
+                            </label>
+                            <div class="difficulty-slider">
+                                <input type="range" name="difficulty" min="1" max="5" value="1" 
+                                       class="form-range" id="difficultyRange">
+                                <div class="difficulty-labels">
+                                    <span>Easy</span>
+                                    <span id="difficultyValue">1</span>
+                                    <span>Hard</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-magical-generate btn-lg">
+                                <i class="fas fa-wand-magic me-2"></i>Generate Story with AI
+                            </button>
+                            <a href="{% url 'assessments:story_list' %}" class="btn btn-outline-secondary btn-lg ms-3">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Stories
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box mt-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> Story generation may take 10-30 seconds. The AI will create a unique story with comprehension questions!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .generate-story-section {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 100%);
+        min-height: 100vh;
+    }
+    
+    /* Override font for navbar brand */
+    .navbar-brand .brand-text {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    .magical-title {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .generation-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 25px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    }
+    
+    /* Theme Grid */
+    .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+    
+    .theme-option input[type="radio"] {
+        display: none;
+    }
+    
+    .theme-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 1rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .theme-option input[type="radio"]:checked + label {
+        border-color: #8B5CF6;
+        background: linear-gradient(135deg, #F3E8FF, #FCE7F3);
+        transform: scale(1.05);
+    }
+    
+    .theme-option label:hover {
+        border-color: #8B5CF6;
+        transform: translateY(-3px);
+    }
+    
+    .theme-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .theme-label {
+        font-weight: 600;
+        color: #374151;
+        text-align: center;
+    }
+    
+    /* Select */
+    .magical-select {
+        border: 2px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .magical-select:focus {
+        border-color: #8B5CF6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    /* Difficulty Slider */
+    .difficulty-slider {
+        padding: 1rem;
+        background: #F9FAFB;
+        border-radius: 12px;
+    }
+    
+    .form-range {
+        width: 100%;
+    }
+    
+    .difficulty-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-weight: 600;
+        color: #6B7280;
+    }
+    
+    #difficultyValue {
+        color: #8B5CF6;
+        font-size: 1.2rem;
+    }
+    
+    /* Buttons */
+    .btn-magical-generate {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        font-weight: 600;
+        padding: 1rem 3rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+    
+    .btn-magical-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: #FEF3C7;
+        border-left: 4px solid #F59E0B;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        color: #92400E;
+    }
+</style>
+
+<script>
+    // Update difficulty value display
+    const difficultyRange = document.getElementById('difficultyRange');
+    const difficultyValue = document.getElementById('difficultyValue');
+    
+    difficultyRange.addEventListener('input', function() {
+        difficultyValue.textContent = this.value;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,593 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ story.title }} - EduKids{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block content %}
+<div class="story-detail-page">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="page-header mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="page-title">{{ story.title }}</h1>
+                    <div class="story-meta">
+                        <span class="badge badge-theme">{{ story.get_theme_display }}</span>
+                        <span class="badge badge-age">{{ story.get_age_group_display }}</span>
+                        <span class="difficulty-badge level-{{ story.difficulty_level }}">
+                            Level {{ story.difficulty_level }}
+                        </span>
+                        {% if story.generated_by_ai %}
+                            <span class="type-badge type-ai">AI</span>
+                        {% else %}
+                            <span class="type-badge type-manual">Manual</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <a href="{% url 'assessments:story_manage_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                    <a href="{% url 'assessments:story_update' story.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+                    <a href="{% url 'assessments:story_duplicate' story.pk %}" class="btn btn-info">
+                        <i class="fas fa-copy me-2"></i>Duplicate
+                    </a>
+                    <a href="{% url 'assessments:story_delete' story.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ total_reads }}</div>
+                        <div class="stat-label">Total Reads</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ completed_reads }}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ average_score }}</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ story.reading_time_minutes }}</div>
+                        <div class="stat-label">Minutes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Story Content -->
+            <div class="col-lg-8">
+                <!-- Story Text -->
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-book me-2"></i>Story Content
+                    </h3>
+                    <div class="story-text">
+                        {% for paragraph in story.story_content %}
+                            <p class="story-paragraph">{{ paragraph }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Questions -->
+                <div class="content-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-question-circle me-2"></i>Comprehension Questions
+                    </h3>
+                    <div class="questions-list">
+                        {% for question in story.questions %}
+                            <div class="question-item">
+                                <div class="question-number">Q{{ forloop.counter }}</div>
+                                <div class="question-content">
+                                    <strong>{{ question.question }}</strong>
+                                    <div class="answer-content">
+                                        <span class="answer-label">Answer:</span>
+                                        {{ question.answer }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Characters -->
+                <div class="sidebar-card mb-4">
+                    <h3 class="card-title">
+                        <i class="fas fa-users me-2"></i>Characters
+                    </h3>
+                    <div class="characters-list">
+                        {% for character in story.characters %}
+                            <div class="character-item">
+                                <i class="fas fa-user-circle me-2"></i>
+                                {{ character }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="sidebar-card">
+                    <h3 class="card-title">
+                        <i class="fas fa-info-circle me-2"></i>Details
+                    </h3>
+                    <div class="metadata-list">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Created:</span>
+                            <span class="metadata-value">{{ story.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Updated:</span>
+                            <span class="metadata-value">{{ story.updated_at|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Paragraphs:</span>
+                            <span class="metadata-value">{{ story.story_content|length }}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Questions:</span>
+                            <span class="metadata-value">{{ story.questions|length }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body, h1, h2, h3, h4, h5, h6, p, span, div, label, input, select, textarea, button, a {
+        font-family: 'Nunito', sans-serif !important;
+    }
+    
+    /* Preserve Font Awesome icons */
+    .fas, .far, .fab, .fa, [class^="fa-"], [class*=" fa-"], i[class^="fa"], i[class*=" fa"] {
+        font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+    }
+
+    .story-detail-page {
+        background: linear-gradient(135deg, #FFF9F0 0%, #F0F9FF 50%, #FFF0F9 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Floating Shapes */
+    .story-detail-page::before,
+    .story-detail-page::after {
+        content: '';
+        position: fixed;
+        border-radius: 50%;
+        opacity: 0.12;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .story-detail-page::before {
+        width: 180px;
+        height: 180px;
+        background: linear-gradient(135deg, #34D399, #10B981);
+        top: 15%;
+        right: 5%;
+        animation: float 22s ease-in-out infinite;
+    }
+
+    .story-detail-page::after {
+        width: 140px;
+        height: 140px;
+        background: linear-gradient(135deg, #60A5FA, #3B82F6);
+        bottom: 20%;
+        left: 8%;
+        animation: float 28s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) translateX(0px); }
+        25% { transform: translateY(-20px) translateX(10px); }
+        50% { transform: translateY(-10px) translateX(-10px); }
+        75% { transform: translateY(-30px) translateX(5px); }
+    }
+
+    .page-header {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 30px;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+        position: relative;
+        z-index: 2;
+        border: 3px solid #F3E8FF;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+
+    .story-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .badge-theme {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .badge-age {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .difficulty-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .level-1 { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); color: #065F46; }
+    .level-2 { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); color: #1E40AF; }
+    .level-3 { background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; }
+    .level-4 { background: linear-gradient(135deg, #FED7AA, #FDBA74); color: #9A3412; }
+    .level-5 { background: linear-gradient(135deg, #FEE2E2, #FECACA); color: #991B1B; }
+
+    .type-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .type-ai {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #065F46;
+    }
+
+    .type-manual {
+        background: linear-gradient(135deg, #E0E7FF, #C7D2FE);
+        color: #3730A3;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+        padding: 0.75rem 1.5rem;
+        font-weight: 700;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .action-buttons .btn-secondary {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    .action-buttons .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        color: white;
+    }
+
+    .action-buttons .btn-warning {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #92400E;
+        box-shadow: 0 4px 15px rgba(252, 211, 77, 0.3);
+    }
+
+    .action-buttons .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(252, 211, 77, 0.4);
+        color: #92400E;
+    }
+
+    .action-buttons .btn-info {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #1E40AF;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .action-buttons .btn-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        color: #1E40AF;
+    }
+
+    .action-buttons .btn-danger {
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
+        color: #991B1B;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .action-buttons .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        color: #991B1B;
+    }
+
+    /* Statistics Cards */
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 25px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+        border: 2px solid #F3F4F6;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    .stat-icon.bg-primary {
+        background: linear-gradient(135deg, #DDD6FE, #C4B5FD);
+        color: #7C3AED;
+    }
+
+    .stat-icon.bg-success {
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+        color: #059669;
+    }
+
+    .stat-icon.bg-warning {
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        color: #D97706;
+    }
+
+    .stat-icon.bg-info {
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+        color: #2563EB;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1F2937;
+    }
+
+    .stat-label {
+        color: #6B7280;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* Content Cards */
+    .content-card, .sidebar-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 30px;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+        position: relative;
+        z-index: 2;
+        border: 3px solid #F3E8FF;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #F3E8FF;
+    }
+
+    .story-text {
+        line-height: 1.9;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .story-paragraph {
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #FAFAFA, #F9FAFB);
+        border-radius: 15px;
+        border-left: 4px solid #DDD6FE;
+    }
+
+    .questions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .question-item {
+        display: flex;
+        gap: 1.25rem;
+        padding: 1.75rem;
+        background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
+        border-radius: 20px;
+        border-left: 5px solid #8B5CF6;
+        transition: all 0.3s ease;
+    }
+
+    .question-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15);
+    }
+
+    .question-number {
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        flex-shrink: 0;
+        font-size: 1.1rem;
+    }
+
+    .question-content {
+        flex: 1;
+    }
+
+    .question-content strong {
+        color: #1F2937;
+        display: block;
+        margin-bottom: 0.75rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .answer-content {
+        color: #059669;
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+        border-radius: 15px;
+        margin-top: 0.75rem;
+        border: 2px solid #A7F3D0;
+        font-weight: 600;
+    }
+
+    .answer-label {
+        font-weight: 800;
+        color: #047857;
+        margin-right: 0.5rem;
+    }
+
+    .characters-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .character-item {
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
+        border-radius: 15px;
+        color: #374151;
+        font-weight: 600;
+        border-left: 4px solid #A78BFA;
+        transition: all 0.3s ease;
+    }
+
+    .character-item:hover {
+        transform: translateX(5px);
+        background: linear-gradient(135deg, #F3E8FF, #E9D5FF);
+    }
+
+    .metadata-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .metadata-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
+        border-radius: 12px;
+    }
+
+    .metadata-label {
+        color: #6B7280;
+        font-weight: 700;
+    }
+
+    .metadata-value {
+        color: #1F2937;
+        font-weight: 700;
+        background: linear-gradient(135deg, #DDD6FE, #C4B5FD);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            width: 100%;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
