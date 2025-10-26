@@ -468,10 +468,31 @@ def voice_assessment_audio_analyze(request):
             
             # Détecter la langue du prompt pour AssemblyAI
             language_code = 'en'  # Par défaut anglais
-            if any(word in prompt.lower() for word in ['parlez', 'décrivez', 'expliquez', 'racontez', 'imaginez', 'pensez']):
-                language_code = 'fr'
-            elif any(char in prompt for char in 'أبتثجحخدذرزسشصضطظعغفقكلمنهوي'):
+            
+            # Mots-clés français
+            french_keywords = ['parlez', 'décrivez', 'expliquez', 'racontez', 'imaginez', 'pensez', 'vous', 'votre', 'dans', 'avec', 'pour', 'que', 'qui', 'quoi', 'comment', 'pourquoi']
+            french_count = sum(1 for word in french_keywords if word in prompt.lower())
+            
+            # Mots-clés anglais
+            english_keywords = ['speak', 'describe', 'explain', 'tell', 'imagine', 'think', 'you', 'your', 'in', 'with', 'for', 'what', 'who', 'how', 'why', 'if', 'when', 'where']
+            english_count = sum(1 for word in english_keywords if word in prompt.lower())
+            
+            # Détection de langue arabe
+            arabic_chars = sum(1 for char in prompt if '\u0600' <= char <= '\u06FF')
+            
+            print(f"🌍 DÉTECTION LANGUE PROMPT:")
+            print(f"   - Français: {french_count} mots")
+            print(f"   - Anglais: {english_count} mots")
+            print(f"   - Arabe: {arabic_chars} caractères")
+            
+            if arabic_chars > 5:
                 language_code = 'ar'
+            elif french_count > english_count:
+                language_code = 'fr'
+            elif english_count > 0:
+                language_code = 'en'
+            else:
+                language_code = 'en'  # Par défaut anglais
             
             # Transcription avec AssemblyAI
             print(f"\n{'='*60}")
@@ -480,7 +501,18 @@ def voice_assessment_audio_analyze(request):
             print(f"📁 Fichier audio: {audio_path}")
             print(f"🌍 Langue détectée: {language_code}")
             
+            # Essayer d'abord avec la langue détectée
             transcription = transcribe_with_assemblyai(audio_path, language_code)
+            
+            # Si la transcription échoue ou est vide, essayer avec l'anglais
+            if not transcription or len(transcription.strip()) < 10:
+                print(f"🔄 Tentative avec l'anglais...")
+                transcription = transcribe_with_assemblyai(audio_path, 'en')
+            
+            # Si toujours pas de transcription, essayer avec le français
+            if not transcription or len(transcription.strip()) < 10:
+                print(f"🔄 Tentative avec le français...")
+                transcription = transcribe_with_assemblyai(audio_path, 'fr')
             
             if transcription:
                 print(f"\n{'='*60}")

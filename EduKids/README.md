@@ -22,59 +22,13 @@
 
 ## 🚀 **DÉMARRAGE RAPIDE**
 
-### **🪟 Windows**
-
-#### **Prérequis Windows :**
-- **Python 3.11+** : [Télécharger depuis python.org](https://www.python.org/downloads/)
-- **Git** : [Télécharger Git for Windows](https://git-scm.com/download/win)
-- **Docker Desktop** (optionnel) : [Télécharger Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-#### **Installation Windows :**
-```cmd
-# 1. Ouvrir PowerShell ou CMD en tant qu'administrateur
-# 2. Naviguer vers le projet
-cd "C:\Users\VotreNom\5Twin4 Framework Python\EduKids"
-
-# 3. Créer l'environnement virtuel
-python -m venv venv
-
-# 4. Activer l'environnement virtuel
-venv\Scripts\activate
-
-# 5. Installer les dépendances
-pip install -r requirements.txt
-
-# 6. Créer les migrations
-python manage.py makemigrations
-python manage.py migrate
-
-# 7. Créer les utilisateurs de test
-python manage.py seed
-
-# 8. Lancer le serveur
-python manage.py runserver
-```
-
-#### **Script automatique Windows :**
-```cmd
-# Créer start.bat dans le dossier EduKids
-@echo off
-echo 🚀 Démarrage d'EduKids...
-cd /d "%~dp0"
-call venv\Scripts\activate
-python manage.py runserver
-pause
-```
-
-### **🍎 macOS / 🐧 Linux**
-
-#### **Option 1 : Script automatique (Recommandé)**
+### **Option 1 : Script automatique (Recommandé)**
 ```bash
 cd "/Users/hamdi/5Twin4 Framework Python/EduKids"
 ./start.sh
 ```
 
-#### **Option 2 : Manuel**
+### **Option 2 : Manuel**
 ```bash
 # 1. Activer l'environnement virtuel
 cd "/Users/hamdi/5Twin4 Framework Python"
@@ -88,8 +42,36 @@ pip install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
 
-# 4. Créer les utilisateurs de test
-python manage.py seed
+# 4. Créer les utilisateurs de test (optionnel)
+python manage.py shell -c "
+from django.contrib.auth import get_user_model
+from students.models import Student, Teacher
+from datetime import date
+
+User = get_user_model()
+
+# Créer utilisateur admin
+admin_user, _ = User.objects.get_or_create(username='admin', defaults={'email': 'admin@edukids.com', 'first_name': 'Admin', 'last_name': 'EduKids', 'is_staff': True, 'is_superuser': True, 'is_active': True, 'user_type': 'admin'})
+admin_user.set_password('admin123')
+admin_user.save()
+
+# Créer utilisateur enseignant
+teacher_user, _ = User.objects.get_or_create(username='teacher', defaults={'email': 'teacher@edukids.com', 'first_name': 'Marie', 'last_name': 'Dupont', 'user_type': 'teacher'})
+teacher_user.set_password('teacher123')
+teacher_user.save()
+Teacher.objects.get_or_create(user=teacher_user, defaults={'subject_specialties': ['Français', 'Mathématiques'], 'teaching_experience': 5, 'certification_level': 'master'})
+
+# Créer utilisateur élève
+student_user, _ = User.objects.get_or_create(username='student', defaults={'email': 'student@edukids.com', 'first_name': 'Lucas', 'last_name': 'Martin', 'user_type': 'student'})
+student_user.set_password('student123')
+student_user.save()
+Student.objects.get_or_create(user=student_user, defaults={'grade_level': 'CM2', 'learning_style': 'visual', 'birth_date': date(2012, 6, 15)})
+
+print('✅ Utilisateurs de test créés!')
+print('👑 Admin: admin / admin123')
+print('👨‍🏫 Enseignant: teacher / teacher123')
+print('🎓 Élève: student / student123')
+"
 
 # 5. Lancer le serveur
 python manage.py runserver
@@ -182,34 +164,7 @@ EduKids/
 
 ## ⚙️ **Configuration PostgreSQL (Optionnel)**
 
-### **🪟 Windows avec Docker Desktop**
-
-#### **Installation Docker Desktop :**
-1. Télécharger [Docker Desktop pour Windows](https://www.docker.com/products/docker-desktop/)
-2. Installer et redémarrer l'ordinateur
-3. Démarrer Docker Desktop
-
-#### **Démarrage des services :**
-```cmd
-# Dans PowerShell ou CMD
-cd "C:\Users\VotreNom\5Twin4 Framework Python\EduKids"
-docker-compose up -d
-docker-compose ps
-```
-
-### **🍎 macOS / 🐧 Linux avec Docker**
-
-#### **Installation Docker :**
-```bash
-# macOS (avec Homebrew)
-brew install docker
-
-# Linux (Ubuntu/Debian)
-sudo apt-get update
-sudo apt-get install docker.io docker-compose
-```
-
-#### **Démarrage des services :**
+### **Installation avec Docker (Recommandé)**
 ```bash
 # Démarrer PostgreSQL + Redis + pgAdmin
 docker-compose up -d
@@ -218,7 +173,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-### **Services disponibles :**
+**Services disponibles :**
 - **PostgreSQL** : localhost:5432
 - **Redis** : localhost:6379  
 - **pgAdmin** : http://localhost:8080
@@ -240,29 +195,7 @@ DATABASES = {
 
 ## 🔧 **Dépannage**
 
-### **🪟 Erreurs Windows :**
-
-**"Python n'est pas reconnu"**
-```cmd
-# Ajouter Python au PATH ou utiliser le chemin complet
-C:\Python311\python.exe -m venv venv
-```
-
-**"Port already in use"**
-```cmd
-# Trouver le processus utilisant le port 8000
-netstat -ano | findstr :8000
-# Tuer le processus (remplacer PID par le numéro affiché)
-taskkill /PID <PID> /F
-```
-
-**"Permission denied" sur les scripts**
-```cmd
-# Exécuter PowerShell en tant qu'administrateur
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### **🍎 macOS / 🐧 Linux - Erreurs Courantes :**
+### **Erreurs Courantes :**
 
 **"No module named 'students'"**
 ```bash
@@ -283,21 +216,6 @@ chmod +x start.sh
 ```
 
 ### **Réinitialisation complète :**
-
-#### **🪟 Windows :**
-```cmd
-# Supprimer la base
-del db.sqlite3
-
-# Recréer les migrations
-python manage.py makemigrations
-python manage.py migrate
-
-# Recréer les utilisateurs de test
-python manage.py seed
-```
-
-#### **🍎 macOS / 🐧 Linux :**
 ```bash
 # Supprimer la base
 rm db.sqlite3
@@ -306,27 +224,14 @@ rm db.sqlite3
 python manage.py makemigrations
 python manage.py migrate
 
-# Recréer les utilisateurs de test
-python manage.py seed
+# Recréer le superutilisateur
+python manage.py createsuperuser
 ```
 
 ## 📊 **Dépendances**
 
-### **🪟 Windows :**
-```cmd
-# Activer l'environnement virtuel
-venv\Scripts\activate
-
-# Installer les dépendances
-pip install -r requirements.txt
-```
-
-### **🍎 macOS / 🐧 Linux :**
+### **Installation automatique :**
 ```bash
-# Activer l'environnement virtuel
-source venv/bin/activate
-
-# Installer les dépendances
 pip install -r requirements.txt
 ```
 
@@ -417,15 +322,6 @@ pip install -r requirements.txt
 
 Votre projet EduKids est **parfaitement structuré** et prêt pour le développement !
 
-### **🪟 Windows :**
-**Commencez par :**
-1. Ouvrir PowerShell en tant qu'administrateur
-2. Naviguer vers le projet : `cd "C:\Users\VotreNom\5Twin4 Framework Python\EduKids"`
-3. Activer l'environnement : `venv\Scripts\activate`
-4. Lancer le serveur : `python manage.py runserver`
-5. Aller sur http://localhost:8000/admin
-
-### **🍎 macOS / 🐧 Linux :**
 **Commencez par :**
 1. Lancer `./start.sh`
 2. Aller sur http://localhost:8000/admin
