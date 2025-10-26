@@ -121,7 +121,7 @@
   </head>
   <body>
     <div class="chat-wrap">
-      <h2>Assistant EduKids</h2>
+      <h2>EduKids Assistant ✨</h2>
       <div>
         <label for="language">Langue:</label>
         <select id="language" class="lang">
@@ -131,31 +131,33 @@
           <option value="pt">Português</option>
           <option value="ar">العربية</option>
         </select>
-        <label style="margin-left:12px"><input type="checkbox" id="tts" checked> Lecture vocale</label>
-        <button id="toggle-pdf-history" class="secondary">📚 Mes PDFs</button>
+        <label style="margin-left:12px"><input type="checkbox" id="tts" checked> Voice reading</label>
+        <button id="toggle-pdf-history" class="secondary">📚 My PDFs</button>
       </div>
 
       <div class="messages" id="messages"></div>
 
       <div class="controls">
         <textarea id="input" placeholder="Écris un message..." aria-label="message"></textarea>
-        <button id="send" class="primary">Envoyer</button>
+        <button id="send" class="primary">Send</button>
       </div>
     </div>
 
     <!-- PDF History Panel -->
     <div class="pdf-history-panel" id="pdf-history-panel">
       <div class="pdf-history-header">
-        <h3>📚 Mes Documents PDF</h3>
-        <button id="close-history" class="close-history-btn">✕ Fermer</button>
+        <h3>📚 My PDF Documents</h3>
+        <button id="close-history" class="close-history-btn">✕ Close</button>
       </div>
       <div id="pdf-list-container">
         <div class="empty-state">
           <div class="empty-state-icon">📄</div>
-          <p>Chargement des PDFs...</p>
+          <p>Loading PDFs...</p>
         </div>
       </div>
     </div>
+    
+
 
     <script src="{% static 'js/assistant_chat.js' %}"></script>
   </body>
