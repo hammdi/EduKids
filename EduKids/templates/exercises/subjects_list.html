@@ -159,7 +159,7 @@
                   </li>
                   <li><hr class="dropdown-divider"></li>
                   <li>
-                    <form method="post" action="#" style="display: inline;"
+                    <form method="post" action="{% url 'delete_subject' subject.pk %}" style="display: inline;"
                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette classe ?')">
                       {% csrf_token %}
                       <button type="submit" class="dropdown-item text-danger">
@@ -281,6 +281,14 @@
               </label>
               {{ subject_form.order }}
               <small class="d-block text-muted mt-2">Position d'affichage</small>
+            </div>
+            <div class="col-12">
+              <label for="{{ subject_form.grade_level.id_for_label }}" class="form-label fw-bold text-dark mb-2">
+                <i class="fas fa-graduation-cap me-2" style="color: #3b82f6;"></i>
+                Niveau scolaire *
+              </label>
+              {{ subject_form.grade_level }}
+              <small class="d-block text-muted mt-2">Sélectionnez le niveau scolaire pour cette classe</small>
             </div>
 
             <!-- Image -->

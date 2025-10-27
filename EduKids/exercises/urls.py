@@ -18,7 +18,7 @@ urlpatterns = [
     path('student/topics/<int:pk>/', views.student_topic_detail, name='student_topic_detail'),
     path('student/exercises/<int:pk>/start/', views.student_exercise_start, name='student_exercise_start'),
     path('student/exercises/<int:pk>/submit/', views.submit_exercise, name='submit_exercise'),
-    
+    path('delete_subject/<int:pk>/', views.delete_subject, name='delete_subject'),
     # Teacher Class Management - REMOVED all assignment/classroom-related URLs
     path('teacher/dashboard/', views.teacher_dashboard, name='teacher_dashboard'),
     # path('classes/', views.teacher_classes_list, name='teacher_classes_list'),  # REMOVED

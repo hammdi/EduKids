@@ -48,6 +48,7 @@ def subject_detail(request, pk):
             if topic_form.is_valid():
                 topic = topic_form.save(commit=False)
                 topic.subject = subject
+                topic.grade_level = subject.grade_level
                 topic.save()
                 messages.success(request, 'Topic created successfully!')
                 
@@ -130,6 +131,7 @@ def topic_detail(request, pk):
             topic_form = TopicForm(request.POST, instance=topic)
             if topic_form.is_valid():
                 topic_form.save()
+
                 messages.success(request, 'Topic updated successfully!')
                 return redirect('topic_detail', pk=topic.pk)
         elif 'add_exercise' in request.POST:
@@ -1057,3 +1059,19 @@ def preview_ai_questions(request, pk):
         'exercise': exercise,
         'generated_questions': generated_questions,
     })
+
+@login_required
+def delete_subject(request, pk):
+    """Delete a subject (classroom) - only by its creator"""
+    subject = get_object_or_404(Subject, pk=pk)
+    if request.user != subject.created_by:
+        messages.error(request, 'You can only delete subjects you created.')
+        return redirect('subjects_list')
+    
+    if request.method == 'POST':
+        subject.delete()
+        messages.success(request, f'Subject "{subject.name}" deleted successfully!')
+        return redirect('subjects_list')
+    
+    # Fallback for GET requests
+    return redirect('subjects_list')
