@@ -9,22 +9,18 @@ from .views import (
     MissionViewSet, UserMissionViewSet, BadgeViewSet, UserBadgeViewSet,
     AvatarViewSet, AccessoryViewSet, UserAccessoryViewSet
 )
-from gamification.views import avatar_view
 
 # Router pour l'API REST
 router = DefaultRouter()
-router.register(r'missions', MissionViewSet)
-router.register(r'user-missions', UserMissionViewSet)
-router.register(r'badges', BadgeViewSet)
-router.register(r'user-badges', UserBadgeViewSet)
-router.register(r'avatars', AvatarViewSet)
-router.register(r'accessories', AccessoryViewSet)
-router.register(r'user-accessories', UserAccessoryViewSet)
+router.register(r'missions', MissionViewSet, basename='mission')
+router.register(r'user-missions', UserMissionViewSet, basename='user-mission')
+router.register(r'badges', BadgeViewSet, basename='badge')
+router.register(r'user-badges', UserBadgeViewSet, basename='user-badge')
+router.register(r'avatars', AvatarViewSet, basename='avatar')
+router.register(r'accessories', AccessoryViewSet, basename='accessory')
+router.register(r'user-accessories', UserAccessoryViewSet, basename='user-accessory')
 
 urlpatterns = [
-    # Template views
-    path('avatar/', avatar_view, name='avatar'),
-
     # API REST
     path('api/', include(router.urls)),
 ]
