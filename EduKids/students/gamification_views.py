@@ -82,12 +82,47 @@ def student_customize(request):
     Page de personnalisation de l'avatar
     """
     from django.shortcuts import render
+    from gamification.models import UserAccessory, Avatar
+    from students.models import Student
     
-    student = request.user.student_profile
+    student = Student.objects.get(user=request.user)
+    
+    # Récupérer ou créer l'avatar
+    avatar, created = Avatar.objects.get_or_create(
+        student=student,
+        defaults={'level': 1}
+    )
+    
+    # Récupérer tous les accessoires possédés
+    student_accessories = UserAccessory.objects.filter(
+        student=student
+    ).select_related('accessory').order_by('-date_obtained')
+    
+    # Préparer les données pour le template
+    inventory = []
+    equipped_count = 0
+    
+    for sa in student_accessories:
+        is_equipped = sa.status == 'equipped'
+        if is_equipped:
+            equipped_count += 1
+        
+        inventory.append({
+            'id': sa.id,
+            'accessory': sa.accessory,
+            'is_equipped': is_equipped,
+            'date_obtained': sa.date_obtained,
+        })
+    
+    total_items = len(inventory)
     
     context = {
         'student': student,
         'user': request.user,
+        'avatar': avatar,
+        'inventory': inventory,
+        'total_items': total_items,
+        'equipped_count': equipped_count,
     }
     
     return render(request, 'students/gamification/customize_avatar.html', context)
