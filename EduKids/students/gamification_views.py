@@ -79,10 +79,18 @@ def student_dashboard(request):
 @student_required
 def student_customize(request):
     """
-    Page de personnalisation de l'avatar - Redirige vers inventory (page fusionnée)
+    Page de personnalisation de l'avatar
     """
-    from django.shortcuts import redirect
-    return redirect('student_inventory')
+    from django.shortcuts import render
+    
+    student = request.user.student_profile
+    
+    context = {
+        'student': student,
+        'user': request.user,
+    }
+    
+    return render(request, 'students/gamification/customize_avatar.html', context)
 
 
 @student_required

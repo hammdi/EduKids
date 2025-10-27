@@ -29,7 +29,7 @@ User = get_user_model()
 def avatar_view(request):
     """
     Vue simple pour la personnalisation d'avatar
-    Redirige vers une page avec les infos de l'avatar
+    Redirige vers la page de personnalisation complète
     """
     try:
         if hasattr(request.user, 'student_profile'):
@@ -42,7 +42,12 @@ def avatar_view(request):
                     'level': 1
                 }
             )
-            return render(request, 'gamification/avatar.html', {'avatar': avatar})
+            context = {
+                'avatar': avatar,
+                'student': student,
+                'user': request.user,
+            }
+            return render(request, 'students/gamification/customize_avatar.html', context)
         else:
             return redirect('profile')
     except Exception as e:
