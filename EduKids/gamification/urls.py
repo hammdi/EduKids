@@ -10,6 +10,8 @@ from .views import (
     AvatarViewSet, AccessoryViewSet, UserAccessoryViewSet, avatar_view
 )
 
+app_name = 'gamification'
+
 # Router pour l'API REST
 router = DefaultRouter()
 router.register(r'missions', MissionViewSet, basename='mission')
