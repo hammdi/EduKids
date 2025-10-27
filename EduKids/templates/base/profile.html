@@ -338,8 +338,11 @@
                     <div class="row align-items-center">
                         <div class="col-md-4 text-center">
                             <div class="avatar-container">
-                                <div class="avatar-circle">
-                                    {% if user.user_type == 'student' %}
+                                <div class="avatar-circle" id="profile-avatar-display">
+                                    {% if student_profile and student_profile.avatar.image %}
+                                        <img src="{{ student_profile.avatar.image.url }}" alt="Mon avatar" 
+                                             style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+                                    {% elif user.user_type == 'student' %}
                                         🎓
                                     {% elif user.user_type == 'teacher' %}
                                         👨‍🏫
@@ -347,7 +350,7 @@
                                         👤
                                     {% endif %}
                                 </div>
-                                <img src="{% static 'images/waving.png' %}" alt="Robot" class="robot-mascot">
+                                <div class="robot-mascot" style="font-size: 3rem;">👋</div>
                             </div>
                         </div>
                         <div class="col-md-8 text-center text-md-start mt-4 mt-md-0">
@@ -382,7 +385,7 @@
                                 <div class="info-label">🏫 Classroom</div>
                                 <div class="info-value">
                                     {% if student_profile.classroom %}
-                                        {{ student_profile.classroom.name }}
+                                                    <!-- Removed isolated brace causing CSS error -->
                                     {% else %}
                                         Not assigned yet
                                     {% endif %}
@@ -435,6 +438,16 @@
                 {% endif %}
 
                 <!-- Edit Profile Form -->
+                <!-- Section Avatar Gamification -->
+                <div class="magical-card text-center mb-4">
+                    <h3 class="card-title-magical">
+                        <i class="fas fa-user-astronaut text-warning me-2"></i> Personnaliser mon avatar
+                    </h3>
+                    <a href="{% url 'avatar' %}" class="btn btn-warning btn-lg">
+                        <i class="fas fa-user-astronaut me-2"></i> Accéder à la personnalisation d’avatar
+                    </a>
+                </div>
+
                 <div class="magical-form-card">
                     <h3 class="card-title-magical">
                         ✏️ Edit My Information

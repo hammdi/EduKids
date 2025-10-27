@@ -1,8 +1,39 @@
 """
 Models pour la gamification - EduKids
+
+Phase 3 : Avatars & Personnalisation avancée
+
+Diagramme des relations (ASCII UML) :
+
+    +-----------+     +-----------+
+    |   Student |     |   Avatar  |
+    +-----------+     +-----------+
+    |           |1---1| student   |
+    |           |     | image     |
+    |           |     | level     |
+    |           |     | accessories|
+    +-----------+     +-----------+
+          |1
+          |
+          |*
+    +-----------+     +-----------+
+    | Accessory |     |UserAccessory|
+    +-----------+     +-----------+
+    | name      |1---*| student   |
+    | image     |     | accessory |
+    | type      |     | status    |
+    | points_req|     | date_obt  |
+    +-----------+     +-----------+
+
+Relations :
+- Student --1--> Avatar (avatar personnalisé)
+- Student --*--> UserAccessory (accessoires possédés)
+- Accessory --*--> UserAccessory
+- Avatar --*--> Accessory (accessoires équipés)
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from students.models import Student
 
 
@@ -10,58 +41,21 @@ class Badge(models.Model):
     """
     Badges à gagner (accomplissements, maîtrise, etc.)
     """
-    BADGE_TYPE_CHOICES = (
-        ('achievement', 'Accomplissement'),
-        ('mastery', 'Maîtrise'),
-        ('streak', 'Série'),
-        ('special', 'Spécial'),
-    )
-    
-    RARITY_CHOICES = (
-        ('common', 'Commun'),
-        ('uncommon', 'Peu commun'),
-        ('rare', 'Rare'),
-        ('epic', 'Épique'),
-        ('legendary', 'Légendaire'),
-    )
-    
-    name = models.CharField(max_length=100, verbose_name="Nom du badge")
+    nom = models.CharField(max_length=100, verbose_name="Nom du badge")
     description = models.TextField(verbose_name="Description")
-    badge_type = models.CharField(
-        max_length=15,
-        choices=BADGE_TYPE_CHOICES,
-        verbose_name="Type de badge"
-    )
-    rarity = models.CharField(
-        max_length=15,
-        choices=RARITY_CHOICES,
-        default='common',
-        verbose_name="Rareté"
-    )
     icon = models.CharField(
         max_length=50,
         verbose_name="Icône",
         help_text="Nom de l'icône (ex: fa-trophy)"
     )
-    image = models.ImageField(
-        upload_to='badges/',
-        blank=True,
-        null=True,
-        verbose_name="Image du badge"
+    condition = models.TextField(
+        default="Condition à définir",
+        verbose_name="Condition d'attribution",
+        help_text="Règle textuelle pour gagner le badge (ex: 'Terminer 3 missions de lecture')"
     )
-    points_reward = models.IntegerField(
+    points_bonus = models.IntegerField(
         default=10,
-        verbose_name="Points récompense"
-    )
-    criteria = models.JSONField(
-        default=dict,
-        verbose_name="Critères d'obtention",
-        help_text="Conditions pour obtenir le badge"
-    )
-    is_secret = models.BooleanField(
-        default=False,
-        verbose_name="Badge secret",
-        help_text="Caché jusqu'à l'obtention"
+        verbose_name="Points bonus"
     )
     is_active = models.BooleanField(default=True, verbose_name="Actif")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
@@ -69,42 +63,38 @@ class Badge(models.Model):
     class Meta:
         verbose_name = "Badge"
         verbose_name_plural = "Badges"
-        ordering = ['badge_type', 'name']
+        ordering = ['nom']
     
     def __str__(self):
-        return f"{self.name} ({self.get_rarity_display()})"
+        return f"{self.nom}"
 
 
-class StudentBadge(models.Model):
+class UserBadge(models.Model):
     """
     Badges gagnés par les élèves
     """
-    student = models.ForeignKey(
+    user = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
         related_name='badges',
-        verbose_name="Élève"
+        verbose_name="Utilisateur"
     )
     badge = models.ForeignKey(
         Badge,
         on_delete=models.CASCADE,
-        related_name='earned_by',
+        related_name='gagnes_par',
         verbose_name="Badge"
     )
-    earned_at = models.DateTimeField(auto_now_add=True, verbose_name="Gagné le")
-    is_displayed = models.BooleanField(
-        default=True,
-        verbose_name="Affiché sur le profil"
-    )
+    date_obtention = models.DateTimeField(auto_now_add=True, verbose_name="Date d'obtention")
     
     class Meta:
-        verbose_name = "Badge gagné"
-        verbose_name_plural = "Badges gagnés"
-        unique_together = ['student', 'badge']
-        ordering = ['-earned_at']
+        verbose_name = "Badge utilisateur"
+        verbose_name_plural = "Badges utilisateurs"
+        unique_together = ['user', 'badge']
+        ordering = ['-date_obtention']
     
     def __str__(self):
-        return f"{self.student} - {self.badge.name}"
+        return f"{self.user} - {self.badge.nom}"
 
 
 class Reward(models.Model):
@@ -464,3 +454,297 @@ class Notification(models.Model):
     def __str__(self):
         status = "✓" if self.is_read else "●"
         return f"{status} {self.student} - {self.title}"
+
+
+class Avatar(models.Model):
+    """
+    Avatar personnalisé de l'élève avec upload d'image
+    """
+    student = models.OneToOneField(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='avatar',
+        verbose_name="Élève"
+    )
+    name = models.CharField(
+        max_length=100,
+        default="Mon Avatar",
+        verbose_name="Nom de l'avatar"
+    )
+    image = models.ImageField(
+        upload_to='avatars/custom/',
+        blank=True,
+        null=True,
+        verbose_name="Image d'avatar"
+    )
+    level = models.IntegerField(
+        default=1,
+        verbose_name="Niveau de l'élève"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Actif"
+    )
+    accessories = models.ManyToManyField(
+        'Accessory',
+        blank=True,
+        related_name='equipped_on',
+        verbose_name="Accessoires équipés"
+    )
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Créé le")
+    updated_at = models.DateTimeField(default=timezone.now, verbose_name="Mis à jour le")
+
+    class Meta:
+        verbose_name = "Avatar"
+        verbose_name_plural = "Avatars"
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Avatar de {self.student.user.get_full_name()}"
+
+    def get_equipped_accessories_by_type(self):
+        """
+        Retourne les accessoires équipés groupés par type
+        """
+        equipped = {}
+        for accessory in self.accessories.all():
+            equipped[accessory.accessory_type] = accessory
+        return equipped
+
+    def can_equip_accessory(self, accessory):
+        """
+        Vérifie si l'élève peut équiper cet accessoire
+        """
+        return UserAccessory.objects.filter(
+            student=self.student,
+            accessory=accessory,
+            status='owned'
+        ).exists()
+
+
+class Accessory(models.Model):
+    """
+    Accessoires disponibles dans la boutique
+    """
+    ACCESSORY_TYPE_CHOICES = (
+        ('hat', 'Chapeau'),
+        ('glasses', 'Lunettes'),
+        ('outfit', 'Tenue'),
+        ('background', 'Fond'),
+        ('pet', 'Animal de compagnie'),
+        ('other', 'Autre'),
+    )
+
+    name = models.CharField(max_length=100, verbose_name="Nom")
+    image = models.ImageField(
+        upload_to='accessories/',
+        verbose_name="Image"
+    )
+    accessory_type = models.CharField(
+        max_length=20,
+        choices=ACCESSORY_TYPE_CHOICES,
+        default='other',
+        verbose_name="Type d'accessoire"
+    )
+    points_required = models.IntegerField(
+        default=50,
+        verbose_name="Points requis"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Disponible"
+    )
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Créé le")
+
+    class Meta:
+        verbose_name = "Accessoire"
+        verbose_name_plural = "Accessoires"
+        ordering = ['accessory_type', 'points_required']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_accessory_type_display()})"
+
+
+class UserAccessory(models.Model):
+    """
+    Accessoires possédés par les élèves
+    """
+    STATUS_CHOICES = (
+        ('unlocked', 'Débloqué'),
+        ('owned', 'Possédé'),
+        ('equipped', 'Équipé'),
+    )
+
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='user_accessories',
+        verbose_name="Élève"
+    )
+    accessory = models.ForeignKey(
+        Accessory,
+        on_delete=models.CASCADE,
+        related_name='user_ownerships',
+        verbose_name="Accessoire"
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='unlocked',
+        verbose_name="Statut"
+    )
+    date_obtained = models.DateTimeField(default=timezone.now, verbose_name="Date d'obtention")
+
+    class Meta:
+        verbose_name = "Accessoire utilisateur"
+        verbose_name_plural = "Accessoires utilisateurs"
+        unique_together = ['student', 'accessory']
+        ordering = ['-date_obtained']
+
+    def __str__(self):
+        return f"{self.student.user.get_full_name()} - {self.accessory.name} ({self.get_status_display()})"
+
+    def purchase(self):
+        """
+        Acheter l'accessoire si l'élève a assez de points
+        """
+        if self.student.total_points >= self.accessory.points_required:
+            self.student.total_points -= self.accessory.points_required
+            self.student.save()
+            self.status = 'owned'
+            self.date_obtained = timezone.now()
+            self.save()
+            return True
+        return False
+
+    def equip(self, avatar):
+        """
+        Équiper l'accessoire sur l'avatar
+        """
+        if self.status == 'owned':
+            # Déséquiper les autres accessoires du même type
+            same_type_accessories = UserAccessory.objects.filter(
+                student=self.student,
+                accessory__accessory_type=self.accessory.accessory_type,
+                status='equipped'
+            )
+            for ua in same_type_accessories:
+                ua.unequip(avatar)
+
+            # Équiper le nouvel accessoire
+            self.status = 'equipped'
+            self.save()
+            avatar.accessories.add(self.accessory)
+            avatar.save()
+            return True
+        return False
+
+    def unequip(self, avatar):
+        """
+        Déséquiper l'accessoire de l'avatar
+        """
+        if self.status == 'equipped':
+            self.status = 'owned'
+            self.save()
+            avatar.accessories.remove(self.accessory)
+            avatar.save()
+            return True
+        return False
+
+
+class Mission(models.Model):
+    """
+    Missions intelligentes pour les élèves
+    """
+    MISSION_TYPE_CHOICES = (
+        ('lecture', 'Lecture'),
+        ('math', 'Mathématiques'),
+        ('science', 'Sciences'),
+        ('histoire', 'Histoire'),
+        ('geographie', 'Géographie'),
+        ('langue', 'Langue'),
+        ('creativite', 'Créativité'),
+        ('general', 'Général'),
+    )
+
+    titre = models.CharField(max_length=200, verbose_name="Titre de la mission")
+    description = models.TextField(verbose_name="Description détaillée")
+    type_mission = models.CharField(
+        max_length=15,
+        choices=MISSION_TYPE_CHOICES,
+        default='general',
+        verbose_name="Type de mission"
+    )
+    objectif = models.IntegerField(
+        default=1,
+        verbose_name="Objectif (nombre de tâches)",
+        help_text="Nombre d'actions à accomplir pour terminer la mission"
+    )
+    points = models.IntegerField(
+        default=50,
+        verbose_name="Points récompense"
+    )
+    date_expiration = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date d'expiration"
+    )
+    actif = models.BooleanField(default=True, verbose_name="Actif")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Créé le")
+
+    class Meta:
+        verbose_name = "Mission"
+        verbose_name_plural = "Missions"
+        ordering = ['type_mission', '-created_at']
+
+    def __str__(self):
+        return f"{self.titre} ({self.get_type_mission_display()})"
+
+
+class UserMission(models.Model):
+    """
+    Participation des utilisateurs aux missions
+    """
+    STATUS_CHOICES = (
+        ('en_cours', 'En cours'),
+        ('termine', 'Terminé'),
+    )
+
+    user = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='missions',
+        verbose_name="Utilisateur"
+    )
+    mission = models.ForeignKey(
+        Mission,
+        on_delete=models.CASCADE,
+        related_name='participants',
+        verbose_name="Mission"
+    )
+    progression = models.IntegerField(
+        default=0,
+        verbose_name="Progression actuelle",
+        help_text="Nombre d'actions accomplies"
+    )
+    statut = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default='en_cours',
+        verbose_name="Statut"
+    )
+    date_attribuee = models.DateTimeField(auto_now_add=True, verbose_name="Date attribuée")
+    date_terminee = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date terminée"
+    )
+
+    class Meta:
+        verbose_name = "Mission utilisateur"
+        verbose_name_plural = "Missions utilisateurs"
+        unique_together = ['user', 'mission']
+        ordering = ['-date_attribuee']
+
+    def __str__(self):
+        return f"{self.user} - {self.mission.titre} ({self.progression}/{self.mission.objectif})"

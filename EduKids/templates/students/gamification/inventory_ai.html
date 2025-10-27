@@ -1,0 +1,598 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mes Trésors - IA Style - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles de base */
+.inventory-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.inventory-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Avatar Showcase avec effets IA */
+.avatar-showcase {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-showcase.ai-processing {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.9);
+  }
+}
+
+.avatar-image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.avatar-image.ai-vibrate {
+  animation: vibrate 0.3s ease-in-out;
+}
+
+@keyframes vibrate {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-2deg); }
+  75% { transform: translateX(5px) rotate(2deg); }
+}
+
+.avatar-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+
+.avatar-halo.active {
+  opacity: 1;
+  animation: halo-rotate 2s linear infinite;
+}
+
+@keyframes halo-rotate {
+  0% {
+    border-color: #ff6b6b;
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+  33% {
+    border-color: #4ecdc4;
+  }
+  66% {
+    border-color: #ffe66d;
+  }
+  100% {
+    border-color: #ff6b6b;
+    transform: translate(-50%, -50%) rotate(360deg) scale(1.1);
+  }
+}
+
+/* Cartes d'accessoires */
+.treasure-item {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.treasure-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.treasure-item.equipped {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-color: #28a745;
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 30px rgba(40, 167, 69, 0.6);
+  }
+}
+
+.treasure-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e9ecef;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.equipped-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  box-shadow: 0 2px 10px rgba(40, 167, 69, 0.4);
+}
+
+/* Boutons d'action */
+.btn-equip-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-equip {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 120px;
+}
+
+.btn-equip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-ai-style {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ai-style::before {
+  content: '✨';
+  position: absolute;
+  left: 10px;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.btn-ai-style:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.btn-unequip {
+  background: #6c757d;
+  border: none;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-unequip:hover {
+  background: #5a6268;
+  transform: scale(1.05);
+}
+
+/* Message motivant */
+.motivational-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(100px);
+  transition: all 0.5s ease;
+}
+
+.motivational-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Loading overlay */
+.ai-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.ai-loading-overlay.active {
+  display: flex;
+}
+
+.ai-loading-content {
+  text-align: center;
+  color: white;
+}
+
+.ai-spinner {
+  width: 80px;
+  height: 80px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-loading-text {
+  font-size: 1.2rem;
+  font-weight: bold;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inventory-page">
+  <div class="container">
+    
+    <!-- Avatar Showcase -->
+    <div class="inventory-card">
+      <div class="avatar-showcase" id="avatar-showcase">
+        <h3 class="mb-3">✨ Mon Avatar Magique</h3>
+        
+        <div class="avatar-image-container">
+          <div class="avatar-halo" id="avatar-halo"></div>
+          {% if student.avatar_image %}
+            <img src="{{ student.avatar_image.url }}" alt="Mon Avatar" class="avatar-image" id="avatar-image">
+          {% else %}
+            <div class="avatar-image d-flex align-items-center justify-content-center bg-light">
+              <i class="fas fa-user fa-4x text-muted"></i>
+            </div>
+          {% endif %}
+        </div>
+        
+        <p class="mt-3 mb-0 text-white">
+          <strong>Niveau {{ student.level|default:1 }}</strong>
+        </p>
+        
+        <div class="mt-3">
+          <a href="{% url 'student_customize' %}" class="btn btn-light">
+            <i class="fas fa-edit me-2"></i>Personnaliser
+          </a>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="row mt-4 text-center">
+        <div class="col-md-4">
+          <h4 class="text-primary">🎁 {{ total_items|default:0 }}</h4>
+          <p class="text-muted">Trésors collectés</p>
+        </div>
+        <div class="col-md-4">
+          <h4 class="text-success">✓ {{ equipped_count|default:0 }}</h4>
+          <p class="text-muted">Équipés</p>
+        </div>
+        <div class="col-md-4">
+          <h4 class="text-warning">⭐ {{ collection_percent|default:0 }}%</h4>
+          <p class="text-muted">Collection</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mes Trésors -->
+    <div class="inventory-card">
+      <h4 class="mb-4">
+        <i class="fas fa-treasure-chest me-2 text-warning"></i>Mes Trésors
+      </h4>
+      
+      {% if inventory %}
+        <div class="row">
+          {% for item in inventory %}
+          <div class="col-md-6 col-lg-4">
+            <div class="treasure-item {% if item.is_equipped %}equipped{% endif %}" data-item-id="{{ item.id }}">
+              
+              {% if item.is_equipped %}
+                <span class="equipped-badge">✓ ÉQUIPÉ</span>
+              {% endif %}
+              
+              <div class="d-flex align-items-center mb-3">
+                {% if item.imageURL %}
+                  <img src="{{ item.imageURL }}" alt="{{ item.name }}" class="treasure-icon me-3">
+                {% else %}
+                  <div class="treasure-icon me-3 d-flex align-items-center justify-content-center bg-light">
+                    <i class="fas fa-gift fa-2x text-muted"></i>
+                  </div>
+                {% endif %}
+                
+                <div>
+                  <h6 class="mb-1">{{ item.name }}</h6>
+                  <small class="text-muted">{{ item.categorie }}</small>
+                  <br>
+                  <small class="text-muted">{{ item.date_obtained|date:"d/m/Y" }}</small>
+                </div>
+              </div>
+              
+              <div class="btn-equip-group">
+                {% if item.is_equipped %}
+                  <button class="btn btn-unequip" onclick="unequipItem({{ item.id }})">
+                    <i class="fas fa-times me-1"></i>Retirer
+                  </button>
+                {% else %}
+                  <button class="btn btn-equip" onclick="equipItemManual({{ item.id }}, '{{ item.name }}')">
+                    <i class="fas fa-check me-1"></i>Équiper
+                  </button>
+                  <button class="btn btn-ai-style" onclick="equipItemWithAI({{ item.id }}, '{{ item.name }}')">
+                    ✨ IA Style
+                  </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+          <h5 class="text-muted">Ton coffre est vide !</h5>
+          <p class="text-muted">Commence à collectionner des accessoires dans la boutique</p>
+          <a href="{% url 'student_store' %}" class="btn btn-primary mt-3">
+            <i class="fas fa-shopping-bag me-2"></i>Aller à la boutique
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    
+    <!-- Navigation -->
+    <div class="text-center">
+      <a href="{% url 'student_store' %}" class="btn btn-success btn-lg me-2">
+        <i class="fas fa-shopping-bag me-2"></i>Boutique
+      </a>
+      <a href="{% url 'student_customize' %}" class="btn btn-primary btn-lg me-2">
+        <i class="fas fa-user-edit me-2"></i>Personnaliser
+      </a>
+      <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Dashboard
+      </a>
+    </div>
+    
+  </div>
+</div>
+
+<!-- AI Loading Overlay -->
+<div class="ai-loading-overlay" id="ai-loading">
+  <div class="ai-loading-content">
+    <div class="ai-spinner"></div>
+    <div class="ai-loading-text">🎨 L'IA travaille sur ton avatar...</div>
+    <p class="mt-2">Cela peut prendre quelques secondes</p>
+  </div>
+</div>
+
+<!-- Motivational Message -->
+<div class="motivational-message" id="motivational-message"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+// CSRF Token
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+// Équiper manuellement
+function equipItemManual(itemId, itemName) {
+    fetch(`/api/gamification/equip/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Confetti
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            
+            // Message motivant
+            showMotivationalMessage(`✨ ${itemName} équipé avec succès !`);
+            
+            // Recharger après 1.5s
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors de l\'équipement');
+    });
+}
+
+// Équiper avec IA
+function equipItemWithAI(itemId, itemName) {
+    // Afficher le loading
+    document.getElementById('ai-loading').classList.add('active');
+    document.getElementById('avatar-showcase').classList.add('ai-processing');
+    
+    fetch(`/api/gamification/ai/equip/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Masquer le loading
+        document.getElementById('ai-loading').classList.remove('active');
+        document.getElementById('avatar-showcase').classList.remove('ai-processing');
+        
+        if (data.success) {
+            // Effet halo
+            const halo = document.getElementById('avatar-halo');
+            halo.classList.add('active');
+            
+            // Vibration avatar
+            const avatarImg = document.getElementById('avatar-image');
+            avatarImg.classList.add('ai-vibrate');
+            
+            // Confetti explosif
+            confetti({
+                particleCount: 200,
+                spread: 120,
+                origin: { y: 0.6 },
+                colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#ffd700']
+            });
+            
+            // Message motivant
+            showMotivationalMessage(data.message);
+            
+            // Mettre à jour l'avatar
+            if (data.updated_avatar_url) {
+                setTimeout(() => {
+                    avatarImg.src = data.updated_avatar_url + '?t=' + new Date().getTime();
+                }, 500);
+            }
+            
+            // Recharger après 3s
+            setTimeout(() => {
+                halo.classList.remove('active');
+                avatarImg.classList.remove('ai-vibrate');
+                window.location.reload();
+            }, 3000);
+            
+        } else {
+            // Message d'erreur fun
+            if (data.requires_avatar) {
+                showMotivationalMessage('📸 Upload d\'abord une photo d\'avatar !');
+                setTimeout(() => {
+                    window.location.href = '{% url "student_customize" %}';
+                }, 2000);
+            } else if (data.ai_failed) {
+                showMotivationalMessage(data.message);
+            } else {
+                alert(data.message);
+            }
+        }
+    })
+    .catch(error => {
+        document.getElementById('ai-loading').classList.remove('active');
+        document.getElementById('avatar-showcase').classList.remove('ai-processing');
+        console.error('Error:', error);
+        alert('Erreur lors de l\'équipement IA');
+    });
+}
+
+// Déséquiper
+function unequipItem(itemId) {
+    fetch(`/api/gamification/unequip/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMotivationalMessage('Accessoire retiré');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors du retrait');
+    });
+}
+
+// Afficher message motivant
+function showMotivationalMessage(message) {
+    const msgDiv = document.getElementById('motivational-message');
+    msgDiv.textContent = message;
+    msgDiv.classList.add('show');
+    
+    setTimeout(() => {
+        msgDiv.classList.remove('show');
+    }, 4000);
+}
+
+console.log('🎨 Inventory IA chargé');
+</script>
+{% endblock %}

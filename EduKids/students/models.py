@@ -171,6 +171,11 @@ class Student(models.Model):
         default=1,
         verbose_name="Niveau actuel"
     )
+    last_daily_reward = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Dernière récompense quotidienne"
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'inscription")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière activité")
     

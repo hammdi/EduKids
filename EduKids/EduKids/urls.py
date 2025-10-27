@@ -23,13 +23,18 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Main app URLs (students, auth, home)
+    path('student/', include('students.urls')),
     path('', include('students.urls')),
     
     # Assessments and exercises
     path('assessments/', include('assessments.urls')),
     path('exercises/', include('exercises.urls')),
+    
     # Assistant chat
     path('assistant/', include('assistant.urls')),
+    
+    # Gamification
+    path('gamification/', include('gamification.urls')),
 ]
 
 # Servir les fichiers media en développement

@@ -9,8 +9,7 @@
     </title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <!-- Vous pouvez ajouter un favicon personnalisé ici -->
 
     <!-- Bootstrap 5 CSS -->
     <link
@@ -50,7 +49,7 @@
     <nav class="navbar navbar-expand-lg navbar-light magical-navbar" style="position: relative; z-index: 1000;">
       <div class="container">
         <a class="navbar-brand magical-brand" href="{% url 'home' %}">
-          <img src="{% static 'images/logo.png' %}" alt="EduKids Logo" class="navbar-logo me-2">
+          <span style="font-size: 2rem; margin-right: 0.5rem;">🎓</span>
           <span class="brand-text">EduKids</span>
         </a>
 
@@ -235,6 +234,9 @@
     </div>
     {% endif %}
 
+    <!-- Points HUD (Student only) -->
+    {% include 'components/points_hud.html' %}
+
     <!-- Main Content -->
     <main>
       {% block content %}{% endblock %}
@@ -246,7 +248,7 @@
         <div class="row">
           <div class="col-md-6">
             <div class="footer-brand mb-3">
-              <img src="{% static 'images/logo.png' %}" alt="EduKids Logo" class="footer-logo me-2">
+              <span style="font-size: 2rem; margin-right: 0.5rem;">🎓</span>
               <span class="footer-title">EduKids</span>
             </div>
             <p class="footer-description">✨ Magical Learning Adventures for Young Explorers</p>

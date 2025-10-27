@@ -1,0 +1,376 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Boutique - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.store-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.store-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.points-header {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 1.5rem;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.points-value {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.accessory-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.accessory-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.accessory-card.owned {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+.accessory-image-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e9ecef;
+  margin: 0 auto;
+}
+
+.accessory-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  margin: 0 auto;
+  border: 4px solid #e9ecef;
+}
+
+.price-tag {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  display: inline-block;
+  font-size: 1.1rem;
+}
+
+.btn-buy {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 2rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.btn-buy:hover:not(:disabled) {
+  background: linear-gradient(45deg, #ff5252, #ff8c00);
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.btn-buy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.owned-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.insufficient-points {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  color: #856404;
+  font-size: 0.9rem;
+}
+
+.category-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 15px;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+
+.empty-store {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-store i {
+  font-size: 5rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="store-page">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        <i class="fas fa-store me-3"></i>Boutique d'Accessoires
+      </h1>
+      <p class="lead text-white">Débloque des accessoires stylés pour ton avatar !</p>
+    </div>
+
+    <!-- Points disponibles -->
+    <div class="points-header">
+      <i class="fas fa-coins fa-2x mb-2"></i>
+      <div class="points-value" id="points-display">{{ total_points }}</div>
+      <div>Points disponibles</div>
+    </div>
+
+    <!-- Catalogue -->
+    <div class="store-card">
+      {% if accessories_data %}
+        <div class="row">
+          {% for item in accessories_data %}
+            <div class="col-md-6 col-lg-4">
+              <div class="accessory-card {% if item.is_owned %}owned{% endif %}">
+                
+                <!-- Image -->
+                <div class="text-center mb-3">
+                  {% if item.accessory.image %}
+                    <img src="{{ item.accessory.image.url }}" 
+                         alt="{{ item.accessory.name }}" 
+                         class="accessory-image-large">
+                  {% else %}
+                    <div class="accessory-placeholder">
+                      <i class="fas fa-{{ item.accessory.accessory_type }} fa-2x text-muted"></i>
+                    </div>
+                  {% endif %}
+                </div>
+
+                <!-- Info -->
+                <h5 class="text-center mb-2">{{ item.accessory.name }}</h5>
+                <p class="text-center text-muted small mb-3">
+                  {{ item.accessory.get_accessory_type_display }}
+                </p>
+                <p class="text-center mb-3">{{ item.accessory.description|truncatechars:80 }}</p>
+
+                <!-- Prix -->
+                <div class="text-center mb-3">
+                  <span class="price-tag">
+                    <i class="fas fa-coins me-1"></i>{{ item.accessory.points_required }}
+                  </span>
+                </div>
+
+                <!-- Action -->
+                <div class="text-center">
+                  {% if item.is_owned %}
+                    <span class="owned-badge">
+                      <i class="fas fa-check me-1"></i>Déjà possédé
+                    </span>
+                  {% else %}
+                    <button class="btn btn-buy purchase-btn" 
+                            data-accessory-id="{{ item.accessory.id }}"
+                            data-accessory-name="{{ item.accessory.name }}"
+                            data-points-required="{{ item.accessory.points_required }}"
+                            {% if not item.can_afford %}disabled{% endif %}>
+                      <i class="fas fa-shopping-cart me-2"></i>
+                      {% if item.can_afford %}
+                        Acheter
+                      {% else %}
+                        Points insuffisants
+                      {% endif %}
+                    </button>
+                    
+                    {% if not item.can_afford %}
+                      <div class="insufficient-points">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Continue à apprendre ! Il te faut encore <strong>{{ item.points_needed }}</strong> points.
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                </div>
+
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-store">
+          <i class="fas fa-store-slash"></i>
+          <h4 class="text-muted">La boutique est vide pour le moment</h4>
+          <p class="text-muted">Reviens plus tard pour découvrir de nouveaux accessoires !</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Bouton retour -->
+    <div class="text-center">
+      <a href="{% url 'student_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Achat d'accessoire
+document.querySelectorAll('.purchase-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accessoryId = this.dataset.accessoryId;
+        const accessoryName = this.dataset.accessoryName;
+        const pointsRequired = parseInt(this.dataset.pointsRequired);
+        const currentPoints = parseInt(document.getElementById('points-display').textContent);
+        
+        // Vérification côté client
+        if (currentPoints < pointsRequired) {
+            const pointsNeeded = pointsRequired - currentPoints;
+            showToast(`💰 Continue à apprendre ! Il te faut encore ${pointsNeeded} points pour débloquer cet accessoire.`, 'info');
+            return;
+        }
+        
+        // Confirmation
+        if (!confirm(`Veux-tu vraiment acheter "${accessoryName}" pour ${pointsRequired} points ?`)) {
+            return;
+        }
+        
+        const btnElement = this;
+        const originalText = btnElement.innerHTML;
+        
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Achat en cours...';
+        btnElement.disabled = true;
+        
+        fetch('/gamification/api/user-accessories/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ accessory: accessoryId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                // Mise à jour des points
+                const newPoints = currentPoints - pointsRequired;
+                document.getElementById('points-display').textContent = newPoints;
+                
+                // Animation confetti
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                
+                // Message de succès
+                showToast(`🎉 Bravo ! Tu as débloqué "${accessoryName}" ! Va l'équiper dans la personnalisation.`, 'success');
+                
+                // Remplacer le bouton
+                btnElement.outerHTML = `
+                    <span class="owned-badge">
+                        <i class="fas fa-check me-1"></i>Déjà possédé
+                    </span>
+                `;
+                
+                // Marquer la carte comme possédée
+                btnElement.closest('.accessory-card').classList.add('owned');
+                
+            } else if (data.error) {
+                showToast(`❌ ${data.error}`, 'danger');
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            } else {
+                showToast('❌ Erreur lors de l\'achat', 'danger');
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('❌ Erreur de connexion', 'danger');
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        });
+    });
+});
+
+// Toast notifications
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-lg`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; max-width: 400px; animation: slideIn 0.3s;';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+// Animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+
+console.log('🛍️ Store loaded with', document.querySelectorAll('.accessory-card').length, 'accessories');
+</script>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- CSRF Token pour AJAX -->
+{% csrf_token %}
+{% endblock %}

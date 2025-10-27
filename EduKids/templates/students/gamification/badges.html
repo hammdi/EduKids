@@ -1,0 +1,341 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mes Badges - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.badges-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.badges-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.badge-item {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.badge-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.badge-item.locked {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.badge-item.locked:hover {
+  transform: none;
+}
+
+.badge-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.badge-item.unlocked .badge-icon {
+  animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+}
+
+.badge-name {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.badge-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.badge-progress {
+  margin-top: 0.5rem;
+}
+
+.progress-bar-badge {
+  height: 8px;
+  border-radius: 10px;
+  background: #e9ecef;
+  overflow: hidden;
+}
+
+.progress-fill-badge {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.5s ease;
+}
+
+.badge-date {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
+.unlocked-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 2rem;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 15px;
+  min-width: 150px;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+  }
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 3rem;
+  font-size: 2rem;
+  color: #667eea;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="badges-page">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        <i class="fas fa-trophy me-3"></i>Mes Badges
+      </h1>
+      <p class="lead text-white">Collectionne tous les badges en accomplissant des défis !</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="badges-card">
+      <div class="stats-row" id="badges-stats">
+        <div class="stat-box">
+          <div class="stat-value" id="unlocked-count">0</div>
+          <div class="stat-label">Badges débloqués</div>
+        </div>
+        <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+          <div class="stat-value" id="total-count">0</div>
+          <div class="stat-label">Badges disponibles</div>
+        </div>
+        <div class="stat-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+          <div class="stat-value" id="completion-percentage">0%</div>
+          <div class="stat-label">Complétion</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges Grid -->
+    <div class="badges-card">
+      <h4 class="mb-3"><i class="fas fa-medal me-2 text-warning"></i>Collection de badges</h4>
+      
+      <div id="badges-loading" class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Chargement des badges...</p>
+      </div>
+      
+      <div id="badges-grid" class="badge-grid" style="display: none;">
+        <!-- Badges will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Retour -->
+    <div class="text-center">
+      <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Charger les badges
+document.addEventListener('DOMContentLoaded', function() {
+    loadBadges();
+});
+
+function loadBadges() {
+    fetch('/api/student/badges/')
+        .then(response => response.json())
+        .then(data => {
+            displayBadges(data);
+        })
+        .catch(error => {
+            console.error('Erreur chargement badges:', error);
+            document.getElementById('badges-loading').innerHTML = `
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                <p>Erreur lors du chargement des badges</p>
+            `;
+        });
+}
+
+function displayBadges(data) {
+    const badgesGrid = document.getElementById('badges-grid');
+    const badgesLoading = document.getElementById('badges-loading');
+    
+    // Update stats
+    document.getElementById('unlocked-count').textContent = data.total_unlocked;
+    document.getElementById('total-count').textContent = data.total_available;
+    const percentage = data.total_available > 0 
+        ? Math.round((data.total_unlocked / data.total_available) * 100) 
+        : 0;
+    document.getElementById('completion-percentage').textContent = percentage + '%';
+    
+    // Display badges
+    badgesGrid.innerHTML = '';
+    
+    if (data.badges && data.badges.length > 0) {
+        data.badges.forEach(badge => {
+            const badgeElement = createBadgeElement(badge);
+            badgesGrid.appendChild(badgeElement);
+        });
+        
+        badgesLoading.style.display = 'none';
+        badgesGrid.style.display = 'grid';
+    } else {
+        badgesLoading.innerHTML = `
+            <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+            <p>Aucun badge disponible pour le moment</p>
+        `;
+    }
+}
+
+function createBadgeElement(badge) {
+    const div = document.createElement('div');
+    div.className = `badge-item ${badge.is_unlocked ? 'unlocked' : 'locked'}`;
+    
+    let progressHTML = '';
+    if (!badge.is_unlocked && badge.progress !== undefined) {
+        progressHTML = `
+            <div class="badge-progress">
+                <div class="progress-bar-badge">
+                    <div class="progress-fill-badge" style="width: ${badge.progress}%"></div>
+                </div>
+                <small class="text-muted">${badge.progress}%</small>
+            </div>
+        `;
+    }
+    
+    let dateHTML = '';
+    if (badge.is_unlocked && badge.date_obtained) {
+        const date = new Date(badge.date_obtained);
+        dateHTML = `<div class="badge-date">Obtenu le ${date.toLocaleDateString('fr-FR')}</div>`;
+    }
+    
+    div.innerHTML = `
+        ${badge.is_unlocked ? '<div class="unlocked-badge">✓ Débloqué</div>' : ''}
+        <div class="badge-icon">${badge.icon || '🏆'}</div>
+        <div class="badge-name">${badge.name}</div>
+        <div class="badge-description">${badge.description || ''}</div>
+        ${progressHTML}
+        ${dateHTML}
+    `;
+    
+    // Animation au clic
+    div.addEventListener('click', function() {
+        if (badge.is_unlocked) {
+            celebrateBadge(badge);
+        }
+    });
+    
+    return div;
+}
+
+function celebrateBadge(badge) {
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+    });
+    
+    showToast(`🏆 ${badge.name} - ${badge.description}`, 'success');
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-lg`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; animation: slideIn 0.3s;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+console.log('🏆 Badges page loaded');
+</script>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% endblock %}

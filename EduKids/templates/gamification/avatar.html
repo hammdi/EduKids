@@ -1,0 +1,653 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mon Avatar - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar-customizer {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.avatar-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: none;
+}
+
+.avatar-display {
+  background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.avatar-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+  background: #f8f9fa;
+}
+
+.upload-section {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.accessory-shop {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 1.5rem;
+}
+
+.accessory-item {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  border: 2px solid transparent;
+}
+
+.accessory-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.accessory-item.owned-item {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-color: #28a745;
+  position: relative;
+}
+
+.accessory-item.owned-item::after {
+  content: '✓';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+}
+
+.accessory-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e9ecef;
+}
+
+.btn-kids {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  border: none;
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-kids:hover {
+  background: linear-gradient(45deg, #ff5252, #ff8c00);
+  transform: scale(1.05);
+}
+
+.btn-outline-kids {
+  border: 2px solid #ff6b6b;
+  color: #ff6b6b;
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-outline-kids:hover {
+  background: #ff6b6b;
+  color: white;
+  transform: scale(1.05);
+}
+
+.points-display {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.equipped-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+.owned-badge {
+  background: #17a2b8;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="avatar-customizer">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="avatar-card p-4">
+
+          <!-- Header -->
+          <div class="text-center mb-4">
+            <h1 class="display-4 text-primary mb-2">
+              <i class="fas fa-user-circle me-3"></i>Mon Avatar
+            </h1>
+            <p class="lead text-muted">Personnalise ton avatar et collectionne des accessoires !</p>
+            <div class="points-display" id="points-display">
+              <i class="fas fa-coins me-2"></i><span id="points-value">{{ user.student_profile.total_points|default:0 }}</span> points
+            </div>
+          </div>
+
+          <div class="row">
+            <!-- Avatar Display -->
+            <div class="col-md-4">
+              <div class="avatar-display">
+                <h4 class="text-white mb-3">Mon Avatar</h4>
+                {% if avatar.image %}
+                  <img src="{{ avatar.image.url }}" alt="Mon avatar" class="avatar-image mb-3" id="avatar-preview">
+                {% else %}
+                  <div class="avatar-image mb-3 d-flex align-items-center justify-content-center bg-light">
+                    <i class="fas fa-user fa-3x text-muted"></i>
+                  </div>
+                {% endif %}
+                <p class="text-white mb-0">{{ avatar.name|default:"Avatar personnalisé" }}</p>
+              </div>
+            </div>
+
+            <!-- Customization Panel -->
+            <div class="col-md-8">
+
+              <!-- Upload Section -->
+              <div class="upload-section">
+                <h4 class="mb-3">
+                  <i class="fas fa-camera me-2 text-primary"></i>Changer mon image
+                </h4>
+                <form id="avatar-upload-form" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  
+                  <!-- Preview instantanée -->
+                  <div class="text-center mb-3" id="preview-container" style="display: none;">
+                    <p class="text-muted small mb-2">Aperçu :</p>
+                    <img id="image-preview" src="" alt="Preview" 
+                         style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #667eea;">
+                  </div>
+                  
+                  <div class="mb-3">
+                    <input type="file" class="form-control" id="avatar-image" name="image" 
+                           accept="image/png,image/jpeg,image/jpg" required>
+                    <div class="form-text">Choisis une belle photo de toi ! (JPG, PNG, max 2MB)</div>
+                    <div id="file-error" class="text-danger small mt-1" style="display: none;"></div>
+                  </div>
+                  <button type="submit" class="btn btn-kids" id="upload-btn">
+                    <i class="fas fa-upload me-2"></i>Uploader mon image
+                  </button>
+                </form>
+              </div>
+
+              <!-- Mes Trésors Débloqués -->
+              <div class="accessory-shop mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h4 class="mb-0">
+                    <i class="fas fa-treasure-chest me-2 text-warning"></i>Mes Trésors Débloqués
+                  </h4>
+                  <span class="badge bg-success" style="font-size: 1rem;">{{ owned_count|default:0 }}</span>
+                </div>
+
+                {% if owned_accessories %}
+                  <div class="row">
+                    {% for accessory in owned_accessories %}
+                    <div class="col-md-6 col-lg-4">
+                      <div class="accessory-item owned-item">
+                        <div class="d-flex align-items-center mb-2">
+                          {% if accessory.image %}
+                            <img src="{{ accessory.image.url }}" alt="{{ accessory.name }}" class="accessory-image me-3">
+                          {% else %}
+                            <div class="accessory-image me-3 d-flex align-items-center justify-content-center bg-light">
+                              <i class="fas fa-{{ accessory.accessory_type }} fa-2x text-muted"></i>
+                            </div>
+                          {% endif %}
+                          <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ accessory.name }}</h6>
+                            <small class="text-muted">{{ accessory.get_accessory_type_display }}</small>
+                          </div>
+                        </div>
+
+                        <p class="text-muted small mb-2">{{ accessory.description|truncatechars:50 }}</p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="fw-bold text-warning">
+                            <i class="fas fa-coins me-1"></i>{{ accessory.points_required }}
+                          </span>
+
+                          {% if accessory.is_equipped %}
+                            <span class="equipped-badge">✓ Équipé</span>
+                          {% else %}
+                            <button class="btn btn-outline-kids btn-sm equip-btn"
+                                    data-accessory-id="{{ accessory.id }}"
+                                    data-action="equip">
+                              <i class="fas fa-check me-1"></i>Équiper
+                            </button>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-4">
+                    <i class="fas fa-gift fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aucun trésor pour le moment. Achète des accessoires ci-dessous !</p>
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Nouveaux Accessoires -->
+              <div class="accessory-shop">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h4 class="mb-0">
+                    <i class="fas fa-shopping-bag me-2 text-success"></i>Nouveaux Accessoires
+                  </h4>
+                  <span class="badge bg-primary" style="font-size: 1rem;">{{ available_count|default:0 }}</span>
+                </div>
+
+                {% if available_accessories %}
+                  <div class="row">
+                    {% for accessory in available_accessories %}
+                    <div class="col-md-6 col-lg-4">
+                      <div class="accessory-item">
+                        <div class="d-flex align-items-center mb-2">
+                          {% if accessory.image %}
+                            <img src="{{ accessory.image.url }}" alt="{{ accessory.name }}" class="accessory-image me-3">
+                          {% else %}
+                            <div class="accessory-image me-3 d-flex align-items-center justify-content-center bg-light">
+                              <i class="fas fa-{{ accessory.accessory_type }} fa-2x text-muted"></i>
+                            </div>
+                          {% endif %}
+                          <div class="flex-grow-1">
+                            <h6 class="mb-0">{{ accessory.name }}</h6>
+                            <small class="text-muted">{{ accessory.get_accessory_type_display }}</small>
+                          </div>
+                        </div>
+
+                        <p class="text-muted small mb-2">{{ accessory.description|truncatechars:50 }}</p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="fw-bold text-warning">
+                            <i class="fas fa-coins me-1"></i>{{ accessory.points_required }}
+                          </span>
+
+                          <button class="btn btn-kids btn-sm purchase-btn"
+                                  data-accessory-id="{{ accessory.id }}"
+                                  data-accessory-name="{{ accessory.name }}"
+                                  data-points-required="{{ accessory.points_required }}"
+                                  {% if user.student_profile.total_points|default:0 < accessory.points_required %}disabled{% endif %}>
+                            <i class="fas fa-shopping-cart me-1"></i>Acheter
+                          </button>
+                        </div>
+                        
+                        {% if user.student_profile.total_points|default:0 < accessory.points_required %}
+                          <div class="mt-2 p-2 bg-warning bg-opacity-10 rounded text-center">
+                            <small class="text-muted">💪 Il te faut encore {{ accessory.points_required|add:user.student_profile.total_points|add:"-"|add:user.student_profile.total_points }} points</small>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p class="text-muted">Bravo ! Tu as tout débloqué !</p>
+                  </div>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Boutons de navigation -->
+      <div class="text-center mt-4">
+        <a href="{% url 'student_inventory' %}" class="btn btn-warning btn-lg me-2">
+          <i class="fas fa-treasure-chest me-2"></i>Voir Mes Trésors
+        </a>
+        <a href="{% url 'student_store' %}" class="btn btn-success btn-lg me-2">
+          <i class="fas fa-shopping-bag me-2"></i>Boutique Complète
+        </a>
+        <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+          <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preview instantanée de l'image avant upload
+document.getElementById('avatar-image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const fileError = document.getElementById('file-error');
+    const previewContainer = document.getElementById('preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const uploadBtn = document.getElementById('upload-btn');
+    
+    // Reset
+    fileError.style.display = 'none';
+    fileError.textContent = '';
+    uploadBtn.disabled = false;
+    
+    if (!file) {
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    // Validation du type de fichier
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        fileError.textContent = '❌ Format non autorisé. Utilise JPG ou PNG.';
+        fileError.style.display = 'block';
+        uploadBtn.disabled = true;
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    // Validation de la taille (2MB max)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+        fileError.textContent = '❌ Fichier trop volumineux. Maximum 2MB.';
+        fileError.style.display = 'block';
+        uploadBtn.disabled = true;
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    // Afficher la preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        previewContainer.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+// Gestionnaire pour l'upload d'avatar
+document.getElementById('avatar-upload-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Envoi en cours...';
+    submitBtn.disabled = true;
+
+    fetch('/gamification/api/avatars/my-avatar/upload_image/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.image_url) {
+            // Mise à jour de l'avatar sans refresh
+            const avatarPreview = document.getElementById('avatar-preview');
+            if (avatarPreview) {
+                avatarPreview.src = data.image_url;
+            } else {
+                // Créer l'élément si c'était un placeholder
+                const avatarDisplay = document.querySelector('.avatar-display');
+                const placeholder = avatarDisplay.querySelector('.avatar-image');
+                if (placeholder && placeholder.classList.contains('d-flex')) {
+                    placeholder.outerHTML = `<img src="${data.image_url}" alt="Mon avatar" class="avatar-image mb-3" id="avatar-preview">`;
+                }
+            }
+            showToast('🎉 Super ! Ton avatar a été mis à jour avec succès !', 'success');
+            // Reset le formulaire
+            document.getElementById('preview-container').style.display = 'none';
+            document.getElementById('avatar-image').value = '';
+        } else {
+            showToast('❌ Oups ! Une erreur s\'est produite lors de la mise à jour.', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur de connexion. Vérifie ta connexion internet.', 'danger');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Gestionnaire pour l'achat d'accessoires
+document.querySelectorAll('.purchase-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const accessoryId = this.dataset.accessoryId;
+        const accessoryName = this.dataset.accessoryName;
+        const pointsRequired = parseInt(this.dataset.pointsRequired);
+        const currentPoints = parseInt(document.getElementById('points-value')?.textContent || 0);
+        const originalText = this.innerHTML;
+        const btnElement = this;
+
+        // Vérifier si assez de points
+        if (currentPoints < pointsRequired) {
+            showToast(`💰 Continue à apprendre ! Il te faut encore ${pointsRequired - currentPoints} points pour débloquer cet accessoire.`, 'info');
+            return;
+        }
+
+        // Confirmation
+        if (!confirm(`🎁 Veux-tu vraiment acheter "${accessoryName}" pour ${pointsRequired} points ?`)) {
+            return;
+        }
+
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>...';
+        this.disabled = true;
+
+        fetch(`/gamification/api/user-accessories/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                accessory: accessoryId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                // Animation confetti
+                if (typeof confetti !== 'undefined') {
+                    confetti({
+                        particleCount: 150,
+                        spread: 100,
+                        origin: { y: 0.6 }
+                    });
+                }
+                
+                // Mise à jour dynamique des points
+                const newPoints = currentPoints - pointsRequired;
+                const pointsElement = document.getElementById('points-value');
+                if (pointsElement) {
+                    pointsElement.textContent = newPoints;
+                }
+                
+                // Mettre à jour le HUD si disponible
+                if (window.updatePointsDisplay) {
+                    window.updatePointsDisplay(newPoints);
+                }
+                
+                showToast(`🎉 Bravo ! Tu as débloqué ${accessoryName} ! Recharge la page pour le voir dans "Mes Trésors".`, 'success');
+                
+                // Recharger la page après 2 secondes
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+            } else if (data.error) {
+                showToast(`❌ ${data.error}`, 'danger');
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            } else {
+                showToast('❌ Erreur lors de l\'achat', 'danger');
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('❌ Erreur de connexion', 'danger');
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        });
+    });
+});
+
+// Fonction pour attacher les événements d'équipement
+function attachEquipEvent() {
+    document.querySelectorAll('.equip-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const accessoryId = this.dataset.accessoryId;
+            const action = this.dataset.action;
+            const originalText = this.innerHTML;
+            const btnElement = this;
+
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>...';
+            this.disabled = true;
+
+            fetch(`/gamification/api/avatars/my-avatar/${action}_accessory/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    accessory_id: accessoryId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id || data.equipped_accessories) {
+                    // Changer le bouton en "Équipé"
+                    btnElement.outerHTML = '<span class="equipped-badge">✓ Équipé</span>';
+                    showToast('✨ Accessoire équipé avec succès ! Ton avatar est encore plus cool !', 'success');
+                } else if (data.error) {
+                    showToast(`❌ ${data.error}`, 'danger');
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                } else {
+                    showToast('❌ Erreur lors de l\'équipement', 'danger');
+                    btnElement.innerHTML = originalText;
+                    btnElement.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('❌ Erreur de connexion', 'danger');
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            });
+        });
+    });
+}
+
+// Initialiser les événements d'équipement au chargement
+attachEquipEvent();
+
+// Fonction pour afficher les toasts (messages UX positifs)
+function showToast(message, type) {
+    // Mapping des types vers des couleurs Bootstrap
+    const typeColors = {
+        'success': 'success',
+        'danger': 'danger',
+        'info': 'info',
+        'warning': 'warning'
+    };
+    
+    const bgColor = typeColors[type] || 'primary';
+    
+    const toastDiv = document.createElement('div');
+    toastDiv.className = `alert alert-${bgColor} alert-dismissible fade show position-fixed shadow-lg`;
+    toastDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; max-width: 400px; animation: slideInRight 0.3s ease-out;';
+    toastDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close ms-2" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+
+    document.body.appendChild(toastDiv);
+
+    // Auto-dismiss après 5 secondes
+    setTimeout(() => {
+        toastDiv.classList.remove('show');
+        setTimeout(() => toastDiv.remove(), 300);
+    }, 5000);
+}
+
+console.log('🎨 Page Avatar améliorée chargée');
+
+
+// Animation CSS pour le toast
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% endblock %}

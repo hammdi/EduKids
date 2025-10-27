@@ -1,0 +1,697 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mes Trésors - EduKids{% endblock %}
+
+{% block extra_css %}
+<style>
+.inventory-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.inventory-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Avatar Display */
+.avatar-showcase {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-showcase::before {
+  content: '✨';
+  position: absolute;
+  font-size: 3rem;
+  animation: sparkle 3s infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { top: 10%; left: 10%; opacity: 0; }
+  50% { top: 20%; left: 15%; opacity: 1; }
+}
+
+.avatar-showcase::after {
+  content: '⭐';
+  position: absolute;
+  font-size: 2rem;
+  animation: sparkle2 4s infinite;
+}
+
+@keyframes sparkle2 {
+  0%, 100% { top: 80%; right: 10%; opacity: 0; }
+  50% { top: 70%; right: 15%; opacity: 1; }
+}
+
+.avatar-display {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 1rem;
+  position: relative;
+  border-radius: 50%;
+  border: 5px solid white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: white;
+  overflow: hidden;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.avatar-level {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+/* Treasure Grid */
+.treasure-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.treasure-item {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: 3px solid transparent;
+}
+
+.treasure-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  transition: left 0.5s;
+}
+
+.treasure-item:hover::before {
+  left: 100%;
+}
+
+.treasure-item:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  border-color: #667eea;
+}
+
+.treasure-item.equipped {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.treasure-item.equipped::after {
+  content: '✓ ÉQUIPÉ';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+}
+
+.treasure-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.treasure-item.equipped .treasure-icon {
+  animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(40, 167, 69, 0.5)); }
+  50% { filter: drop-shadow(0 0 15px rgba(40, 167, 69, 0.8)); }
+}
+
+.treasure-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1rem;
+  border: 3px solid #e9ecef;
+  transition: all 0.3s;
+}
+
+.treasure-item:hover .treasure-image {
+  transform: scale(1.1) rotate(5deg);
+  border-color: #667eea;
+}
+
+.treasure-name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.treasure-type {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+.treasure-date {
+  font-size: 0.75rem;
+  color: #999;
+  margin-bottom: 1rem;
+}
+
+/* Action Buttons */
+.btn-equip, .btn-unequip {
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1.5rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.btn-equip {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-equip:hover {
+  background: linear-gradient(45deg, #5568d3, #6a3f8f);
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-unequip {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+  color: white;
+}
+
+.btn-unequip:hover {
+  background: linear-gradient(45deg, #ff5252, #ff8c00);
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+/* Stats */
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 15px;
+  min-width: 150px;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s;
+}
+
+.stat-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Empty State */
+.empty-inventory {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 15px;
+}
+
+.empty-inventory i {
+  font-size: 5rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+/* Loading */
+.loading-spinner {
+  text-align: center;
+  padding: 3rem;
+  font-size: 2rem;
+  color: #667eea;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .treasure-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  
+  .avatar-display {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .stat-box {
+    min-width: 120px;
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inventory-page">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-white mb-2">
+        <i class="fas fa-treasure-chest me-3"></i>Mes Trésors
+      </h1>
+      <p class="lead text-white">✨ Ta collection d'accessoires magiques ! ✨</p>
+    </div>
+
+    <!-- Avatar Showcase -->
+    <div class="inventory-card">
+      <div class="avatar-showcase">
+        <h3 class="mb-3" style="color: #333;">🎭 Mon Avatar</h3>
+        <div class="avatar-display" id="avatar-display">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+        </div>
+        <div class="avatar-level" id="avatar-level">Niveau 1</div>
+        <div class="mt-3">
+          <a href="{% url 'student_customize' %}" class="btn btn-light btn-lg">
+            <i class="fas fa-edit me-2"></i>Personnaliser mon avatar
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="inventory-card">
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-icon">🎁</div>
+          <div class="stat-value" id="total-items">0</div>
+          <div class="stat-label">Trésors collectés</div>
+        </div>
+        <div class="stat-box" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+          <div class="stat-icon">✓</div>
+          <div class="stat-value" id="equipped-items">0</div>
+          <div class="stat-label">Équipés</div>
+        </div>
+        <div class="stat-box" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #333;">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value" id="collection-percentage">0%</div>
+          <div class="stat-label">Collection</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Treasure Grid -->
+    <div class="inventory-card">
+      <h4 class="mb-3">
+        <i class="fas fa-gem me-2 text-warning"></i>Ma Collection
+      </h4>
+      
+      <div id="inventory-loading" class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Chargement de tes trésors...</p>
+      </div>
+      
+      <div id="treasure-grid" class="treasure-grid" style="display: none;">
+        <!-- Treasures will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center">
+      <a href="{% url 'student_store' %}" class="btn btn-warning btn-lg me-2">
+        <i class="fas fa-shopping-bag me-2"></i>Aller à la boutique
+      </a>
+      <a href="{% url 'student_gamification_dashboard' %}" class="btn btn-light btn-lg">
+        <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Charger l'inventaire au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    loadInventory();
+});
+
+function loadInventory() {
+    fetch('/api/student/avatar/inventory')
+        .then(response => response.json())
+        .then(data => {
+            displayInventory(data);
+        })
+        .catch(error => {
+            console.error('Erreur chargement inventaire:', error);
+            showError();
+        });
+}
+
+function displayInventory(data) {
+    // Avatar
+    displayAvatar(data.avatar);
+    
+    // Stats
+    const totalItems = data.inventory.length;
+    const equippedItems = data.inventory.filter(item => item.is_equipped).length;
+    
+    document.getElementById('total-items').textContent = totalItems;
+    document.getElementById('equipped-items').textContent = equippedItems;
+    
+    // Pourcentage de collection (supposons 20 accessoires max)
+    const maxAccessories = 20;
+    const percentage = Math.round((totalItems / maxAccessories) * 100);
+    document.getElementById('collection-percentage').textContent = percentage + '%';
+    
+    // Treasure Grid
+    const treasureGrid = document.getElementById('treasure-grid');
+    const inventoryLoading = document.getElementById('inventory-loading');
+    
+    if (totalItems > 0) {
+        treasureGrid.innerHTML = data.inventory.map(item => createTreasureCard(item)).join('');
+        inventoryLoading.style.display = 'none';
+        treasureGrid.style.display = 'grid';
+        attachActionListeners();
+    } else {
+        inventoryLoading.innerHTML = `
+            <div class="empty-inventory">
+                <i class="fas fa-treasure-chest"></i>
+                <h4>Ton coffre est vide !</h4>
+                <p class="text-muted mb-4">Commence à collectionner des accessoires dans la boutique</p>
+                <a href="/student/store/" class="btn btn-warning btn-lg">
+                    <i class="fas fa-shopping-bag me-2"></i>Aller à la boutique
+                </a>
+            </div>
+        `;
+    }
+}
+
+function displayAvatar(avatar) {
+    const avatarDisplay = document.getElementById('avatar-display');
+    const avatarLevel = document.getElementById('avatar-level');
+    
+    if (avatar && avatar.imageURL) {
+        avatarDisplay.innerHTML = `<img src="${avatar.imageURL}" alt="Avatar" class="avatar-image">`;
+        avatarLevel.textContent = `Niveau ${avatar.level}`;
+    } else {
+        avatarDisplay.innerHTML = `<div class="avatar-placeholder">🎓</div>`;
+        avatarLevel.textContent = `Niveau ${avatar ? avatar.level : 1}`;
+    }
+}
+
+function createTreasureCard(item) {
+    const imageHTML = item.imageURL 
+        ? `<img src="${item.imageURL}" alt="${item.name}" class="treasure-image">`
+        : `<div class="treasure-icon">${getTypeEmoji(item.categorie)}</div>`;
+    
+    const date = new Date(item.date_obtained);
+    const dateStr = date.toLocaleDateString('fr-FR');
+    
+    const actionButton = item.is_equipped
+        ? `<button class="btn-unequip action-btn" data-item-id="${item.id}" data-action="unequip">
+             <i class="fas fa-times me-1"></i>Retirer
+           </button>`
+        : `<button class="btn-equip action-btn" data-item-id="${item.id}" data-action="equip">
+             <i class="fas fa-check me-1"></i>Équiper
+           </button>`;
+    
+    return `
+        <div class="treasure-item ${item.is_equipped ? 'equipped' : ''}" data-item-id="${item.id}">
+            ${imageHTML}
+            <div class="treasure-name">${item.name}</div>
+            <div class="treasure-type">${getTypeLabel(item.categorie)}</div>
+            <div class="treasure-date">📅 ${dateStr}</div>
+            ${actionButton}
+        </div>
+    `;
+}
+
+function attachActionListeners() {
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const itemId = this.dataset.itemId;
+            const action = this.dataset.action;
+            
+            if (action === 'equip') {
+                equipItem(itemId, this);
+            } else {
+                unequipItem(itemId, this);
+            }
+        });
+    });
+    
+    // Animation au clic sur la carte
+    document.querySelectorAll('.treasure-item').forEach(item => {
+        item.addEventListener('click', function() {
+            if (this.classList.contains('equipped')) {
+                celebrateTreasure(this);
+            }
+        });
+    });
+}
+
+function equipItem(itemId, btnElement) {
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btnElement.disabled = true;
+    
+    fetch(`/api/student/avatar/equip/${itemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            showToast(`✨ ${data.message}`, 'success');
+            loadInventory(); // Recharger
+        } else {
+            showToast(`❌ ${data.error}`, 'danger');
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur lors de l\'équipement', 'danger');
+        btnElement.innerHTML = originalText;
+        btnElement.disabled = false;
+    });
+}
+
+function unequipItem(itemId, btnElement) {
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btnElement.disabled = true;
+    
+    fetch(`/api/student/avatar/unequip/${itemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'info');
+            loadInventory(); // Recharger
+        } else {
+            showToast(`❌ ${data.error}`, 'danger');
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('❌ Erreur lors du retrait', 'danger');
+        btnElement.innerHTML = originalText;
+        btnElement.disabled = false;
+    });
+}
+
+function celebrateTreasure(element) {
+    confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: {
+            x: element.getBoundingClientRect().left / window.innerWidth,
+            y: element.getBoundingClientRect().top / window.innerHeight
+        }
+    });
+}
+
+function showError() {
+    document.getElementById('inventory-loading').innerHTML = `
+        <div class="empty-inventory">
+            <i class="fas fa-exclamation-triangle text-danger"></i>
+            <h4>Erreur de chargement</h4>
+            <p class="text-muted">Impossible de charger ton inventaire</p>
+            <button class="btn btn-primary" onclick="loadInventory()">Réessayer</button>
+        </div>
+    `;
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-lg`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; animation: slideIn 0.3s;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function getTypeEmoji(type) {
+    const emojis = {
+        'hat': '🎩',
+        'glasses': '👓',
+        'outfit': '👕',
+        'background': '🖼️',
+        'pet': '🐾',
+        'accessory': '✨'
+    };
+    return emojis[type] || '🎁';
+}
+
+function getTypeLabel(type) {
+    const labels = {
+        'hat': 'Chapeau',
+        'glasses': 'Lunettes',
+        'outfit': 'Tenue',
+        'background': 'Fond',
+        'pet': 'Animal',
+        'accessory': 'Accessoire'
+    };
+    return labels[type] || 'Accessoire';
+}
+
+// Animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+
+console.log('🎁 Inventaire chargé');
+</script>
+
+<!-- Confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% endblock %}

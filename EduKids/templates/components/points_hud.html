@@ -1,0 +1,437 @@
+{% load static %}
+
+<!-- Points HUD - Visible uniquement pour les Students -->
+{% if user.is_authenticated and user.user_type == 'student' %}
+<div id="points-hud" class="points-hud">
+    <div class="points-hud-content">
+        <div class="points-icon">
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="points-info">
+            <div class="points-label">Points</div>
+            <div class="points-value" id="hud-points-value">
+                <span class="loading-dots">...</span>
+            </div>
+        </div>
+        <button class="daily-reward-btn" id="daily-reward-btn" title="Récompense quotidienne">
+            <i class="fas fa-gift"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+.points-hud {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 9998;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 50px;
+    padding: 8px 20px;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    animation: slideInRight 0.5s ease-out;
+    transition: all 0.3s;
+}
+
+.points-hud:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+}
+
+.points-hud-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.points-icon {
+    font-size: 1.5rem;
+    color: #333;
+    animation: bounce 2s infinite;
+}
+
+.points-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.points-label {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.points-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333;
+    line-height: 1;
+}
+
+.daily-reward-btn {
+    background: #ff6b6b;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.daily-reward-btn:hover {
+    background: #ff5252;
+    transform: rotate(15deg) scale(1.1);
+}
+
+.daily-reward-btn:active {
+    transform: scale(0.95);
+}
+
+.daily-reward-btn.claimed {
+    background: #95a5a6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.daily-reward-btn.claimed:hover {
+    transform: none;
+}
+
+.loading-dots {
+    animation: blink 1.5s infinite;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .points-hud {
+        top: 60px;
+        right: 10px;
+        padding: 6px 15px;
+    }
+    
+    .points-icon {
+        font-size: 1.2rem;
+    }
+    
+    .points-value {
+        font-size: 1.1rem;
+    }
+    
+    .daily-reward-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+<script>
+// Points HUD JavaScript - v2.0 (Fixed 404)
+(function() {
+    const pointsHUD = document.getElementById('points-hud');
+    
+    // Ne charger que si le HUD existe (utilisateur connecté en tant qu'étudiant)
+    if (!pointsHUD) {
+        console.log('Points HUD: Non affiché (utilisateur non étudiant)');
+        return;
+    }
+    
+    console.log('Points HUD: Initialisation pour étudiant');
+    const pointsValue = document.getElementById('hud-points-value');
+    const dailyRewardBtn = document.getElementById('daily-reward-btn');
+    
+    // Charger les points au démarrage
+    loadPoints();
+    
+    // Fonction pour charger les points
+    function loadPoints() {
+        fetch('/api/student/points/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.points !== undefined) {
+                    updatePointsDisplay(data.points);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur chargement points:', error);
+                pointsValue.textContent = '0';
+            });
+    }
+    
+    // Fonction pour mettre à jour l'affichage des points
+    function updatePointsDisplay(points) {
+        pointsValue.textContent = points.toLocaleString();
+    }
+    
+    // Fonction globale pour ajouter des points (appelable depuis n'importe où)
+    window.addPoints = function(points, reason = 'Action réussie') {
+        return fetch('/api/student/points/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ points, reason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Animation de gain de points
+                animatePointsGain(data.points_added);
+                updatePointsDisplay(data.points);
+                
+                // Vérifier les badges débloqués
+                if (data.unlocked_badges && data.unlocked_badges.length > 0) {
+                    data.unlocked_badges.forEach(badge => {
+                        showBadgeUnlocked(badge);
+                    });
+                }
+                
+                // Level up
+                if (data.level_up) {
+                    showLevelUp();
+                }
+                
+                return data;
+            } else {
+                throw new Error(data.error || 'Erreur ajout points');
+            }
+        });
+    };
+    
+    // Récompense quotidienne
+    dailyRewardBtn.addEventListener('click', function() {
+        if (this.classList.contains('claimed')) {
+            showToast('Tu as déjà récupéré ta récompense aujourd\'hui !', 'info');
+            return;
+        }
+        
+        this.disabled = true;
+        
+        fetch('/api/student/points/daily-reward', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updatePointsDisplay(data.total_points);
+                this.classList.add('claimed');
+                showToast(data.message, 'success');
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                
+                // Badges débloqués
+                if (data.unlocked_badges && data.unlocked_badges.length > 0) {
+                    data.unlocked_badges.forEach(badge => {
+                        showBadgeUnlocked(badge);
+                    });
+                }
+            } else if (data.already_claimed) {
+                this.classList.add('claimed');
+                showToast(data.message, 'info');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur récompense quotidienne:', error);
+            showToast('Erreur lors de la récupération de la récompense', 'danger');
+        })
+        .finally(() => {
+            this.disabled = false;
+        });
+    });
+    
+    // Animation gain de points
+    function animatePointsGain(points) {
+        const floatingPoints = document.createElement('div');
+        floatingPoints.className = 'floating-points';
+        floatingPoints.textContent = `+${points}`;
+        floatingPoints.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 100px;
+            color: #ffd700;
+            font-size: 2rem;
+            font-weight: bold;
+            z-index: 9999;
+            animation: floatUp 2s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        `;
+        
+        document.body.appendChild(floatingPoints);
+        
+        setTimeout(() => floatingPoints.remove(), 2000);
+    }
+    
+    // Animation level up
+    function showLevelUp() {
+        showToast('🎉 NIVEAU SUPÉRIEUR ! Continue comme ça !', 'success');
+        confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.5 }
+        });
+    }
+    
+    // Afficher badge débloqué
+    function showBadgeUnlocked(badge) {
+        const modal = document.createElement('div');
+        modal.className = 'badge-unlock-modal';
+        modal.innerHTML = `
+            <div class="badge-unlock-content">
+                <div class="badge-unlock-icon">${badge.icon || '🏆'}</div>
+                <h3>Badge débloqué !</h3>
+                <h4>${badge.name}</h4>
+                <p>${badge.description}</p>
+                <button class="btn btn-primary" onclick="this.closest('.badge-unlock-modal').remove()">
+                    Super !
+                </button>
+            </div>
+        `;
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        `;
+        
+        document.body.appendChild(modal);
+        
+        confetti({
+            particleCount: 200,
+            spread: 120,
+            origin: { y: 0.6 }
+        });
+    }
+    
+    // Toast notification
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-lg`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 320px; animation: slideIn 0.3s;';
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // CSS pour animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .badge-unlock-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: scaleIn 0.5s;
+        }
+        
+        .badge-unlock-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    console.log('✅ Points HUD initialized');
+})();
+</script>
+{% endif %}

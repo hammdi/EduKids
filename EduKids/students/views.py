@@ -13,6 +13,7 @@ from django.utils.crypto import get_random_string
 from django.urls import reverse
 import uuid
 from .models import Student, Teacher, Parent, User
+from gamification.models import Accessory
 from .forms import StudentRegistrationForm, TeacherRegistrationForm
 
 def send_verification_email(user):
@@ -176,12 +177,16 @@ def register(request):
             
             # Create profile based on user type
             if user_type == 'student':
-                Student.objects.create(
+                student = Student.objects.create(
                     user=user,
                     birth_date='2000-01-01',  # Default birth date
                     grade_level='middle_school',
-                    learning_style='visual'
+                    learning_style='visual',
+                    total_points=500  # 🎁 Bonus de bienvenue : 500 points
                 )
+                # ✅ Avatar sera créé plus tard via le système de gamification
+                # L'étudiant pourra personnaliser son avatar dans le dashboard
+                
             elif user_type == 'teacher':
                 Teacher.objects.create(
                     user=user,
@@ -209,18 +214,103 @@ def register(request):
     })
 
 @login_required
-def student_dashboard(request):
-    """Student dashboard view"""
+def dashboard(request):
+    """Dashboard Student centralisé avec Gamification intégrée"""
     try:
         student = request.user.student_profile
     except Student.DoesNotExist:
         messages.error(request, 'Student profile not found.')
         return redirect('home')
     
+    from gamification.models import Avatar, UserAccessory, UserBadge, Mission, UserMission, Accessory
+    
+    # Avatar - récupérer s'il existe, sinon None
+    try:
+        avatar = Avatar.objects.get(student=student)
+    except Avatar.DoesNotExist:
+        avatar = None
+    
+    # Points
+    total_points = student.total_points
+    
+    # Badges
+    user_badges = UserBadge.objects.filter(
+        user=student,
+        date_obtention__isnull=False
+    ).select_related('badge').order_by('-date_obtention')[:5]
+    
+    total_badges = UserBadge.objects.filter(user=student, date_obtention__isnull=False).count()
+    
+    # Missions
+    active_missions = UserMission.objects.filter(
+        user=student,
+        statut='en_cours'
+    ).select_related('mission')[:3]
+    
+    completed_missions = UserMission.objects.filter(
+        user=student,
+        statut='termine'
+    ).count()
+    
+    # Accessoires possédés
+    user_accessories = UserAccessory.objects.filter(
+        student=student,
+        status__in=['owned', 'equipped']
+    ).select_related('accessory')
+    
+    equipped_accessories = [ua for ua in user_accessories if ua.status == 'equipped']
+    total_accessories = user_accessories.count()
+    
+    # Accessoires disponibles à l'achat (boutique)
+    owned_accessory_ids = [ua.accessory_id for ua in user_accessories]
+    shop_accessories = Accessory.objects.filter(
+        is_active=True
+    ).exclude(id__in=owned_accessory_ids).order_by('points_required', 'name')[:12]  # Top 12 accessoires
+    
+    # Séparer par type pour meilleure organisation
+    accessories_by_type = {}
+    for acc in shop_accessories:
+        acc_type = acc.accessory_type
+        if acc_type not in accessories_by_type:
+            accessories_by_type[acc_type] = []
+        accessories_by_type[acc_type].append(acc)
+    
+    # Trésors débloqués (accessoires rares/spéciaux possédés)
+    treasures = user_accessories.filter(
+        accessory__accessory_type__in=['treasure', 'special', 'legendary']
+    ).select_related('accessory')
+    
+    # Progression niveau
+    current_level = avatar.level if avatar else 1
+    next_level_points = current_level * 100
+    points_in_level = total_points % next_level_points
+    progress_percentage = min((points_in_level / next_level_points) * 100, 100) if next_level_points > 0 else 0
+    
     context = {
         'student': student,
+        'avatar': avatar,
+        'total_points': total_points,
+        'total_badges': total_badges,
+        'user_badges': user_badges,
+        'active_missions': active_missions,
+        'completed_missions': completed_missions,
+        'equipped_accessories': equipped_accessories,
+        'user_accessories': user_accessories,
+        'total_accessories': total_accessories,
+        'shop_accessories': shop_accessories,
+        'accessories_by_type': accessories_by_type,
+        'treasures': treasures,
+        'current_level': current_level,
+        'next_level_points': next_level_points,
+        'points_in_level': points_in_level,
+        'progress_percentage': progress_percentage,
     }
     return render(request, 'students/dashboard.html', context)
+
+@login_required
+def student_dashboard(request):
+    """Alias pour compatibilité"""
+    return dashboard(request)
 
 @login_required
 def teacher_dashboard(request):

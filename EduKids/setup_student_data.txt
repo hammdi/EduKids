@@ -1,0 +1,65 @@
+# Commandes à exécuter dans le shell Django
+# python manage.py shell
+
+from users.models import User
+from students.models import Student
+from gamification.models import Accessory, Avatar
+
+# Créer un student de test
+student_user = User.objects.filter(username='student_test').first()
+
+if not student_user:
+    student_user = User.objects.create_user(
+        username='student_test',
+        email='student@test.com',
+        password='test123',
+        user_type='student',
+        first_name='Alice',
+        last_name='Dupont'
+    )
+    print(f"✅ User créé: {student_user.username}")
+else:
+    print(f"✅ User existant: {student_user.username}")
+
+# Créer le profil student
+try:
+    student = student_user.student_profile
+    print(f"✅ Profil Student existant")
+except Student.DoesNotExist:
+    student = Student.objects.create(
+        user=student_user,
+        grade_level='CE2',
+        total_points=500
+    )
+    print(f"✅ Profil Student créé")
+
+# Créer l'avatar
+avatar, created = Avatar.objects.get_or_create(
+    student=student,
+    defaults={'level': 1}
+)
+print(f"✅ Avatar: {'créé' if created else 'existant'}")
+
+# Créer des accessoires
+accessories = [
+    {'name': 'Chapeau de pirate', 'type': 'hat', 'points': 100, 'desc': 'Un super chapeau de pirate !'},
+    {'name': 'Lunettes de soleil', 'type': 'glasses', 'points': 50, 'desc': 'Des lunettes stylées'},
+    {'name': 'Cape de super-héros', 'type': 'outfit', 'points': 200, 'desc': 'Une cape magique'},
+    {'name': 'Couronne dorée', 'type': 'hat', 'points': 150, 'desc': 'Une couronne de champion'},
+]
+
+for acc_data in accessories:
+    acc, created = Accessory.objects.get_or_create(
+        name=acc_data['name'],
+        defaults={
+            'accessory_type': acc_data['type'],
+            'points_required': acc_data['points'],
+            'description': acc_data['desc'],
+            'is_active': True
+        }
+    )
+    print(f"{'✅ Créé' if created else 'ℹ️  Existant'}: {acc.name}")
+
+print("\n✅ Configuration terminée !")
+print("Username: student_test")
+print("Password: test123")
