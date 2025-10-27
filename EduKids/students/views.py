@@ -102,6 +102,11 @@ def custom_login(request):
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.get_full_name()}!')
                 
+                # Check for next parameter
+                next_url = request.GET.get('next') or request.POST.get('next')
+                if next_url:
+                    return redirect(next_url)
+                
                 # Redirect based on user type
                 if user.user_type == 'student':
                     return redirect('student_dashboard')
