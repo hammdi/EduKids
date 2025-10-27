@@ -28,12 +28,12 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tn!3qb!pizgv7f=bc5rr4g#@#yg8=!ytcye%2=!8#p5ih9q=mp'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-tn!3qb!pizgv7f=bc5rr4g#@#yg8=!ytcye%2=!8#p5ih9q=mp')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -100,11 +100,10 @@ ASGI_APPLICATION = 'EduKids.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'edukids_db',
-    }
+    'default': dj_database_url.config(default='sqlite:///edukids_db')
 }
 
 # Cache par défaut (local)
