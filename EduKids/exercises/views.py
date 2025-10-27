@@ -1057,3 +1057,19 @@ def preview_ai_questions(request, pk):
         'exercise': exercise,
         'generated_questions': generated_questions,
     })
+
+@login_required
+def delete_subject(request, pk):
+    """Delete a subject (classroom) - only by its creator"""
+    subject = get_object_or_404(Subject, pk=pk)
+    if request.user != subject.created_by:
+        messages.error(request, 'You can only delete subjects you created.')
+        return redirect('subjects_list')
+    
+    if request.method == 'POST':
+        subject.delete()
+        messages.success(request, f'Subject "{subject.name}" deleted successfully!')
+        return redirect('subjects_list')
+    
+    # Fallback for GET requests
+    return redirect('subjects_list')

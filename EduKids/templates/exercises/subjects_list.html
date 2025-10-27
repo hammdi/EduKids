@@ -159,7 +159,7 @@
                   </li>
                   <li><hr class="dropdown-divider"></li>
                   <li>
-                    <form method="post" action="#" style="display: inline;"
+                    <form method="post" action="{% url 'delete_subject' subject.pk %}" style="display: inline;"
                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette classe ?')">
                       {% csrf_token %}
                       <button type="submit" class="dropdown-item text-danger">
