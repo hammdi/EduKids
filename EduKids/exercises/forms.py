@@ -5,7 +5,7 @@ from .models import Subject, Topic, Exercise, Lesson, Question, Answer
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['name', 'description', 'icon', 'color', 'order', 'image']
+        fields = ['name', 'description', 'icon', 'color', 'order', 'image','grade_level']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'color': forms.TextInput(attrs={'type': 'color'}),
@@ -14,7 +14,7 @@ class SubjectForm(forms.ModelForm):
 class TopicForm(forms.ModelForm):
     class Meta:
         model = Topic
-        fields = ['name', 'description', 'grade_level', 'order']
+        fields = ['name', 'description','order']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }

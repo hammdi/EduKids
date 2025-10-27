@@ -48,6 +48,7 @@ def subject_detail(request, pk):
             if topic_form.is_valid():
                 topic = topic_form.save(commit=False)
                 topic.subject = subject
+                topic.grade_level = subject.grade_level
                 topic.save()
                 messages.success(request, 'Topic created successfully!')
                 
@@ -130,6 +131,7 @@ def topic_detail(request, pk):
             topic_form = TopicForm(request.POST, instance=topic)
             if topic_form.is_valid():
                 topic_form.save()
+
                 messages.success(request, 'Topic updated successfully!')
                 return redirect('topic_detail', pk=topic.pk)
         elif 'add_exercise' in request.POST:
