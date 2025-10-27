@@ -3,7 +3,7 @@ Vues API pour l'application gamification - EduKids
 
 Points de terminaison REST pour la gestion des missions, badges, avatars et accessoires.
 """
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets, status
@@ -23,6 +23,30 @@ from .serializers import (
 from .services import attribuer_points_et_badges
 
 User = get_user_model()
+
+
+@login_required
+def avatar_view(request):
+    """
+    Vue simple pour la personnalisation d'avatar
+    Redirige vers une page avec les infos de l'avatar
+    """
+    try:
+        if hasattr(request.user, 'student_profile'):
+            student = request.user.student_profile
+            avatar, created = Avatar.objects.get_or_create(
+                student=student,
+                defaults={
+                    'name': f"Avatar de {request.user.first_name}",
+                    'is_active': True,
+                    'level': 1
+                }
+            )
+            return render(request, 'gamification/avatar.html', {'avatar': avatar})
+        else:
+            return redirect('profile')
+    except Exception as e:
+        return render(request, 'gamification/avatar.html', {'error': str(e)})
 
 
 class MissionViewSet(viewsets.ReadOnlyModelViewSet):

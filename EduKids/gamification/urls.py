@@ -7,7 +7,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     MissionViewSet, UserMissionViewSet, BadgeViewSet, UserBadgeViewSet,
-    AvatarViewSet, AccessoryViewSet, UserAccessoryViewSet
+    AvatarViewSet, AccessoryViewSet, UserAccessoryViewSet, avatar_view
 )
 
 # Router pour l'API REST
@@ -21,6 +21,9 @@ router.register(r'accessories', AccessoryViewSet, basename='accessory')
 router.register(r'user-accessories', UserAccessoryViewSet, basename='user-accessory')
 
 urlpatterns = [
+    # Template views
+    path('avatar/', avatar_view, name='avatar'),
+    
     # API REST
     path('api/', include(router.urls)),
 ]
