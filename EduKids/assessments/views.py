@@ -264,6 +264,7 @@ def transcribe_with_assemblyai(audio_path, language_code='fr'):
         traceback.print_exc()
         return None
 
+@login_required
 def voice_assessment(request):
     """Vue simple pour l'évaluation vocale"""
     return render(request, 'assessments/voice_assessment.html')
@@ -316,12 +317,14 @@ def voice_assessment_real_view(request, student_id=None):
     
     return render(request, 'assessments/voice_assessment_real.html', context)
 
+@login_required
 def voice_assessment_direct_view(request):
     """
     Vue pour l'évaluation vocale directe avec transcription visible
     """
     return render(request, 'assessments/voice_assessment_direct.html')
 
+@login_required
 def voice_assessment_audio_only_view(request):
     """
     Vue pour l'évaluation vocale DIRECTE par audio avec OpenAI
