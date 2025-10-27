@@ -28,8 +28,7 @@ User = get_user_model()
 @login_required
 def avatar_view(request):
     """
-    Vue simple pour la personnalisation d'avatar
-    Redirige vers une page avec les infos de l'avatar
+    Vue pour la personnalisation d'avatar - redirige vers customize_avatar
     """
     try:
         if hasattr(request.user, 'student_profile'):
@@ -42,7 +41,28 @@ def avatar_view(request):
                     'level': 1
                 }
             )
-            return render(request, 'gamification/avatar.html', {'avatar': avatar})
+            
+            # Get user's accessories/inventory
+            user_accessories = UserAccessory.objects.filter(student=student).select_related('accessory')
+            inventory = []
+            equipped_count = 0
+            
+            for ua in user_accessories:
+                inventory.append({
+                    'id': ua.id,
+                    'accessory': ua.accessory,
+                    'is_equipped': ua.status == 'equipped',
+                    'acquisition_date': ua.acquisition_date
+                })
+                if ua.status == 'equipped':
+                    equipped_count += 1
+            
+            return render(request, 'students/gamification/customize_avatar.html', {
+                'avatar': avatar,
+                'inventory': inventory,
+                'total_items': len(inventory),
+                'equipped_count': equipped_count
+            })
         else:
             return redirect('profile')
     except Exception as e:
