@@ -30,7 +30,7 @@
             <div class="col-lg-6 order-2 order-lg-1">
                 <div class="hero-content">
                     <div class="logo-hero mb-4">
-                        <img src="{% static 'images/waving.png' %}" alt="EduKids Waving Robot" class="floating-logo">
+                        <i class="fas fa-robot fa-5x floating-logo" style="color: #8B5CF6;"></i>
                     </div>
                     <h1 class="display-3 fw-bold mb-3 magical-title animated-title">
                         <span class="welcome-text">Welcome to</span> <span class="text-magical edukids-bounce">EduKids</span>
@@ -67,7 +67,9 @@
             <div class="col-lg-6 order-1 order-lg-2">
                 <div class="hero-image-container">
                     <div class="floating-image-wrapper">
-                        <img src="{% static 'images/landing.png' %}" alt="EduKids Magical Learning" class="hero-image floating-gentle">
+                        <div class="hero-image-icon">
+                            <i class="fas fa-graduation-cap fa-10x floating-gentle" style="color: #EC4899;"></i>
+                        </div>
                         <div class="floating-hearts">
                             <div class="heart heart-1"><i class="fas fa-heart"></i></div>
                             <div class="heart heart-2"><i class="fas fa-heart"></i></div>
@@ -91,65 +93,65 @@
         </div>
         
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="magical-card h-100 voice-magic-card" style="background-image: url('/static/images/VoiceMagic.png'); background-size: cover; background-position: center;">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon magical-icon-voice mx-auto mb-3">
-                            <i class="fas fa-microphone fa-2x"></i>
-                            <div class="icon-sparkles">
-                                <span class="sparkle-dot"><i class="fas fa-star"></i></span>
-                                <span class="sparkle-dot"><i class="fas fa-sparkles"></i></span>
-                                <span class="sparkle-dot"><i class="fas fa-star"></i></span>
-                            </div>
-                        </div>
-                        <h4 class="card-title magical-card-title"><i class="fas fa-magic me-2"></i>Voice Magic</h4>
-                        <p class="card-text magical-card-text">
-                            Talk to our AI friend! Share your thoughts and stories while our 
-                            magical voice helper listens and helps you grow stronger in speaking.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="magical-card h-100 learning-quests-card" style="background-image: url('/static/images/LearningQuests.png'); background-size: cover; background-position: center;">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon magical-icon-learn mx-auto mb-3">
-                            <i class="fas fa-book fa-2x"></i>
-                            <div class="icon-sparkles">
-                                <span class="sparkle-dot"><i class="fas fa-gem"></i></span>
-                                <span class="sparkle-dot"><i class="fas fa-star"></i></span>
-                                <span class="sparkle-dot"><i class="fas fa-gem"></i></span>
-                            </div>
-                        </div>
-                        <h4 class="card-title magical-card-title"><i class="fas fa-compass me-2"></i>Learning Quests</h4>
-                        <p class="card-text magical-card-text">
-                            Embark on fun learning adventures! Solve puzzles, play games, 
-                            and discover new worlds while learning math, reading, and more.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="magical-card h-100 growth-journey-card" style="background-image: url('/static/images/GrowthJourney.png'); background-size: cover; background-position: center;">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon magical-icon-progress mx-auto mb-3">
-                            <i class="fas fa-chart-line fa-2x"></i>
-                            <div class="icon-sparkles">
-                                <span class="sparkle-dot"><i class="fas fa-certificate"></i></span>
-                                <span class="sparkle-dot"><i class="fas fa-award"></i></span>
-                                <span class="sparkle-dot"><i class="fas fa-certificate"></i></span>
-                            </div>
-                        </div>
-                        <h4 class="card-title magical-card-title"><i class="fas fa-seedling me-2"></i>Growth Journey</h4>
-                        <p class="card-text magical-card-text">
-                            Watch yourself grow like a beautiful flower! See your progress, 
-                            earn magical badges, and celebrate every step of your learning journey.
-                        </p>
-                    </div>
-                </div>
-            </div>
+             <div class="col-md-4">
+                 <div class="magical-card h-100 voice-magic-card">
+                     <div class="card-body text-center p-4">
+                         <div class="feature-icon magical-icon-voice mx-auto mb-3">
+                             <i class="fas fa-microphone fa-2x"></i>
+                             <div class="icon-sparkles">
+                                 <span class="sparkle-dot"><i class="fas fa-star"></i></span>
+                                 <span class="sparkle-dot"><i class="fas fa-sparkles"></i></span>
+                                 <span class="sparkle-dot"><i class="fas fa-star"></i></span>
+                             </div>
+                         </div>
+                         <h4 class="card-title magical-card-title"><i class="fas fa-magic me-2"></i>Voice Magic</h4>
+                         <p class="card-text magical-card-text">
+                             Talk to our AI friend! Share your thoughts and stories while our 
+                             magical voice helper listens and helps you grow stronger in speaking.
+                         </p>
+                     </div>
+                 </div>
+             </div>
+             
+             <div class="col-md-4">
+                 <div class="magical-card h-100 learning-quests-card">
+                     <div class="card-body text-center p-4">
+                         <div class="feature-icon magical-icon-learn mx-auto mb-3">
+                             <i class="fas fa-book fa-2x"></i>
+                             <div class="icon-sparkles">
+                                 <span class="sparkle-dot"><i class="fas fa-gem"></i></span>
+                                 <span class="sparkle-dot"><i class="fas fa-star"></i></span>
+                                 <span class="sparkle-dot"><i class="fas fa-gem"></i></span>
+                             </div>
+                         </div>
+                         <h4 class="card-title magical-card-title"><i class="fas fa-compass me-2"></i>Learning Quests</h4>
+                         <p class="card-text magical-card-text">
+                             Embark on fun learning adventures! Solve puzzles, play games, 
+                             and discover new worlds while learning math, reading, and more.
+                         </p>
+                     </div>
+                 </div>
+             </div>
+             
+             <div class="col-md-4">
+                 <div class="magical-card h-100 growth-journey-card">
+                     <div class="card-body text-center p-4">
+                         <div class="feature-icon magical-icon-progress mx-auto mb-3">
+                             <i class="fas fa-chart-line fa-2x"></i>
+                             <div class="icon-sparkles">
+                                 <span class="sparkle-dot"><i class="fas fa-certificate"></i></span>
+                                 <span class="sparkle-dot"><i class="fas fa-award"></i></span>
+                                 <span class="sparkle-dot"><i class="fas fa-certificate"></i></span>
+                             </div>
+                         </div>
+                         <h4 class="card-title magical-card-title"><i class="fas fa-seedling me-2"></i>Growth Journey</h4>
+                         <p class="card-text magical-card-text">
+                             Watch yourself grow like a beautiful flower! See your progress, 
+                             earn magical badges, and celebrate every step of your learning journey.
+                         </p>
+                     </div>
+                 </div>
+             </div>
         </div>
     </div>
 </section>
@@ -184,7 +186,7 @@
             <div class="col-lg-6">
                 <div class="text-center about-illustration">
                     <div class="floating-graduation">
-                        <img src="{% static 'images/LearningMadeMagical.png' %}" alt="Learning Made Magical" class="magical-grad-image">
+                        <i class="fas fa-graduation-cap magical-grad-icon fa-8x"></i>
                         <div class="graduation-sparkles">
                             <span class="grad-sparkle"><i class="fas fa-star"></i></span>
                             <span class="grad-sparkle"><i class="fas fa-gem"></i></span>
