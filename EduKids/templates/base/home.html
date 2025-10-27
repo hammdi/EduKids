@@ -1,61 +1,917 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}EduKids - Plateforme Éducative Intelligente{% endblock %}
+{% block title %}EduKids - Magical Learning Adventure{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto text-center">
-            <h1 class="display-4 mb-4">
-                <i class="fas fa-graduation-cap text-primary"></i>
-                EduKids
-            </h1>
-            <p class="lead mb-4">
-                Plateforme éducative intelligente pour l'apprentissage au primaire
-            </p>
-            
-            <div class="row mt-5">
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-robot fa-3x text-primary mb-3"></i>
-                            <h5 class="card-title">Assistant IA</h5>
-                            <p class="card-text">Assistant virtuel intelligent pour accompagner les élèves</p>
-                        </div>
+<!-- Animated Background Elements -->
+<div class="magical-background">
+    <div class="floating-bubbles">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+        <div class="bubble bubble-4"></div>
+        <div class="bubble bubble-5"></div>
+        <div class="bubble bubble-6"></div>
+    </div>
+    <div class="floating-sparkles">
+        <div class="sparkle sparkle-1"><i class="fas fa-star"></i></div>
+        <div class="sparkle sparkle-2"><i class="fas fa-gem"></i></div>
+        <div class="sparkle sparkle-3"><i class="fas fa-sparkles"></i></div>
+        <div class="sparkle sparkle-4"><i class="fas fa-certificate"></i></div>
+        <div class="sparkle sparkle-5"><i class="fas fa-star"></i></div>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section magical-gradient py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6 order-2 order-lg-1">
+                <div class="hero-content">
+                    <div class="logo-hero mb-4">
+                        <img src="{% static 'images/waving.png' %}" alt="EduKids Waving Robot" class="floating-logo">
                     </div>
-                </div>
-                
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-book fa-3x text-success mb-3"></i>
-                            <h5 class="card-title">Exercices</h5>
-                            <p class="card-text">Exercices adaptatifs et génération automatique</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
-                            <h5 class="card-title">Gamification</h5>
-                            <p class="card-text">Badges, avatars et système de récompenses</p>
-                        </div>
+                    <h1 class="display-3 fw-bold mb-3 magical-title animated-title">
+                        <span class="welcome-text">Welcome to</span> <span class="text-magical edukids-bounce">EduKids</span>
+                    </h1>
+                    <p class="magical-tagline mb-4">
+                        <i class="fas fa-magic me-2"></i>Discover. Learn. Play. The magical way to grow with EduKids.
+                    </p>
+                    <p class="lead mb-4 hero-description">
+                        Join our enchanted world of learning where AI magic meets fun! 
+                        Voice adventures, interactive quests, and personalized journeys await.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        {% if not user.is_authenticated %}
+                            <a href="{% url 'register' %}" class="btn btn-magical-primary btn-lg magical-button">
+                                <i class="fas fa-play me-2"></i>Start My Adventure
+                            </a>
+                            <a href="{% url 'login' %}" class="btn btn-magical-secondary btn-lg magical-button">
+                                <i class="fas fa-sign-in-alt me-2"></i>Continue Journey
+                            </a>
+                        {% else %}
+                            {% if user.student %}
+                                <a href="{% url 'student_dashboard' %}" class="btn btn-magical-primary btn-lg magical-button">
+                                    <i class="fas fa-tachometer-alt me-2"></i>My Learning World
+                                </a>
+                            {% elif user.teacher %}
+                                <a href="{% url 'teacher_dashboard' %}" class="btn btn-magical-primary btn-lg magical-button">
+                                    <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Magic
+                                </a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            
-            <div class="mt-5">
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-3">
-                    <i class="fas fa-sign-in-alt"></i> Se connecter
-                </a>
-                <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-user-plus"></i> S'inscrire
-                </a>
+            <div class="col-lg-6 order-1 order-lg-2">
+                <div class="hero-image-container">
+                    <div class="floating-image-wrapper">
+                        <img src="{% static 'images/landing.png' %}" alt="EduKids Magical Learning" class="hero-image floating-gentle">
+                        <div class="floating-hearts">
+                            <div class="heart heart-1"><i class="fas fa-heart"></i></div>
+                            <div class="heart heart-2"><i class="fas fa-heart"></i></div>
+                            <div class="heart heart-3"><i class="fas fa-heart"></i></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 features-magical">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold magical-title mb-3">Our Magical Powers</h2>
+                <p class="lead magical-subtitle">Discover the enchanted tools that make learning an adventure!</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="magical-card h-100 voice-magic-card" style="background-image: url('/static/images/VoiceMagic.png'); background-size: cover; background-position: center;">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon magical-icon-voice mx-auto mb-3">
+                            <i class="fas fa-microphone fa-2x"></i>
+                            <div class="icon-sparkles">
+                                <span class="sparkle-dot"><i class="fas fa-star"></i></span>
+                                <span class="sparkle-dot"><i class="fas fa-sparkles"></i></span>
+                                <span class="sparkle-dot"><i class="fas fa-star"></i></span>
+                            </div>
+                        </div>
+                        <h4 class="card-title magical-card-title"><i class="fas fa-magic me-2"></i>Voice Magic</h4>
+                        <p class="card-text magical-card-text">
+                            Talk to our AI friend! Share your thoughts and stories while our 
+                            magical voice helper listens and helps you grow stronger in speaking.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="magical-card h-100 learning-quests-card" style="background-image: url('/static/images/LearningQuests.png'); background-size: cover; background-position: center;">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon magical-icon-learn mx-auto mb-3">
+                            <i class="fas fa-book fa-2x"></i>
+                            <div class="icon-sparkles">
+                                <span class="sparkle-dot"><i class="fas fa-gem"></i></span>
+                                <span class="sparkle-dot"><i class="fas fa-star"></i></span>
+                                <span class="sparkle-dot"><i class="fas fa-gem"></i></span>
+                            </div>
+                        </div>
+                        <h4 class="card-title magical-card-title"><i class="fas fa-compass me-2"></i>Learning Quests</h4>
+                        <p class="card-text magical-card-text">
+                            Embark on fun learning adventures! Solve puzzles, play games, 
+                            and discover new worlds while learning math, reading, and more.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="magical-card h-100 growth-journey-card" style="background-image: url('/static/images/GrowthJourney.png'); background-size: cover; background-position: center;">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon magical-icon-progress mx-auto mb-3">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                            <div class="icon-sparkles">
+                                <span class="sparkle-dot"><i class="fas fa-certificate"></i></span>
+                                <span class="sparkle-dot"><i class="fas fa-award"></i></span>
+                                <span class="sparkle-dot"><i class="fas fa-certificate"></i></span>
+                            </div>
+                        </div>
+                        <h4 class="card-title magical-card-title"><i class="fas fa-seedling me-2"></i>Growth Journey</h4>
+                        <p class="card-text magical-card-text">
+                            Watch yourself grow like a beautiful flower! See your progress, 
+                            earn magical badges, and celebrate every step of your learning journey.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about-magical py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="about-content">
+                    <h2 class="display-5 fw-bold mb-4 magical-title">Our Magical World</h2>
+                    <p class="lead mb-4 magical-description">
+                        EduKids is a enchanted learning kingdom where young explorers aged 6-12 
+                        discover the joy of learning through AI magic, fun games, and wonderful adventures!
+                    </p>
+                    <div class="row magical-stats">
+                        <div class="col-6">
+                            <div class="text-center magical-stat-card">
+                                <h3 class="magical-number">100%</h3>
+                                <p class="stat-label">Fun Learning</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center magical-stat-card">
+                                <h3 class="magical-number">AI</h3>
+                                <p class="stat-label">Smart Helper</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center about-illustration">
+                    <div class="floating-graduation">
+                        <img src="{% static 'images/LearningMadeMagical.png' %}" alt="Learning Made Magical" class="magical-grad-image">
+                        <div class="graduation-sparkles">
+                            <span class="grad-sparkle"><i class="fas fa-star"></i></span>
+                            <span class="grad-sparkle"><i class="fas fa-gem"></i></span>
+                            <span class="grad-sparkle"><i class="fas fa-sparkles"></i></span>
+                            <span class="grad-sparkle"><i class="fas fa-certificate"></i></span>
+                        </div>
+                    </div>
+                    <h3 class="magical-subtitle mt-4">Learning Made Magical</h3>
+                    <p class="magical-description">Where curiosity meets wonder and every child becomes a learning hero!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-magical py-5 mb-0">
+    <div class="container text-center">
+        <div class="cta-content">
+            <h2 class="display-5 fw-bold mb-4 magical-cta-title">Ready for Your Learning Adventure?</h2>
+            <p class="lead mb-4 magical-cta-text">
+                Join thousands of young explorers in our magical learning kingdom! 
+                Your adventure awaits with AI friends, fun quests, and amazing discoveries.
+            </p>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn btn-magical-cta btn-lg magical-button pulse-animation">
+                    <i class="fas fa-play me-2"></i>Begin My Adventure Now!
+                </a>
+                <div class="cta-sparkles mt-3">
+                    <span class="cta-sparkle"><i class="fas fa-star"></i></span>
+                    <span class="cta-sparkle"><i class="fas fa-gem"></i></span>
+                    <span class="cta-sparkle"><i class="fas fa-sparkles"></i></span>
+                    <span class="cta-sparkle"><i class="fas fa-certificate"></i></span>
+                    <span class="cta-sparkle"><i class="fas fa-star"></i></span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
 {% endblock %}
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+    /* Global Magical Styling */
+    * {
+        font-family: 'Nunito', sans-serif;
+    }
+    
+    /* Feature Cards with Background Images */
+    .voice-magic-card {
+        background-image: url('/static/images/VoiceMagic.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 15px;
+        overflow: hidden;
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .voice-magic-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .voice-magic-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .learning-quests-card {
+        background-image: url('/static/images/LearningQuests.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 15px;
+        overflow: hidden;
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .learning-quests-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .learning-quests-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .growth-journey-card {
+        background-image: url('/static/images/GrowthJourney.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 15px;
+        overflow: hidden;
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .growth-journey-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.85);
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .growth-journey-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Magical Background */
+    .magical-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+        overflow: hidden;
+    }
+    
+    /* Floating Bubbles */
+    .floating-bubbles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .bubble {
+        position: absolute;
+        background: linear-gradient(135deg, rgba(255, 182, 193, 0.3), rgba(221, 160, 221, 0.3));
+        border-radius: 50%;
+        animation: floatBubble 15s infinite linear;
+        box-shadow: 0 4px 15px rgba(255, 182, 193, 0.2);
+    }
+    
+    .bubble-1 { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+    .bubble-2 { width: 60px; height: 60px; left: 20%; animation-delay: 2s; }
+    .bubble-3 { width: 100px; height: 100px; left: 35%; animation-delay: 4s; }
+    .bubble-4 { width: 50px; height: 50px; left: 60%; animation-delay: 6s; }
+    .bubble-5 { width: 70px; height: 70px; left: 80%; animation-delay: 8s; }
+    .bubble-6 { width: 90px; height: 90px; left: 90%; animation-delay: 10s; }
+    
+    @keyframes floatBubble {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+    }
+    
+    /* Floating Sparkles */
+    .floating-sparkles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .sparkle {
+        position: absolute;
+        font-size: 20px;
+        animation: sparkleFloat 8s infinite ease-in-out;
+    }
+    
+    .sparkle-1 { left: 15%; top: 20%; animation-delay: 0s; }
+    .sparkle-2 { left: 85%; top: 30%; animation-delay: 2s; }
+    .sparkle-3 { left: 25%; top: 70%; animation-delay: 4s; }
+    .sparkle-4 { left: 75%; top: 60%; animation-delay: 6s; }
+    .sparkle-5 { left: 50%; top: 80%; animation-delay: 8s; }
+    
+    @keyframes sparkleFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+        50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+    }
+    
+    /* Hero Section */
+    .magical-gradient {
+        background: linear-gradient(135deg, 
+            #FFE4E6 0%,    /* Soft pink */
+            #E0E7FF 25%,   /* Lavender */
+            #DBEAFE 50%,   /* Sky blue */
+            #F3E8FF 75%,   /* Light purple */
+            #FDF2F8 100%   /* Pale pink */
+        );
+        min-height: 90vh;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .min-vh-75 {
+        min-height: 75vh;
+    }
+    
+    /* Logo Animation */
+    .floating-logo {
+        max-height: 80px;
+        animation: gentleFloat 3s ease-in-out infinite;
+        filter: drop-shadow(0 8px 16px rgba(147, 51, 234, 0.2));
+    }
+    
+    @keyframes gentleFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    /* Magical Typography */
+    .magical-title {
+        background: linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+        font-weight: 800;
+    }
+    
+    /* Animated Title Effects */
+    .animated-title {
+        animation: titleFadeIn 2s ease-out;
+    }
+    
+    .welcome-text {
+        display: inline-block;
+        animation: slideInLeft 1.5s ease-out;
+    }
+    
+    .edukids-bounce {
+        display: inline-block;
+        animation: bounceInRight 2s ease-out, colorPulse 3s ease-in-out infinite 2s;
+        animation-fill-mode: both;
+    }
+    
+    @keyframes titleFadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        0% {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        60% {
+            opacity: 0.8;
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes bounceInRight {
+        0% {
+            opacity: 0;
+            transform: translateX(50px) scale(0.8);
+        }
+        50% {
+            opacity: 0.8;
+            transform: translateX(-10px) scale(1.1);
+        }
+        70% {
+            transform: translateX(5px) scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+    
+    @keyframes colorPulse {
+        0%, 100% {
+            filter: brightness(1) saturate(1);
+            transform: scale(1);
+        }
+        50% {
+            filter: brightness(1.2) saturate(1.3);
+            transform: scale(1.02);
+        }
+    }
+    
+    .text-magical {
+        background: linear-gradient(135deg, #F59E0B, #EC4899, #8B5CF6);
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 2s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
+    }
+    
+    .magical-tagline {
+        font-size: 1.3rem;
+        color: #8B5CF6;
+        font-weight: 600;
+        text-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+        animation: twinkle 3s ease-in-out infinite;
+    }
+    
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.9; }
+        50% { opacity: 1; }
+    }
+    
+    .hero-description {
+        color: #6B7280;
+        font-weight: 500;
+        line-height: 1.6;
+    }
+    
+    /* Magical Buttons */
+    .magical-button {
+        border-radius: 25px;
+        font-weight: 600;
+        text-transform: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-magical-primary {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        border: none;
+        color: white;
+    }
+    
+    .btn-magical-primary:hover {
+        background: linear-gradient(135deg, #059669, #10B981);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+    
+    .btn-magical-secondary {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        border: none;
+        color: white;
+    }
+    
+    .btn-magical-secondary:hover {
+        background: linear-gradient(135deg, #D97706, #F59E0B);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        color: white;
+    }
+    
+    .btn-magical-cta {
+        background: linear-gradient(135deg, #EC4899, #F472B6);
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .btn-magical-cta:hover {
+        background: linear-gradient(135deg, #DB2777, #EC4899);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4);
+        color: white;
+    }
+    
+    .pulse-animation {
+        animation: magicalPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes magicalPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* Hero Image */
+    .hero-image-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .floating-image-wrapper {
+        position: relative;
+    }
+    
+    .hero-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 20px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .floating-gentle {
+        animation: floatGentle 4s ease-in-out infinite;
+    }
+    
+    @keyframes floatGentle {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(1deg); }
+    }
+    
+    
+    /* Floating Hearts */
+    .floating-hearts {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+    
+    .heart {
+        position: absolute;
+        font-size: 24px;
+        animation: heartFloat 6s ease-in-out infinite;
+    }
+    
+    .heart-1 { top: 20%; left: 10%; animation-delay: 0s; }
+    .heart-2 { top: 60%; right: 15%; animation-delay: 2s; }
+    .heart-3 { bottom: 30%; left: 20%; animation-delay: 4s; }
+    
+    @keyframes heartFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+        50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
+    }
+    
+    /* Features Section */
+    .features-magical {
+        background: linear-gradient(135deg, #FEFCE8 0%, #FEF3C7 100%);
+        position: relative;
+    }
+    
+    .magical-subtitle {
+        color: #7C3AED;
+        font-weight: 600;
+    }
+    
+    .magical-card {
+        background: transparent;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+    }
+    
+    .magical-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s;
+    }
+    
+    .magical-card:hover::before {
+        left: 100%;
+    }
+    
+    .magical-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .magical-icon-voice {
+        background: linear-gradient(135deg, #EC4899, #F472B6);
+        color: white;
+    }
+    
+    .magical-icon-learn {
+        background: linear-gradient(135deg, #10B981, #34D399);
+        color: white;
+    }
+    
+    .magical-icon-progress {
+        background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+        color: white;
+    }
+    
+    .icon-sparkles {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        pointer-events: none;
+    }
+    
+    .sparkle-dot {
+        position: absolute;
+        font-size: 12px;
+        animation: sparkleRotate 3s linear infinite;
+    }
+    
+    .sparkle-dot:nth-child(1) { top: 0; left: 50%; animation-delay: 0s; }
+    .sparkle-dot:nth-child(2) { top: 50%; right: 0; animation-delay: 1s; }
+    .sparkle-dot:nth-child(3) { bottom: 0; left: 50%; animation-delay: 2s; }
+    
+    @keyframes sparkleRotate {
+        0% { transform: rotate(0deg) translateX(40px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+    }
+    
+    .magical-card-title {
+        color: #7C3AED;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9), 0 4px 8px rgba(255, 255, 255, 0.7);
+    }
+    
+    .magical-card-text {
+        color: #374151;
+        font-weight: 600;
+        line-height: 1.6;
+        text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(255, 255, 255, 0.7);
+    }
+    
+    /* About Section */
+    .about-magical {
+        background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        position: relative;
+    }
+    
+    .magical-description {
+        color: #6B7280;
+        font-weight: 500;
+        line-height: 1.7;
+    }
+    
+    .magical-stat-card {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .magical-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .magical-number {
+        background: linear-gradient(135deg, #F59E0B, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #7C3AED;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .floating-graduation {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .magical-grad-icon {
+        font-size: 6rem;
+        background: linear-gradient(135deg, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gentleFloat 4s ease-in-out infinite;
+    }
+    
+    /* New Image Styling with Blur Effect */
+    .magical-grad-image {
+        max-width: 400px;
+        width: 100%;
+        height: auto;
+        filter: blur(1px) brightness(1.05);
+        animation: gentleFloat 4s ease-in-out infinite;
+        transition: all 0.3s ease;
+    }
+    
+    .magical-grad-image:hover {
+        filter: blur(0px) brightness(1.1);
+        transform: scale(1.05);
+    }
+    
+    .graduation-sparkles {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+    
+    .grad-sparkle {
+        position: absolute;
+        font-size: 16px;
+        animation: sparkleOrbit 8s linear infinite;
+    }
+    
+    .grad-sparkle:nth-child(1) { animation-delay: 0s; }
+    .grad-sparkle:nth-child(2) { animation-delay: 2s; }
+    .grad-sparkle:nth-child(3) { animation-delay: 4s; }
+    .grad-sparkle:nth-child(4) { animation-delay: 6s; }
+    
+    @keyframes sparkleOrbit {
+        0% { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+        100% { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+    }
+    
+    /* CTA Section */
+    .cta-magical {
+        background: linear-gradient(135deg, #FDF2F8 0%, #FCE7F3 50%, #F3E8FF 100%);
+        position: relative;
+    }
+    
+    .magical-cta-title {
+        background: linear-gradient(135deg, #EC4899, #8B5CF6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+    }
+    
+    .magical-cta-text {
+        color: #7C3AED;
+        font-weight: 600;
+    }
+    
+    .cta-sparkles {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .cta-sparkle {
+        font-size: 1.5rem;
+        animation: sparkleJump 2s ease-in-out infinite;
+    }
+    
+    .cta-sparkle:nth-child(1) { animation-delay: 0s; }
+    .cta-sparkle:nth-child(2) { animation-delay: 0.2s; }
+    .cta-sparkle:nth-child(3) { animation-delay: 0.4s; }
+    .cta-sparkle:nth-child(4) { animation-delay: 0.6s; }
+    .cta-sparkle:nth-child(5) { animation-delay: 0.8s; }
+    
+    @keyframes sparkleJump {
+        0%, 100% { transform: translateY(0px) scale(1); }
+        50% { transform: translateY(-10px) scale(1.2); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .magical-title {
+            font-size: 2.5rem;
+        }
+        
+        .magical-tagline {
+            font-size: 1.1rem;
+        }
+        
+        .floating-logo {
+            max-height: 60px;
+        }
+        
+        .hero-image {
+            margin-top: 2rem;
+        }
+        
+        .magical-grad-icon {
+            font-size: 4rem;
+        }
+        
+        .magical-grad-image {
+            max-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
